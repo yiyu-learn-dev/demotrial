@@ -33,7 +33,6 @@
 
         .vertical-text { writing-mode: vertical-rl; text-orientation: mixed; letter-spacing:0.3em; }
 
-        /* 桌面端边栏折叠：自身变成窄条 */
         .sidebar-collapsed-desktop {
             width: 40px !important;
             min-width: 40px !important;
@@ -41,22 +40,10 @@
             overflow: hidden !important;
             transition: width 0.3s ease, min-width 0.3s ease, padding 0.3s ease;
         }
-        .sidebar-collapsed-desktop .sidebar-content {
-            display: none;
-        }
-        .sidebar-collapsed-desktop .sidebar-collapse-btn {
-            display: none;
-        }
-        .sidebar-collapsed-desktop .sidebar-expand-inner {
-            display: flex !important;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            cursor: pointer;
-        }
+        .sidebar-collapsed-desktop .sidebar-content { display: none; }
+        .sidebar-collapsed-desktop .sidebar-collapse-btn { display: none; }
+        .sidebar-collapsed-desktop .sidebar-expand-inner { display: flex !important; flex-direction: column; align-items: center; justify-content: center; height: 100%; cursor: pointer; }
 
-        /* 移动端面板折叠（内联） */
         .mobile-collapse {
             max-height: 0;
             opacity: 0;
@@ -64,28 +51,73 @@
             overflow: hidden;
             transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease, margin 0.3s ease;
         }
-        .mobile-collapse.open {
-            max-height: 800px;
-            opacity: 1;
-            margin-bottom: 1rem;
+        .mobile-collapse.open { max-height: 800px; opacity: 1; margin-bottom: 1rem; }
+
+        .note-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        .note-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            border-color: #93b4e8;
+        }
+        .extend-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .extend-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
 
-        body.night-mode { background:#1a1f2e; color:#d1d5db; }
+        /* 夜间模式 */
+        body.night-mode { background:#1a1f2e; }
+        body.night-mode,
+        body.night-mode .text-gray-800,
+        body.night-mode .text-gray-700,
+        body.night-mode .text-gray-600,
+        body.night-mode .text-gray-500,
+        body.night-mode .text-gray-400 { color: #e5e7eb !important; }
+        body.night-mode .text-brand { color: #a3c2f0 !important; }
         body.night-mode .bg-white { background:#1f2937 !important; }
         body.night-mode .bg-gray-100 { background:#374151 !important; }
-        body.night-mode .border-gray-200,.border-gray-100 { border-color:#4b5563 !important; }
+        body.night-mode .bg-gray-50 { background:#2c3a4f !important; }
+        body.night-mode .bg-\[\#eef4fb\] { background:#2c3a4f !important; }
+        body.night-mode .border-gray-200,
+        body.night-mode .border-gray-100 { border-color:#4b5563 !important; }
         body.night-mode header { background:#1f2937 !important; }
-        body.night-mode .text-brand { color:#93b4e8 !important; }
-        body.night-mode .bg-brand { background:#4b6e9c !important; }
+        body.night-mode .bg-brand { background:#5a7fae !important; }
         body.night-mode .hover\:bg-gray-100:hover { background:#374151 !important; }
         body.night-mode .chat-bubble-ai { background:#374151 !important; color:#e5e7eb; border-color:#4b5563; }
         body.night-mode .chat-bubble-user { background:#1f2937 !important; color:#e5e7eb; border-color:#4b5563; }
+        body.night-mode .bg-\[\#f8fafc\] { background:#1f2937 !important; }
+        body.night-mode input,
+        body.night-mode textarea { color: #e5e7eb !important; }
+        body.night-mode .bg-\[\#e6f4ea\],
+        body.night-mode .bg-\[\#fef7e0\],
+        body.night-mode .bg-\[\#fce8e6\],
+        body.night-mode .bg-\[\#f3e8fd\] { background: #2c3a4f !important; }
+        body.night-mode .text-green-900,
+        body.night-mode .text-green-700,
+        body.night-mode .text-yellow-900,
+        body.night-mode .text-yellow-700,
+        body.night-mode .text-red-900,
+        body.night-mode .text-red-700,
+        body.night-mode .text-purple-900,
+        body.night-mode .text-purple-700 { color: #e5e7eb !important; }
+        body.night-mode .note-card:hover { box-shadow: 0 8px 20px rgba(255,255,255,0.1); }
+        body.night-mode .timer-ring { border-color: #a3c2f0 !important; }
+        body.night-mode #timer-btn { background-color: #2c3a4f !important; }
+        body.night-mode #timer-btn:hover { background-color: #374151 !important; }
 
+        /* 护眼模式 */
         body.warm-mode { background: #FCFAF2 !important; color: #3E3A39; }
         body.warm-mode header { background: #F5F0E5 !important; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
         body.warm-mode .bg-white { background: #F5F0E5 !important; }
         body.warm-mode .bg-gray-100 { background: #EAE4D9 !important; }
-        body.warm-mode .border-gray-200,.border-gray-100 { border-color: #E0D8C8 !important; }
+        body.warm-mode .bg-gray-50 { background: #E3DBCD !important; }
+        body.warm-mode .bg-\[\#eef4fb\] { background: #E3DBCD !important; }
+        body.warm-mode .border-gray-200,
+        body.warm-mode .border-gray-100 { border-color: #E0D8C8 !important; }
         body.warm-mode .text-brand { color: #3E3A39 !important; }
         body.warm-mode .bg-brand { background: #EAA348 !important; }
         body.warm-mode .hover\:bg-gray-100:hover { background: #D9CFBC !important; }
@@ -118,7 +150,7 @@
             <span class="hidden sm:inline text-xs bg-blue-100 text-brand px-2 py-0.5 rounded-full font-medium ml-1">高考英语</span>
         </div>
         <div class="flex items-center gap-2 sm:gap-4">
-            <button class="w-8 h-8 sm:w-9 sm:h-9 rounded-full hover:bg-gray-100 flex items-center justify-center transition text-gray-500 hover:text-brand" title="分享"><i class="fa-solid fa-share-from-square text-sm sm:text-base"></i></button>
+            <button id="share-btn" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full hover:bg-gray-100 flex items-center justify-center transition text-gray-500 hover:text-brand" title="分享"><i class="fa-solid fa-share-from-square text-sm sm:text-base"></i></button>
             <button id="settings-btn" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full hover:bg-gray-100 flex items-center justify-center transition text-gray-500 hover:text-brand" title="设置" onclick="toggleSettings()"><i class="fa-solid fa-gear text-sm sm:text-base"></i></button>
             <button class="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full bg-brand flex items-center justify-center text-white font-bold text-sm sm:text-base shadow-md hover:shadow-lg transition hover:bg-[#2c4a73]" title="用户">U</button>
         </div>
@@ -136,8 +168,8 @@
 
     <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative gap-0 lg:gap-4 md:gap-5 p-3 sm:p-4 md:p-6">
         <div class="lg:hidden flex gap-2 mb-3 flex-wrap">
-            <button id="mobile-toggle-left" class="flex-1 min-w-[80px] bg-white rounded-xl py-2.5 sm:py-3 text-sm font-semibold text-brand shadow-sm hover:shadow-md transition flex items-center justify-center gap-1.5 border-2 border-transparent"> <i class="fa-solid fa-book-open text-xs"></i> 错题笔记</button>
-            <button id="mobile-toggle-right" class="flex-1 min-w-[80px] bg-white rounded-xl py-2.5 sm:py-3 text-sm font-semibold text-brand shadow-sm hover:shadow-md transition flex items-center justify-center gap-1.5 border-2 border-transparent"> 拓展 <i class="fa-solid fa-puzzle-piece text-xs"></i></button>
+            <button id="mobile-toggle-left" class="flex-1 min-w-[80px] bg-white rounded-xl py-2.5 sm:py-3 text-sm font-semibold text-brand shadow-sm transition flex items-center justify-center gap-1.5 border-2 border-transparent"> <i class="fa-solid fa-book-open text-xs"></i> 错题笔记</button>
+            <button id="mobile-toggle-right" class="flex-1 min-w-[80px] bg-white rounded-xl py-2.5 sm:py-3 text-sm font-semibold text-brand shadow-sm transition flex items-center justify-center gap-1.5 border-2 border-transparent"> 拓展 <i class="fa-solid fa-puzzle-piece text-xs"></i></button>
         </div>
 
         <!-- 左栏 -->
@@ -146,22 +178,21 @@
                 <div class="flex items-center justify-between mb-3 sm:mb-4">
                     <h2 class="text-base sm:text-lg font-bold text-brand flex items-center gap-2"><i class="fa-solid fa-book-open text-sm"></i> 错题笔记</h2>
                     <div class="flex items-center gap-1.5 sm:gap-2">
-                        <button class="w-7 h-7 sm:w-8 sm:h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition text-gray-400 hover:text-brand" onclick="alert('Demo: 搜索错题')"><i class="fa-solid fa-magnifying-glass text-xs sm:text-sm"></i></button>
+                        <button class="w-7 h-7 sm:w-8 sm:h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition text-gray-400 hover:text-brand" title="搜索错题" onclick="alert('Demo: 搜索错题')"><i class="fa-solid fa-magnifying-glass text-xs sm:text-sm"></i></button>
                         <button class="sidebar-collapse-btn w-7 h-7 sm:w-8 sm:h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition text-gray-400 hover:text-brand hidden lg:flex" onclick="toggleLeftDesktop()"><i class="fa-solid fa-arrow-left text-xs sm:text-sm"></i></button>
                     </div>
                 </div>
                 <div class="flex-1 overflow-y-auto custom-scrollbar space-y-2.5 sm:space-y-3 mb-3 sm:mb-4 pr-1">
-                    <div class="bg-white border border-gray-200 rounded-xl p-2.5 sm:p-3 shadow-sm"><div class="h-10 sm:h-12 md:h-14 bg-gradient-to-r from-blue-400 to-blue-500 rounded-lg mb-2 flex items-center justify-center text-white/60"><i class="fa-regular fa-image"></i></div><p class="text-xs text-gray-500 truncate">阅读理解细节题 · 2025真题</p></div>
-                    <div class="bg-white border border-gray-200 rounded-xl p-2.5 sm:p-3 shadow-sm"><div class="h-10 sm:h-12 md:h-14 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg mb-2 flex items-center justify-center text-white/60"><i class="fa-regular fa-image"></i></div><p class="text-xs text-gray-500 truncate">完形填空逻辑题 · 模拟卷</p></div>
-                    <div class="bg-white border border-gray-200 rounded-xl p-2.5 sm:p-3 shadow-sm"><div class="h-10 sm:h-12 md:h-14 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-lg mb-2 flex items-center justify-center text-white/60"><i class="fa-regular fa-image"></i></div><p class="text-xs text-gray-500 truncate">语法填空易错点 · 非谓语</p></div>
-                    <div class="bg-white border border-gray-200 rounded-xl p-2.5 sm:p-3 shadow-sm"><div class="h-10 sm:h-12 md:h-14 bg-gradient-to-r from-indigo-400 to-blue-500 rounded-lg mb-2 flex items-center justify-center text-white/60"><i class="fa-regular fa-image"></i></div><p class="text-xs text-gray-500 truncate">七选五篇章结构 · 核心词</p></div>
+                    <div class="note-card bg-white border border-gray-200 rounded-xl p-2.5 sm:p-3 shadow-sm cursor-pointer"><div class="h-10 sm:h-12 md:h-14 bg-gradient-to-r from-blue-400 to-blue-500 rounded-lg mb-2 flex items-center justify-center text-white/60"><i class="fa-regular fa-image"></i></div><p class="text-xs text-gray-500 truncate">阅读理解细节题 · 2025真题</p></div>
+                    <div class="note-card bg-white border border-gray-200 rounded-xl p-2.5 sm:p-3 shadow-sm cursor-pointer"><div class="h-10 sm:h-12 md:h-14 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg mb-2 flex items-center justify-center text-white/60"><i class="fa-regular fa-image"></i></div><p class="text-xs text-gray-500 truncate">完形填空逻辑题 · 模拟卷</p></div>
+                    <div class="note-card bg-white border border-gray-200 rounded-xl p-2.5 sm:p-3 shadow-sm cursor-pointer"><div class="h-10 sm:h-12 md:h-14 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-lg mb-2 flex items-center justify-center text-white/60"><i class="fa-regular fa-image"></i></div><p class="text-xs text-gray-500 truncate">语法填空易错点 · 非谓语</p></div>
+                    <div class="note-card bg-white border border-gray-200 rounded-xl p-2.5 sm:p-3 shadow-sm cursor-pointer"><div class="h-10 sm:h-12 md:h-14 bg-gradient-to-r from-indigo-400 to-blue-500 rounded-lg mb-2 flex items-center justify-center text-white/60"><i class="fa-regular fa-image"></i></div><p class="text-xs text-gray-500 truncate">七选五篇章结构 · 核心词</p></div>
                 </div>
                 <div class="flex gap-2 sm:gap-3 shrink-0">
                     <button class="flex-1 bg-brand text-white py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold hover:bg-[#2c4a73] transition shadow-md flex items-center justify-center gap-1.5"><i class="fa-solid fa-plus text-xs"></i> 添加</button>
                     <button class="flex-1 bg-brand text-white py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold hover:bg-[#2c4a73] transition shadow-md flex items-center justify-center gap-1.5"><i class="fa-solid fa-folder-tree text-xs"></i> 分类</button>
                 </div>
             </div>
-            <!-- 左栏折叠后的内部展开按钮 -->
             <div class="sidebar-expand-inner hidden flex-col items-center justify-center cursor-pointer" onclick="toggleLeftDesktop()">
                 <span class="vertical-text text-brand font-bold text-sm mb-3">错题</span>
                 <i class="fa-solid fa-chevron-right text-brand"></i>
@@ -171,13 +202,13 @@
         <!-- 中栏 -->
         <section class="flex-1 flex flex-col h-full bg-white lg:bg-transparent lg:rounded-tl-2xl lg:rounded-tr-2xl lg:shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] lg:mt-2 lg:mx-2 border border-gray-200 relative overflow-hidden order-1 lg:order-2 min-h-0">
             <div class="px-4 py-3 flex items-center gap-2 sm:gap-3 border-b border-gray-200 bg-white/80 backdrop-blur-sm z-10">
-                <button id="timer-btn" class="flex items-center gap-2 bg-[#eef4fb] hover:bg-[#dde8f5] text-brand font-semibold px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm transition shadow-sm" onclick="toggleTimer()"><span class="w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-brand flex items-center justify-center flex-shrink-0 timer-ring" id="timer-icon"><i class="fa-solid fa-play text-[10px] sm:text-xs text-brand ml-0.5"></i></span><span id="timer-text">开始学习计时</span></button>
+                <button id="timer-btn" class="flex items-center gap-2 bg-[#eef4fb] hover:bg-[#dde8f5] text-brand font-semibold px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm transition shadow-sm" onclick="toggleTimer()"><span class="w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-brand flex items-center justify-center flex-shrink-0 timer-ring" id="timer-icon"><i class="fa-solid fa-play text-[10px] sm:text-xs text-brand ml-0.5"></i></span><span id="timer-text" class="text-brand">开始学习计时</span></button>
                 <button class="flex items-center gap-2 bg-gray-50 hover:bg-gray-100 text-gray-600 font-semibold px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm transition shadow-sm"><i class="fa-solid fa-clock-rotate-left text-sm"></i>历史对话</button>
                 <button id="new-chat-btn" class="flex items-center gap-2 bg-brand hover:bg-[#2c4a73] text-white font-semibold px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm transition shadow-md ml-auto" onclick="createNewChat()"><i class="fa-solid fa-plus text-xs"></i>创建新对话</button>
             </div>
             <div class="px-4 sm:px-5 md:px-6 pt-3 sm:pt-4 pb-2 shrink-0"><h1 class="text-xl sm:text-2xl font-extrabold text-brand tracking-wide">对话</h1><p class="text-xs text-gray-400 mt-0.5">陶然AI助教 · 陪你冲刺高考英语</p></div>
             <div id="chat-window" class="flex-1 overflow-y-auto custom-scrollbar px-3 sm:px-4 md:px-5 py-3 space-y-5" style="min-height:0;">
-                <div class="message-animate flex flex-col items-start"><span class="text-[11px] text-gray-400 mb-1 ml-1">陶然AI助教 · 刚刚</span><div class="bg-gray-100 border border-gray-200 text-gray-800 px-4 py-3 rounded-2xl rounded-tl-sm max-w-[85%] shadow-sm chat-text leading-relaxed">Hi！我是陶然AI助教 🎓 专攻高考英语，阅读、完形、语法、写作都可以问我~</div></div>
+                <div class="message-animate flex flex-col items-start"><span class="text-[11px] text-gray-400 mb-1 ml-1">陶然AI助教 · 刚刚</span><div class="bg-gray-100 border border-gray-200 text-gray-800 px-4 py-3 rounded-2xl rounded-tl-sm max-w-[85%] shadow-sm chat-text leading-relaxed">Hi！我是陶然AI助教 🎓 专攻高考英语，阅读、完形、语法都可以问我~</div></div>
             </div>
             <div class="p-3 lg:p-4 shrink-0 bg-white border-t border-gray-200">
                 <div class="bg-[#f8fafc] rounded-2xl p-1.5 flex items-end border border-gray-200 focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-50 transition-all duration-300">
@@ -188,7 +219,7 @@
             </div>
         </section>
 
-        <!-- 右栏（拓展）自身折叠 -->
+        <!-- 右栏 -->
         <aside id="right-panel" class="w-full lg:w-[25%] flex-shrink-0 order-3 lg:order-3 bg-white rounded-2xl shadow-md p-3 sm:p-4 md:p-5 h-full flex flex-col mobile-collapse open lg:max-h-none lg:opacity-100 lg:overflow-visible border border-gray-200 transition-all duration-300">
             <div class="sidebar-content flex flex-col h-full">
                 <div class="flex items-center justify-between mb-3 sm:mb-4">
@@ -196,13 +227,12 @@
                     <button class="sidebar-collapse-btn w-7 h-7 sm:w-8 sm:h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition text-gray-400 hover:text-brand hidden lg:flex" onclick="toggleRightDesktop()"><i class="fa-solid fa-arrow-right text-xs sm:text-sm"></i></button>
                 </div>
                 <div class="flex-1 overflow-y-auto custom-scrollbar space-y-3 sm:space-y-4 pr-1">
-                    <div class="bg-[#e6f4ea] rounded-2xl shadow-sm p-4 relative overflow-hidden group"><div class="absolute -right-4 -bottom-4 text-green-500 opacity-10 text-7xl"><i class="fa-solid fa-layer-group"></i></div><h3 class="font-bold text-green-900 mb-1">闪卡</h3><p class="text-[13px] text-green-700 font-medium">高考高频词汇短语</p></div>
-                    <div class="bg-[#fef7e0] rounded-2xl shadow-sm p-4 relative overflow-hidden group"><div class="absolute -right-3 -bottom-3 text-yellow-500 opacity-10 text-7xl"><i class="fa-solid fa-calendar-check"></i></div><h3 class="font-bold text-yellow-900 mb-1">日历</h3><p class="text-[13px] text-yellow-700 font-medium">下次月考 倒计时: <strong class="text-yellow-900 text-lg ml-1">5</strong> Day</p></div>
-                    <div class="bg-[#fce8e6] rounded-2xl shadow-sm p-4 relative overflow-hidden group"><div class="absolute -right-3 -bottom-3 text-red-500 opacity-10 text-7xl"><i class="fa-solid fa-book-open"></i></div><h3 class="font-bold text-red-900 mb-1">知识笔记</h3><p class="text-[13px] text-red-700 font-medium">语法体系与写作模板</p></div>
-                    <div class="bg-[#f3e8fd] rounded-2xl shadow-sm p-4 relative overflow-hidden group"><div class="absolute -right-2 -bottom-2 text-purple-500 opacity-10 text-7xl"><i class="fa-solid fa-store"></i></div><h3 class="font-bold text-purple-900 mb-1">商城</h3><p class="text-[13px] text-purple-700 font-medium">高考冲刺专区</p></div>
+                    <div class="extend-card bg-[#e6f4ea] rounded-2xl shadow-sm p-4 relative overflow-hidden cursor-pointer"><div class="absolute -right-4 -bottom-4 text-green-500 opacity-10 text-7xl"><i class="fa-solid fa-layer-group"></i></div><h3 class="font-bold text-green-900 mb-1 text-[15px]">闪卡</h3><p class="text-[13px] text-green-700 font-medium">高考高频词汇短语</p></div>
+                    <div class="extend-card bg-[#fef7e0] rounded-2xl shadow-sm p-4 relative overflow-hidden cursor-pointer"><div class="absolute -right-3 -bottom-3 text-yellow-500 opacity-10 text-7xl"><i class="fa-solid fa-calendar-check"></i></div><h3 class="font-bold text-yellow-900 mb-1 text-[15px]">日历</h3><p class="text-[13px] text-yellow-700 font-medium">下次月考 倒计时: <strong class="text-yellow-900 text-lg ml-1">5</strong> Day</p></div>
+                    <div class="extend-card bg-[#fce8e6] rounded-2xl shadow-sm p-4 relative overflow-hidden cursor-pointer"><div class="absolute -right-3 -bottom-3 text-red-500 opacity-10 text-7xl"><i class="fa-solid fa-book-open"></i></div><h3 class="font-bold text-red-900 mb-1 text-[15px]">知识笔记</h3><p class="text-[13px] text-red-700 font-medium">语法体系与写作模板</p></div>
+                    <div class="extend-card bg-[#f3e8fd] rounded-2xl shadow-sm p-4 relative overflow-hidden cursor-pointer"><div class="absolute -right-2 -bottom-2 text-purple-500 opacity-10 text-7xl"><i class="fa-solid fa-store"></i></div><h3 class="font-bold text-purple-900 mb-1 text-[15px]">商城</h3><p class="text-[13px] text-purple-700 font-medium">高考冲刺专区</p></div>
                 </div>
             </div>
-            <!-- 右栏折叠后的内部展开按钮 -->
             <div class="sidebar-expand-inner hidden flex-col items-center justify-center cursor-pointer" onclick="toggleRightDesktop()">
                 <i class="fa-solid fa-chevron-left text-brand mb-3"></i>
                 <span class="vertical-text text-brand font-bold text-sm">拓展</span>
@@ -222,6 +252,7 @@
                 toastTimer = setTimeout(() => toast.classList.remove('show'), dur);
             }
 
+            // 计时器
             let timerRunning=false, timerSec=0, timerInterval;
             window.toggleTimer = function() {
                 const btn = document.getElementById('timer-btn'), icon = document.getElementById('timer-icon'), text = document.getElementById('timer-text');
@@ -237,6 +268,7 @@
                 }
             };
 
+            // 聊天
             const replies = ["针对这道题，我们要注意上下文的逻辑关系。你能找出文中的转折词吗？","这个非谓语动词作伴随状语，表示与谓语动作同时发生，且主语是动作的执行者，所以用v-ing形式。","非常好的问题！在高考七选五中，代词的指代是一个重要线索。","写作中把 'very important' 替换成 'of vital importance'，会让你的句式更高级哦！","这道阅读细节题的答案在第二段第三句。注意题干中的同义替换。"];
             const chatInput = document.getElementById('chat-input');
             chatInput.addEventListener('input', function(){ this.style.height='auto'; this.style.height=(this.scrollHeight<128?this.scrollHeight:128)+'px'; });
@@ -256,19 +288,15 @@
             }
             window.createNewChat = function(){
                 document.getElementById('chat-window').innerHTML = '';
-                setTimeout(() => appendMessage("你好！我是你的高考英语AI助教。开启新对话，想复习点什么？",'ai'), 200);
+                setTimeout(() => appendMessage("Hi！我是陶然AI助教 🎓 专攻高考英语，阅读、完形、语法都可以问我~",'ai'), 200);
                 showToast('✨ 已创建新对话');
             };
 
-            // 桌面端边栏自身折叠
-            window.toggleLeftDesktop = function() {
-                document.getElementById('left-panel').classList.toggle('sidebar-collapsed-desktop');
-            };
-            window.toggleRightDesktop = function() {
-                document.getElementById('right-panel').classList.toggle('sidebar-collapsed-desktop');
-            };
+            // 桌面边栏折叠
+            window.toggleLeftDesktop = function() { document.getElementById('left-panel').classList.toggle('sidebar-collapsed-desktop'); };
+            window.toggleRightDesktop = function() { document.getElementById('right-panel').classList.toggle('sidebar-collapsed-desktop'); };
 
-            // 移动端内联展开
+            // 移动端
             const leftPanel = document.getElementById('left-panel'), rightPanel = document.getElementById('right-panel');
             const mobileToggleLeft = document.getElementById('mobile-toggle-left'), mobileToggleRight = document.getElementById('mobile-toggle-right');
             function initMobile() {
@@ -285,6 +313,7 @@
             mobileToggleLeft.addEventListener('click', () => { if(window.innerWidth<1024) leftPanel.classList.toggle('open'); });
             mobileToggleRight.addEventListener('click', () => { if(window.innerWidth<1024) rightPanel.classList.toggle('open'); });
 
+            // 设置
             window.toggleSettings = function() {
                 document.getElementById('settings-panel').classList.toggle('open');
                 document.getElementById('settings-overlay').classList.toggle('hidden');
@@ -311,6 +340,49 @@
                 btn.classList.add('bg-brand','text-white','border-brand');
                 showToast(`字体大小已切换至${size==='small'?'小':size==='large'?'大':'中'}`);
             };
+
+            // 修复后的分享功能（兼容本地文件打开）
+            function copyToClipboard(text) {
+                return new Promise((resolve, reject) => {
+                    // 优先使用现代 API
+                    if (navigator.clipboard && window.isSecureContext) {
+                        navigator.clipboard.writeText(text).then(resolve).catch(() => {
+                            fallbackCopy(text, resolve, reject);
+                        });
+                    } else {
+                        fallbackCopy(text, resolve, reject);
+                    }
+                });
+                function fallbackCopy(text, resolve, reject) {
+                    try {
+                        const textarea = document.createElement('textarea');
+                        textarea.value = text;
+                        textarea.style.position = 'fixed';
+                        textarea.style.opacity = '0';
+                        document.body.appendChild(textarea);
+                        textarea.select();
+                        const successful = document.execCommand('copy');
+                        document.body.removeChild(textarea);
+                        if (successful) resolve();
+                        else reject(new Error('execCommand failed'));
+                    } catch (err) {
+                        reject(err);
+                    }
+                }
+            }
+
+            document.getElementById('share-btn').addEventListener('click', async () => {
+                const url = window.location.href;
+                try {
+                    await copyToClipboard(url);
+                    showToast('🔗 链接已复制，可分享给好友');
+                } catch (e) {
+                    // 最终兜底：显示链接让用户手动复制
+                    showToast('😥 无法自动复制，请手动复制地址栏链接');
+                }
+            });
+
+            // 快捷键
             document.addEventListener('keydown', function(e) {
                 if((e.ctrlKey||e.metaKey)&&e.key==='k'){ e.preventDefault(); chatInput.focus(); showToast('⌨️ 输入框已聚焦'); }
                 if(e.key==='Escape'){ if(document.getElementById('settings-panel').classList.contains('open')) toggleSettings(); else if(window.innerWidth<1024){ leftPanel.classList.remove('open'); rightPanel.classList.remove('open'); } }
