@@ -939,10 +939,20 @@
             function showMobilePanel(panel) {
                 if (window.innerWidth >= 1024) return;
                 if (panel === 'left') {
+                    if (leftPanel.classList.contains('open')) {
+                        leftPanel.classList.remove('open');
+                        setMobileToggleState('');
+                        return;
+                    }
                     leftPanel.classList.add('open');
                     rightPanel.classList.remove('open');
                     setMobileToggleState('left');
                 } else if (panel === 'right') {
+                    if (rightPanel.classList.contains('open')) {
+                        rightPanel.classList.remove('open');
+                        setMobileToggleState('');
+                        return;
+                    }
                     rightPanel.classList.add('open');
                     leftPanel.classList.remove('open');
                     setMobileToggleState('right');
