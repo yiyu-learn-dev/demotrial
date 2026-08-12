@@ -483,6 +483,7 @@
             let currentChatId = null;
             let isSending = false;
             let pendingImage = null;
+            let currentViewportMode = window.innerWidth < 1024 ? 'mobile' : 'desktop';
             let profileDraftAvatar = '';
             let userProfile = {
                 nickname: '同学',
@@ -1171,8 +1172,13 @@
                 rightPanel.classList.toggle('sidebar-collapsed-desktop');
             };
 
-            function initMobile() {
-                if (window.innerWidth < 1024) {
+            function initMobile(force = false) {
+                const nextViewportMode = window.innerWidth < 1024 ? 'mobile' : 'desktop';
+                if (!force && nextViewportMode === currentViewportMode) {
+                    return;
+                }
+                currentViewportMode = nextViewportMode;
+                if (nextViewportMode === 'mobile') {
                     leftPanel.classList.add('mobile-collapse');
                     rightPanel.classList.add('mobile-collapse');
                     leftPanel.classList.remove('open');
@@ -1187,7 +1193,7 @@
                 }
             }
 
-            initMobile();
+            initMobile(true);
             updateNoteSearchState('');
             window.addEventListener('resize', () => {
                 clearTimeout(window._rt);
