@@ -23,19 +23,32 @@ class ChatRequest(BaseModel):
     session_id: str | None = None
     message: str = Field(..., min_length=1, max_length=2000)
     history: list[ChatMessage] = Field(default_factory=list)
+    latest_image: "ImagePayload | None" = None
+
+
+class ImagePayload(BaseModel):
+    file_name: str = Field(..., min_length=1, max_length=255)
+    mime_type: str = Field(..., min_length=1, max_length=100)
+    data_url: str = Field(..., min_length=1)
 
 
 class ChatResponse(BaseModel):
     reply: str
 
 
-def build_demo_reply(message: str, history: list[ChatMessage]) -> str:
+def build_demo_reply(message: str, history: list[ChatMessage], latest_image: ImagePayload | None = None) -> str:
     text = message.strip()
     lowered = text.lower()
     history_size = len(history)
 
     if not text:
         raise HTTPException(status_code=400, detail="message 不能为空")
+
+    if latest_image is not None:
+        suffix = "你可以继续补一句你最想让我看哪一部分，比如题干、选项、还是整段文章。"
+        if any(keyword in text for keyword in ["阅读", "图片", "截图", "题目", "分析"]):
+            return f"我已经收到你上传的图片 `{latest_image.file_name}` 了。当前后端还没接真正的 OCR/视觉模型，不过链路已经打通。{suffix}"
+        return f"图片我已经收到了，文件名是 `{latest_image.file_name}`。当前演示版会先把图片作为附件收下，下一步就可以接 OCR 或多模态模型做识别。{suffix}"
 
     if any(keyword in text for keyword in ["阅读", "细节题", "主旨", "七选五"]):
         return (
@@ -73,7 +86,7 @@ async def health() -> dict[str, str]:
 
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest) -> ChatResponse:
-    reply = build_demo_reply(request.message, request.history)
+    reply = build_demo_reply(request.message, request.history, request.latest_image)
     return ChatResponse(reply=reply)
 
 

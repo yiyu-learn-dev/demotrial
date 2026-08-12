@@ -69,6 +69,85 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
 
+        body {
+            background:
+                radial-gradient(circle at top left, rgba(55, 90, 140, 0.08), transparent 26%),
+                linear-gradient(180deg, #f5f8fc 0%, #eef3f9 100%);
+        }
+
+        .glass-panel {
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            box-shadow: 0 14px 40px rgba(31, 41, 55, 0.08);
+        }
+
+        .hero-glow { box-shadow: 0 12px 30px rgba(55, 90, 140, 0.12); }
+
+        .mobile-switch-btn.active {
+            background: #375a8c;
+            color: #ffffff;
+            border-color: rgba(55, 90, 140, 0.24);
+            box-shadow: 0 10px 24px rgba(55, 90, 140, 0.16);
+        }
+
+        .profile-avatar-button {
+            position: relative;
+            overflow: hidden;
+        }
+        .profile-avatar-button::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            border: 1px solid rgba(255,255,255,0.5);
+            pointer-events: none;
+        }
+
+        .profile-sheet { transform: translateY(16px); opacity: 0; transition: transform 0.28s ease, opacity 0.28s ease; }
+        .profile-sheet.open { transform: translateY(0); opacity: 1; }
+
+        .avatar-option {
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        .avatar-option:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(55, 90, 140, 0.1);
+            border-color: rgba(55, 90, 140, 0.22);
+        }
+
+        .pending-upload {
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .pending-upload:hover {
+            border-color: #93b4e8;
+            box-shadow: 0 8px 20px rgba(55, 90, 140, 0.08);
+        }
+
+        .chat-image-bubble img {
+            display: block;
+            max-width: 100%;
+            border-radius: 16px;
+        }
+
+        .note-card.hidden-by-search {
+            display: none;
+        }
+
+        .note-search-panel {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.25s ease, opacity 0.2s ease, margin-bottom 0.2s ease;
+            margin-bottom: 0;
+        }
+
+        .note-search-panel.open {
+            max-height: 120px;
+            opacity: 1;
+            margin-bottom: 0.75rem;
+        }
+
         /* 夜间模式 */
         body.night-mode { background:#1a1f2e; }
         body.night-mode,
@@ -109,6 +188,9 @@
         body.night-mode #timer-btn { background-color: #2c3a4f !important; }
         body.night-mode #timer-btn:hover { background-color: #374151 !important; }
         body.night-mode .history-item.active { background: #2c3a4f !important; border-color: #5a7fae !important; }
+        body.night-mode .glass-panel { background: rgba(31, 41, 55, 0.82) !important; }
+        body.night-mode .mobile-switch-btn.active { background: #5a7fae !important; }
+        body.night-mode .avatar-option:hover { box-shadow: 0 10px 24px rgba(90, 127, 174, 0.18); }
 
         /* 护眼模式 */
         body.warm-mode { background: #FCFAF2 !important; color: #3E3A39; }
@@ -126,6 +208,8 @@
         body.warm-mode .chat-bubble-user { background: #FFFFFF !important; color: #3E3A39; border-color: #E0D8C8; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
         body.warm-mode .bg-\[\#f8fafc\] { background: #F5F0E5 !important; }
         body.warm-mode .history-item.active { background: #EAE4D9 !important; border-color: #EAA348 !important; }
+        body.warm-mode .glass-panel { background: rgba(245, 240, 229, 0.88) !important; }
+        body.warm-mode .mobile-switch-btn.active { background: #eaa348 !important; }
 
         :root { --chat-font-size: 16px; }
         .chat-text { font-size: var(--chat-font-size); }
@@ -157,10 +241,10 @@
 </head>
 <body class="bg-[#f0f4f8] min-h-screen font-sans antialiased flex flex-col h-screen overflow-hidden">
 
-    <header class="bg-white shadow-sm sticky top-0 z-50 h-16 flex items-center justify-between px-4 lg:px-6 shrink-0">
+    <header class="glass-panel sticky top-0 z-50 h-16 flex items-center justify-between px-4 lg:px-6 shrink-0 border-b border-white/60">
         <div class="flex items-center gap-2 sm:gap-3">
             <a href="#" class="flex items-center gap-2">
-                <div class="w-8 h-8 sm:w-9 sm:h-9 bg-brand rounded-lg flex items-center justify-center"><i class="fa-solid fa-graduation-cap text-white text-sm sm:text-base"></i></div>
+                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center hero-glow bg-brand"><i class="fa-solid fa-graduation-cap text-white text-sm sm:text-base"></i></div>
                 <span class="text-lg sm:text-xl md:text-2xl font-bold text-brand tracking-tight whitespace-nowrap">陶然AI助教</span>
             </a>
             <span class="hidden sm:inline text-xs bg-blue-100 text-brand px-2 py-0.5 rounded-full font-medium ml-1">高考英语</span>
@@ -168,11 +252,13 @@
         <div class="flex items-center gap-2 sm:gap-4">
             <button id="share-btn" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full hover:bg-gray-100 flex items-center justify-center transition text-gray-500 hover:text-brand" title="分享"><i class="fa-solid fa-share-from-square text-sm sm:text-base"></i></button>
             <button id="settings-btn" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full hover:bg-gray-100 flex items-center justify-center transition text-gray-500 hover:text-brand" title="设置" onclick="toggleSettings()"><i class="fa-solid fa-gear text-sm sm:text-base"></i></button>
-            <button class="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full bg-brand flex items-center justify-center text-white font-bold text-sm sm:text-base shadow-md hover:shadow-lg transition hover:bg-[#2c4a73]" title="用户">U</button>
+            <button id="profile-btn" class="profile-avatar-button w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-brand flex items-center justify-center text-white text-sm sm:text-base shadow-md hover:shadow-lg transition" title="用户资料">
+                <i class="fa-regular fa-user"></i>
+            </button>
         </div>
     </header>
 
-    <div id="settings-panel" class="fixed top-0 right-0 h-full w-72 bg-white shadow-2xl z-[60] settings-panel flex flex-col p-6 border-l border-gray-200">
+    <div id="settings-panel" class="fixed top-0 right-0 h-full w-72 glass-panel shadow-2xl z-[60] settings-panel flex flex-col p-6 border-l border-white/60">
         <div class="flex items-center justify-between mb-6"><h3 class="text-lg font-bold text-brand">设置</h3><button onclick="toggleSettings()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button></div>
         <div class="flex-1 space-y-6 overflow-y-auto">
             <div class="flex items-center justify-between"><span class="text-sm font-medium text-gray-700">夜间模式</span><button id="night-mode-toggle" class="w-12 h-6 rounded-full bg-gray-300 transition relative" onclick="toggleNightMode()"><span class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-transform"></span></button></div>
@@ -184,25 +270,41 @@
 
     <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative gap-0 lg:gap-4 md:gap-5 p-3 sm:p-4 md:p-6">
         <div class="lg:hidden flex gap-2 mb-3 flex-wrap">
-            <button id="mobile-toggle-left" class="flex-1 min-w-[80px] bg-white rounded-xl py-2.5 sm:py-3 text-sm font-semibold text-brand shadow-sm transition flex items-center justify-center gap-1.5 border-2 border-transparent"> <i class="fa-solid fa-book-open text-xs"></i> 错题笔记</button>
-            <button id="mobile-toggle-right" class="flex-1 min-w-[80px] bg-white rounded-xl py-2.5 sm:py-3 text-sm font-semibold text-brand shadow-sm transition flex items-center justify-center gap-1.5 border-2 border-transparent"> 拓展 <i class="fa-solid fa-puzzle-piece text-xs"></i></button>
+            <button id="mobile-toggle-left" class="mobile-switch-btn flex-1 min-w-[80px] glass-panel rounded-2xl py-2.5 sm:py-3 text-sm font-semibold text-brand shadow-sm transition flex items-center justify-center gap-1.5 border border-white/60"> <i class="fa-solid fa-book-open text-xs"></i> 错题笔记</button>
+            <button id="mobile-toggle-right" class="mobile-switch-btn flex-1 min-w-[80px] glass-panel rounded-2xl py-2.5 sm:py-3 text-sm font-semibold text-brand shadow-sm transition flex items-center justify-center gap-1.5 border border-white/60"> 拓展 <i class="fa-solid fa-puzzle-piece text-xs"></i></button>
         </div>
 
         <!-- 左栏 -->
-        <aside id="left-panel" class="w-full lg:w-[20%] flex-shrink-0 order-2 lg:order-1 bg-white rounded-2xl shadow-md p-3 sm:p-4 md:p-5 h-full flex flex-col mobile-collapse open lg:max-h-none lg:opacity-100 lg:overflow-visible border border-gray-200 transition-all duration-300">
+        <aside id="left-panel" class="w-full lg:w-[20%] flex-shrink-0 order-2 lg:order-1 glass-panel rounded-3xl shadow-md p-3 sm:p-4 md:p-5 h-full flex flex-col mobile-collapse open lg:max-h-none lg:opacity-100 lg:overflow-visible border border-white/60 transition-all duration-300">
             <div class="sidebar-content flex flex-col h-full">
                 <div class="flex items-center justify-between mb-3 sm:mb-4">
                     <h2 class="text-base sm:text-lg font-bold text-brand flex items-center gap-2"><i class="fa-solid fa-book-open text-sm"></i> 错题笔记</h2>
                     <div class="flex items-center gap-1.5 sm:gap-2">
-                        <button class="w-7 h-7 sm:w-8 sm:h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition text-gray-400 hover:text-brand" title="搜索错题" onclick="alert('Demo: 搜索错题')"><i class="fa-solid fa-magnifying-glass text-xs sm:text-sm"></i></button>
+                        <button id="note-search-toggle" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition text-gray-400 hover:text-brand" title="搜索错题"><i class="fa-solid fa-magnifying-glass text-xs sm:text-sm"></i></button>
                         <button class="sidebar-collapse-btn w-7 h-7 sm:w-8 sm:h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition text-gray-400 hover:text-brand hidden lg:flex" onclick="toggleLeftDesktop()"><i class="fa-solid fa-arrow-left text-xs sm:text-sm"></i></button>
                     </div>
                 </div>
+                <div id="note-search-panel" class="note-search-panel">
+                    <div class="bg-white/85 border border-gray-200 rounded-2xl px-3 py-2.5">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-magnifying-glass text-xs text-gray-400"></i>
+                            <input id="note-search-input" type="text" class="flex-1 bg-transparent outline-none text-sm text-gray-700 placeholder-gray-400" placeholder="搜索题型、知识点、年份">
+                            <button id="note-search-clear" class="hidden text-xs text-gray-400 hover:text-brand transition">清空</button>
+                        </div>
+                        <p id="note-search-meta" class="text-[11px] text-gray-400 mt-2">当前是演示数据，后续接真实错题库后可以直接复用这套搜索交互。</p>
+                    </div>
+                </div>
                 <div class="flex-1 overflow-y-auto custom-scrollbar space-y-2.5 sm:space-y-3 mb-3 sm:mb-4 pr-1">
-                    <div class="note-card bg-white border border-gray-200 rounded-xl p-2.5 sm:p-3 shadow-sm cursor-pointer"><div class="h-10 sm:h-12 md:h-14 bg-gradient-to-r from-blue-400 to-blue-500 rounded-lg mb-2 flex items-center justify-center text-white/60"><i class="fa-regular fa-image"></i></div><p class="text-xs text-gray-500 truncate">阅读理解细节题 · 2025真题</p></div>
-                    <div class="note-card bg-white border border-gray-200 rounded-xl p-2.5 sm:p-3 shadow-sm cursor-pointer"><div class="h-10 sm:h-12 md:h-14 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg mb-2 flex items-center justify-center text-white/60"><i class="fa-regular fa-image"></i></div><p class="text-xs text-gray-500 truncate">完形填空逻辑题 · 模拟卷</p></div>
-                    <div class="note-card bg-white border border-gray-200 rounded-xl p-2.5 sm:p-3 shadow-sm cursor-pointer"><div class="h-10 sm:h-12 md:h-14 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-lg mb-2 flex items-center justify-center text-white/60"><i class="fa-regular fa-image"></i></div><p class="text-xs text-gray-500 truncate">语法填空易错点 · 非谓语</p></div>
-                    <div class="note-card bg-white border border-gray-200 rounded-xl p-2.5 sm:p-3 shadow-sm cursor-pointer"><div class="h-10 sm:h-12 md:h-14 bg-gradient-to-r from-indigo-400 to-blue-500 rounded-lg mb-2 flex items-center justify-center text-white/60"><i class="fa-regular fa-image"></i></div><p class="text-xs text-gray-500 truncate">七选五篇章结构 · 核心词</p></div>
+                    <div id="note-list">
+                        <div class="note-card bg-white border border-gray-200 rounded-xl p-2.5 sm:p-3 shadow-sm cursor-pointer mb-2.5 sm:mb-3" data-note-title="阅读理解细节题 · 2025真题" data-note-keywords="阅读 细节题 真题 定位 同义替换 2025"><div class="h-10 sm:h-12 md:h-14 bg-gradient-to-r from-blue-400 to-blue-500 rounded-lg mb-2 flex items-center justify-center text-white/60"><i class="fa-regular fa-image"></i></div><p class="text-xs text-gray-500 truncate">阅读理解细节题 · 2025真题</p></div>
+                        <div class="note-card bg-white border border-gray-200 rounded-xl p-2.5 sm:p-3 shadow-sm cursor-pointer mb-2.5 sm:mb-3" data-note-title="完形填空逻辑题 · 模拟卷" data-note-keywords="完形 逻辑题 模拟卷 上下文 词义辨析"><div class="h-10 sm:h-12 md:h-14 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg mb-2 flex items-center justify-center text-white/60"><i class="fa-regular fa-image"></i></div><p class="text-xs text-gray-500 truncate">完形填空逻辑题 · 模拟卷</p></div>
+                        <div class="note-card bg-white border border-gray-200 rounded-xl p-2.5 sm:p-3 shadow-sm cursor-pointer mb-2.5 sm:mb-3" data-note-title="语法填空易错点 · 非谓语" data-note-keywords="语法填空 易错点 非谓语 to do doing done"><div class="h-10 sm:h-12 md:h-14 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-lg mb-2 flex items-center justify-center text-white/60"><i class="fa-regular fa-image"></i></div><p class="text-xs text-gray-500 truncate">语法填空易错点 · 非谓语</p></div>
+                        <div class="note-card bg-white border border-gray-200 rounded-xl p-2.5 sm:p-3 shadow-sm cursor-pointer" data-note-title="七选五篇章结构 · 核心词" data-note-keywords="七选五 篇章结构 核心词 衔接词 指代"><div class="h-10 sm:h-12 md:h-14 bg-gradient-to-r from-indigo-400 to-blue-500 rounded-lg mb-2 flex items-center justify-center text-white/60"><i class="fa-regular fa-image"></i></div><p class="text-xs text-gray-500 truncate">七选五篇章结构 · 核心词</p></div>
+                    </div>
+                    <div id="note-search-empty" class="hidden bg-white border border-dashed border-gray-200 rounded-2xl px-4 py-6 text-center">
+                        <p class="text-sm font-medium text-gray-600">没有找到匹配的错题</p>
+                        <p class="text-xs text-gray-400 mt-1">试试搜索“阅读 / 完形 / 非谓语 / 七选五”</p>
+                    </div>
                 </div>
                 <div class="flex gap-2 sm:gap-3 shrink-0">
                     <button class="flex-1 bg-brand text-white py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold hover:bg-[#2c4a73] transition shadow-md flex items-center justify-center gap-1.5"><i class="fa-solid fa-plus text-xs"></i> 添加</button>
@@ -216,8 +318,8 @@
         </aside>
 
         <!-- 中栏 -->
-        <section class="flex-1 flex flex-col h-full bg-white lg:bg-transparent lg:rounded-tl-2xl lg:rounded-tr-2xl lg:shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] lg:mt-2 lg:mx-2 border border-gray-200 relative overflow-hidden order-1 lg:order-2 min-h-0">
-            <div class="px-4 py-3 flex items-center gap-2 sm:gap-3 border-b border-gray-200 bg-white/80 backdrop-blur-sm z-10">
+        <section class="flex-1 flex flex-col h-full glass-panel lg:bg-transparent lg:rounded-[28px] lg:shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] lg:mt-2 lg:mx-2 border border-white/60 relative overflow-hidden order-1 lg:order-2 min-h-0">
+            <div class="px-4 py-3 flex items-center gap-2 sm:gap-3 border-b border-white/60 bg-white/55 backdrop-blur-sm z-10">
                 <button id="timer-btn" class="flex items-center gap-2 bg-[#eef4fb] hover:bg-[#dde8f5] text-brand font-semibold px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm transition shadow-sm" onclick="toggleTimer()"><span class="w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-brand flex items-center justify-center flex-shrink-0 timer-ring" id="timer-icon"><i class="fa-solid fa-play text-[10px] sm:text-xs text-brand ml-0.5"></i></span><span id="timer-text" class="text-brand">开始学习计时</span></button>
                 <button id="history-btn" class="flex items-center gap-2 bg-gray-50 hover:bg-gray-100 text-gray-600 font-semibold px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm transition shadow-sm"><i class="fa-solid fa-clock-rotate-left text-sm"></i>历史对话</button>
                 <button id="new-chat-btn" class="flex items-center gap-2 bg-brand hover:bg-[#2c4a73] text-white font-semibold px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm transition shadow-md ml-auto" onclick="createNewChat()"><i class="fa-solid fa-plus text-xs"></i>创建新对话</button>
@@ -226,9 +328,21 @@
             <div id="chat-window" class="flex-1 overflow-y-auto custom-scrollbar px-3 sm:px-4 md:px-5 py-3 space-y-5" style="min-height:0;">
                 <div class="message-animate flex flex-col items-start"><span class="text-[11px] text-gray-400 mb-1 ml-1">陶然AI助教 · 刚刚</span><div class="bg-gray-100 border border-gray-200 text-gray-800 px-4 py-3 rounded-2xl rounded-tl-sm max-w-[85%] shadow-sm chat-text leading-relaxed">Hi！我是陶然AI助教 🎓 专攻高考英语，阅读、完形、语法都可以问我~</div></div>
             </div>
-            <div class="p-3 lg:p-4 shrink-0 bg-white border-t border-gray-200">
-                <div class="bg-[#f8fafc] rounded-2xl p-1.5 flex items-end border border-gray-200 focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-50 transition-all duration-300">
-                    <button class="p-2.5 text-brand hover:bg-blue-100 rounded-xl transition mb-0.5 ml-0.5" onclick="alert('Demo: 上传文件功能')"><i class="fa-solid fa-paperclip text-lg"></i></button>
+            <div class="p-3 lg:p-4 shrink-0 bg-white/30 border-t border-white/60">
+                <div id="pending-upload" class="pending-upload hidden mb-3 bg-white/80 border border-gray-200 rounded-2xl p-3">
+                    <div class="flex items-start gap-3">
+                        <img id="pending-upload-preview" src="" alt="待发送图片预览" class="w-20 h-20 rounded-xl object-cover border border-gray-200">
+                        <div class="flex-1 min-w-0">
+                            <p id="pending-upload-name" class="text-sm font-medium text-gray-700 truncate"></p>
+                            <p id="pending-upload-meta" class="text-xs text-gray-400 mt-1"></p>
+                            <p class="text-xs text-gray-400 mt-2">支持 JPG / PNG / WebP，单张不超过 4MB</p>
+                        </div>
+                        <button id="pending-upload-remove" class="w-8 h-8 rounded-full hover:bg-gray-100 text-gray-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                </div>
+                <div class="bg-white/70 rounded-[22px] p-1.5 flex items-end border border-white/80 focus-within:border-teal-300 focus-within:ring-4 focus-within:ring-teal-50 transition-all duration-300 shadow-[0_8px_24px_rgba(13,148,136,0.08)]">
+                    <button id="upload-image-btn" class="p-2.5 text-brand hover:bg-blue-100 rounded-xl transition mb-0.5 ml-0.5"><i class="fa-solid fa-paperclip text-lg"></i></button>
+                    <input id="chat-image-input" type="file" accept="image/png,image/jpeg,image/webp" class="hidden">
                     <textarea id="chat-input" class="flex-1 max-h-32 min-h-[40px] bg-transparent border-none focus:ring-0 resize-none p-2.5 text-[14px] text-gray-700 placeholder-gray-400 leading-relaxed outline-none" rows="1" placeholder="输入你想探讨的高考英语问题..." onkeydown="handleInputKey(event)"></textarea>
                     <button id="send-btn" class="m-1 w-9 h-9 bg-brand text-white rounded-full flex items-center justify-center hover:bg-blue-800 transition shrink-0 shadow-md" onclick="sendMessage()"><i class="fa-solid fa-arrow-up text-sm"></i></button>
                 </div>
@@ -236,7 +350,7 @@
         </section>
 
         <!-- 右栏 -->
-        <aside id="right-panel" class="w-full lg:w-[25%] flex-shrink-0 order-3 lg:order-3 bg-white rounded-2xl shadow-md p-3 sm:p-4 md:p-5 h-full flex flex-col mobile-collapse open lg:max-h-none lg:opacity-100 lg:overflow-visible border border-gray-200 transition-all duration-300">
+        <aside id="right-panel" class="w-full lg:w-[25%] flex-shrink-0 order-3 lg:order-3 glass-panel rounded-3xl shadow-md p-3 sm:p-4 md:p-5 h-full flex flex-col mobile-collapse open lg:max-h-none lg:opacity-100 lg:overflow-visible border border-white/60 transition-all duration-300">
             <div class="sidebar-content flex flex-col h-full">
                 <div class="flex items-center justify-between mb-3 sm:mb-4">
                     <h2 class="text-base sm:text-lg font-bold text-brand flex items-center gap-2"><i class="fa-solid fa-puzzle-piece text-sm"></i> 拓 展</h2>
@@ -258,7 +372,7 @@
 
     <div id="toast" class="fixed bottom-6 left-1/2 z-[100] bg-gray-800 text-white px-5 py-3 rounded-2xl text-sm shadow-2xl opacity-0 pointer-events-none"><span id="toast-message"></span></div>
     <div id="history-overlay" class="fixed inset-0 bg-black bg-opacity-30 z-[65] hidden"></div>
-    <div id="history-panel" class="fixed top-0 right-0 h-full w-full sm:w-96 bg-white shadow-2xl z-[70] history-panel flex flex-col p-5 border-l border-gray-200">
+    <div id="history-panel" class="fixed top-0 right-0 h-full w-full sm:w-96 glass-panel shadow-2xl z-[70] history-panel flex flex-col p-5 border-l border-white/60">
         <div class="flex items-center justify-between gap-3 mb-4">
             <div>
                 <h3 class="text-lg font-bold text-brand">历史对话</h3>
@@ -275,14 +389,52 @@
         </div>
         <div id="history-list" class="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-1"></div>
     </div>
+    <div id="profile-overlay" class="fixed inset-0 bg-black bg-opacity-40 z-[75] hidden"></div>
+    <div id="profile-sheet" class="profile-sheet fixed inset-x-4 top-1/2 -translate-y-1/2 sm:inset-x-auto sm:right-6 sm:top-24 sm:translate-y-0 sm:w-[340px] glass-panel rounded-3xl shadow-2xl z-[80] border border-white/70 p-5 hidden">
+        <div class="flex items-start justify-between gap-4 mb-4">
+            <div>
+                <h3 class="text-base font-bold text-brand">个人资料</h3>
+                <p class="text-xs text-gray-400 mt-1">本地保存</p>
+            </div>
+            <button id="profile-close-btn" class="w-9 h-9 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+        <div class="space-y-4">
+            <div class="flex items-center gap-4">
+                <div id="profile-avatar-preview" class="w-16 h-16 rounded-2xl bg-brand text-white flex items-center justify-center text-base shadow-md overflow-hidden"><i class="fa-regular fa-user"></i></div>
+                <div class="flex-1">
+                    <p class="text-sm font-semibold text-gray-700 mb-2">头像</p>
+                    <div class="flex gap-2 flex-wrap">
+                        <button id="profile-upload-btn" class="avatar-option px-3 py-2 rounded-xl text-sm font-semibold text-brand bg-blue-50 border border-blue-100">更换头像</button>
+                        <button id="profile-reset-avatar-btn" class="avatar-option px-3 py-2 rounded-xl text-sm font-semibold text-gray-600 bg-white border border-gray-200">默认</button>
+                    </div>
+                    <input id="profile-avatar-input" type="file" accept="image/*" class="hidden">
+                </div>
+            </div>
+            <div>
+                <label for="profile-name-input" class="block text-sm font-semibold text-gray-700 mb-2">昵称</label>
+                <input id="profile-name-input" type="text" maxlength="20" class="w-full rounded-2xl border border-gray-200 bg-white/85 px-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-50 transition" placeholder="输入昵称">
+            </div>
+            <div class="flex gap-3 pt-1">
+                <button id="profile-cancel-btn" class="flex-1 rounded-2xl border border-gray-200 bg-white py-3 text-sm font-semibold text-gray-600 transition hover:bg-gray-50">取消</button>
+                <button id="profile-save-btn" class="flex-1 rounded-2xl bg-brand py-3 text-sm font-semibold text-white shadow-md transition hover:bg-[#2c4a73]">保存</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         (function() {
             const toast = document.getElementById('toast');
             const toastMsg = document.getElementById('toast-message');
             const chatInput = document.getElementById('chat-input');
+            const chatImageInput = document.getElementById('chat-image-input');
+            const uploadImageBtn = document.getElementById('upload-image-btn');
             const chatWindow = document.getElementById('chat-window');
             const chatMeta = document.getElementById('chat-meta');
+            const pendingUpload = document.getElementById('pending-upload');
+            const pendingUploadPreview = document.getElementById('pending-upload-preview');
+            const pendingUploadName = document.getElementById('pending-upload-name');
+            const pendingUploadMeta = document.getElementById('pending-upload-meta');
+            const pendingUploadRemove = document.getElementById('pending-upload-remove');
             const historyBtn = document.getElementById('history-btn');
             const historyPanel = document.getElementById('history-panel');
             const historyOverlay = document.getElementById('history-overlay');
@@ -291,16 +443,38 @@
             const historyCount = document.getElementById('history-count');
             const historyCloseBtn = document.getElementById('history-close-btn');
             const clearHistoryBtn = document.getElementById('clear-history-btn');
+            const profileBtn = document.getElementById('profile-btn');
+            const profileOverlay = document.getElementById('profile-overlay');
+            const profileSheet = document.getElementById('profile-sheet');
+            const profileCloseBtn = document.getElementById('profile-close-btn');
+            const profileCancelBtn = document.getElementById('profile-cancel-btn');
+            const profileSaveBtn = document.getElementById('profile-save-btn');
+            const profileUploadBtn = document.getElementById('profile-upload-btn');
+            const profileResetAvatarBtn = document.getElementById('profile-reset-avatar-btn');
+            const profileAvatarInput = document.getElementById('profile-avatar-input');
+            const profileAvatarPreview = document.getElementById('profile-avatar-preview');
+            const profileNameInput = document.getElementById('profile-name-input');
+            const noteSearchToggle = document.getElementById('note-search-toggle');
+            const noteSearchPanel = document.getElementById('note-search-panel');
+            const noteSearchInput = document.getElementById('note-search-input');
+            const noteSearchClear = document.getElementById('note-search-clear');
+            const noteSearchMeta = document.getElementById('note-search-meta');
+            const noteSearchEmpty = document.getElementById('note-search-empty');
             const leftPanel = document.getElementById('left-panel');
             const rightPanel = document.getElementById('right-panel');
             const mobileToggleLeft = document.getElementById('mobile-toggle-left');
             const mobileToggleRight = document.getElementById('mobile-toggle-right');
+            const noteCards = Array.from(document.querySelectorAll('.note-card'));
             const defaultGreeting = "Hi！我是陶然AI助教 🎓 专攻高考英语，阅读、完形、语法都可以问我~";
             const CHAT_API_URL = "/api/chat";
+            const IMAGE_ACCEPT_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+            const IMAGE_MAX_SIZE = 4 * 1024 * 1024;
             const DB_NAME = 'taoran-chat-demo-db';
-            const DB_VERSION = 1;
+            const DB_VERSION = 2;
             const STORE_NAME = 'chat_sessions';
+            const PROFILE_STORE_NAME = 'user_settings';
             const ACTIVE_CHAT_KEY = 'taoran-active-chat-id';
+            const PROFILE_KEY = 'profile';
             let toastTimer;
             let timerRunning = false;
             let timerSec = 0;
@@ -308,6 +482,12 @@
             let db = null;
             let currentChatId = null;
             let isSending = false;
+            let pendingImage = null;
+            let profileDraftAvatar = '';
+            let userProfile = {
+                nickname: '同学',
+                avatarDataUrl: ''
+            };
 
             function showToast(msg, dur = 2000) {
                 if (toastTimer) clearTimeout(toastTimer);
@@ -335,8 +515,9 @@
             }
 
             function buildChatTitle(messages) {
-                const firstUserMessage = messages.find(msg => msg.sender === 'user');
+                const firstUserMessage = messages.find(msg => msg.sender === 'user' && (msg.content || msg.type === 'image'));
                 if (!firstUserMessage) return '新对话';
+                if (firstUserMessage.type === 'image' && !firstUserMessage.content) return '图片提问';
                 return firstUserMessage.content.replace(/\s+/g, ' ').slice(0, 18) || '新对话';
             }
 
@@ -344,6 +525,7 @@
                 return [{
                     id: crypto.randomUUID(),
                     sender: 'ai',
+                    type: 'text',
                     content: defaultGreeting,
                     createdAt: new Date().toISOString()
                 }];
@@ -367,9 +549,93 @@
                 const sendBtn = document.getElementById('send-btn');
                 sendBtn.disabled = sending;
                 chatInput.disabled = sending;
+                uploadImageBtn.disabled = sending;
                 sendBtn.classList.toggle('opacity-60', sending);
                 sendBtn.classList.toggle('cursor-not-allowed', sending);
+                uploadImageBtn.classList.toggle('opacity-60', sending);
+                uploadImageBtn.classList.toggle('cursor-not-allowed', sending);
                 chatInput.placeholder = sending ? '陶然AI助教正在思考中...' : '输入你想探讨的高考英语问题...';
+            }
+
+            function formatFileSize(size) {
+                if (size < 1024 * 1024) return `${Math.round(size / 1024)} KB`;
+                return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+            }
+
+            function clearPendingImage() {
+                pendingImage = null;
+                pendingUpload.classList.add('hidden');
+                pendingUploadPreview.src = '';
+                pendingUploadName.textContent = '';
+                pendingUploadMeta.textContent = '';
+                chatImageInput.value = '';
+            }
+
+            function renderPendingImage() {
+                if (!pendingImage) {
+                    clearPendingImage();
+                    return;
+                }
+                pendingUploadPreview.src = pendingImage.dataUrl;
+                pendingUploadName.textContent = pendingImage.name;
+                pendingUploadMeta.textContent = `${pendingImage.mimeType.replace('image/', '').toUpperCase()} · ${formatFileSize(pendingImage.size)}`;
+                pendingUpload.classList.remove('hidden');
+            }
+
+            function getMessagePreview(message) {
+                if (!message) return '暂无消息';
+                if (message.type === 'image') {
+                    return message.content ? `[图片] ${message.content}` : '[图片]';
+                }
+                return message.content || '暂无消息';
+            }
+
+            function renderAvatar(container, profile, sizeClass = 'text-base') {
+                if (profile.avatarDataUrl) {
+                    container.innerHTML = `<img src="${profile.avatarDataUrl}" alt="用户头像" class="w-full h-full object-cover">`;
+                    return;
+                }
+                container.innerHTML = `<i class="fa-regular fa-user ${sizeClass}"></i>`;
+            }
+
+            function updateNoteSearchState(keyword = '') {
+                const normalized = keyword.trim().toLowerCase();
+                let visibleCount = 0;
+                noteCards.forEach(card => {
+                    const haystack = `${card.dataset.noteTitle || ''} ${card.dataset.noteKeywords || ''}`.toLowerCase();
+                    const matched = !normalized || haystack.includes(normalized);
+                    card.classList.toggle('hidden-by-search', !matched);
+                    if (matched) visibleCount += 1;
+                });
+                noteSearchEmpty.classList.toggle('hidden', visibleCount !== 0);
+                noteSearchClear.classList.toggle('hidden', !normalized);
+                if (!normalized) {
+                    noteSearchMeta.textContent = `当前共 ${noteCards.length} 条演示错题，后续接真实错题库后可以直接复用这套搜索交互。`;
+                } else {
+                    noteSearchMeta.textContent = `搜索“${keyword.trim()}”找到 ${visibleCount} 条结果`;
+                }
+            }
+
+            function openNoteSearch() {
+                noteSearchPanel.classList.add('open');
+                noteSearchInput.focus();
+            }
+
+            function closeNoteSearch() {
+                noteSearchPanel.classList.remove('open');
+                noteSearchInput.value = '';
+                updateNoteSearchState('');
+            }
+
+            function applyUserProfile(profile) {
+                userProfile = {
+                    nickname: (profile.nickname || '同学').trim() || '同学',
+                    avatarDataUrl: profile.avatarDataUrl || ''
+                };
+                renderAvatar(profileAvatarPreview, userProfile);
+                renderAvatar(profileBtn, userProfile, 'text-sm sm:text-base');
+                profileNameInput.value = userProfile.nickname;
+                profileDraftAvatar = userProfile.avatarDataUrl;
             }
 
             function openDB() {
@@ -383,6 +649,9 @@
                         const database = event.target.result;
                         if (!database.objectStoreNames.contains(STORE_NAME)) {
                             database.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                        }
+                        if (!database.objectStoreNames.contains(PROFILE_STORE_NAME)) {
+                            database.createObjectStore(PROFILE_STORE_NAME, { keyPath: 'key' });
                         }
                     };
                     request.onsuccess = function() {
@@ -466,23 +735,81 @@
                 });
             }
 
+            function getProfileRecord() {
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction(PROFILE_STORE_NAME, 'readonly');
+                    const store = transaction.objectStore(PROFILE_STORE_NAME);
+                    const request = store.get(PROFILE_KEY);
+                    request.onsuccess = function() {
+                        resolve(request.result ? request.result.value : null);
+                    };
+                    request.onerror = function() {
+                        reject(request.error);
+                    };
+                    transaction.onerror = function() {
+                        reject(transaction.error || new Error('资料读取失败'));
+                    };
+                });
+            }
+
+            function saveProfileRecord(profile) {
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction(PROFILE_STORE_NAME, 'readwrite');
+                    const store = transaction.objectStore(PROFILE_STORE_NAME);
+                    const request = store.put({
+                        key: PROFILE_KEY,
+                        value: profile
+                    });
+                    request.onsuccess = function() {
+                        resolve(profile);
+                    };
+                    request.onerror = function() {
+                        reject(request.error);
+                    };
+                    transaction.onerror = function() {
+                        reject(transaction.error || new Error('资料保存失败'));
+                    };
+                });
+            }
+
             function appendMessage(content, sender, options = {}) {
                 const createdAt = options.createdAt || new Date().toISOString();
+                const type = options.type || 'text';
                 const div = document.createElement('div');
                 const time = new Date(createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                const safeContent = escapeHtml(content).replace(/\n/g, '<br>');
                 div.className = `message-animate flex flex-col ${sender === 'user' ? 'items-end' : 'items-start'}`;
-                if (sender === 'user') {
-                    div.innerHTML = `<span class="text-[11px] text-gray-400 mb-1 mr-1">我 · ${time}</span><div class="bg-white border border-gray-200 text-gray-800 px-4 py-3 rounded-2xl rounded-tr-sm max-w-[85%] shadow-sm chat-text">${safeContent}</div>`;
+                if (type === 'image') {
+                    const safeCaption = content ? `<p class="mt-3 text-[14px] leading-relaxed chat-text">${escapeHtml(content).replace(/\n/g, '<br>')}</p>` : '';
+                    const imageSrc = options.imageDataUrl || '';
+                    const bubbleClass = sender === 'user'
+                        ? 'bg-white border border-gray-200 rounded-2xl rounded-tr-sm'
+                        : 'bg-gray-100 border border-gray-200 rounded-2xl rounded-tl-sm';
+                    div.innerHTML = `
+                        <span class="text-[11px] text-gray-400 mb-1 ${sender === 'user' ? 'mr-1' : 'ml-1'}">${sender === 'user' ? '我' : '陶然AI助教'} · ${time}</span>
+                        <div class="chat-image-bubble ${bubbleClass} max-w-[85%] shadow-sm p-2">
+                            <img src="${imageSrc}" alt="聊天上传图片" class="max-h-72 object-cover">
+                            ${safeCaption}
+                        </div>
+                    `;
                 } else {
-                    div.innerHTML = `<span class="text-[11px] text-gray-400 mb-1 ml-1">陶然AI助教 · ${time}</span><div class="bg-gray-100 border border-gray-200 text-gray-800 px-4 py-3 rounded-2xl rounded-tl-sm max-w-[85%] shadow-sm chat-text">${safeContent}</div>`;
+                    const safeContent = escapeHtml(content).replace(/\n/g, '<br>');
+                    if (sender === 'user') {
+                        div.innerHTML = `<span class="text-[11px] text-gray-400 mb-1 mr-1">我 · ${time}</span><div class="bg-white border border-gray-200 text-gray-800 px-4 py-3 rounded-2xl rounded-tr-sm max-w-[85%] shadow-sm chat-text">${safeContent}</div>`;
+                    } else {
+                        div.innerHTML = `<span class="text-[11px] text-gray-400 mb-1 ml-1">陶然AI助教 · ${time}</span><div class="bg-gray-100 border border-gray-200 text-gray-800 px-4 py-3 rounded-2xl rounded-tl-sm max-w-[85%] shadow-sm chat-text">${safeContent}</div>`;
+                    }
                 }
                 chatWindow.appendChild(div);
                 chatWindow.scrollTop = chatWindow.scrollHeight;
                 return {
                     id: crypto.randomUUID(),
                     sender,
+                    type,
                     content,
+                    imageDataUrl: options.imageDataUrl || '',
+                    mimeType: options.mimeType || '',
+                    fileName: options.fileName || '',
+                    fileSize: options.fileSize || 0,
                     createdAt
                 };
             }
@@ -490,7 +817,14 @@
             function renderMessages(messages) {
                 chatWindow.innerHTML = '';
                 messages.forEach(message => {
-                    appendMessage(message.content, message.sender, { createdAt: message.createdAt });
+                    appendMessage(message.content || '', message.sender, {
+                        createdAt: message.createdAt,
+                        type: message.type || 'text',
+                        imageDataUrl: message.imageDataUrl || '',
+                        mimeType: message.mimeType || '',
+                        fileName: message.fileName || '',
+                        fileSize: message.fileSize || 0
+                    });
                 });
             }
 
@@ -513,7 +847,7 @@
                 chats.forEach(chat => {
                     const item = document.createElement('div');
                     const lastMessage = chat.messages[chat.messages.length - 1];
-                    const preview = lastMessage ? lastMessage.content.slice(0, 42) : '暂无消息';
+                    const preview = getMessagePreview(lastMessage).slice(0, 42);
                     item.className = `history-item rounded-2xl border border-gray-200 p-3 cursor-pointer ${chat.id === currentChatId ? 'active' : 'bg-white'}`;
                     item.innerHTML = `
                         <div class="flex items-start gap-3">
@@ -558,6 +892,67 @@
                 historyOverlay.classList.add('hidden');
             }
 
+            function openProfileSheet() {
+                profileNameInput.value = userProfile.nickname;
+                profileDraftAvatar = userProfile.avatarDataUrl;
+                renderAvatar(profileAvatarPreview, {
+                    nickname: profileNameInput.value,
+                    avatarDataUrl: profileDraftAvatar
+                });
+                profileOverlay.classList.remove('hidden');
+                profileSheet.classList.remove('hidden');
+                requestAnimationFrame(() => profileSheet.classList.add('open'));
+            }
+
+            function closeProfileSheet() {
+                profileSheet.classList.remove('open');
+                setTimeout(() => {
+                    if (!profileSheet.classList.contains('open')) {
+                        profileSheet.classList.add('hidden');
+                        profileOverlay.classList.add('hidden');
+                    }
+                }, 280);
+            }
+
+            async function loadUserProfile() {
+                if (!db) return;
+                const storedProfile = await getProfileRecord();
+                applyUserProfile(storedProfile || userProfile);
+            }
+
+            async function saveUserProfile() {
+                const nextProfile = {
+                    nickname: profileNameInput.value.trim() || '同学',
+                    avatarDataUrl: profileDraftAvatar || ''
+                };
+                if (db) {
+                    await saveProfileRecord(nextProfile);
+                }
+                applyUserProfile(nextProfile);
+            }
+
+            function setMobileToggleState(activePanel) {
+                mobileToggleLeft.classList.toggle('active', activePanel === 'left');
+                mobileToggleRight.classList.toggle('active', activePanel === 'right');
+            }
+
+            function showMobilePanel(panel) {
+                if (window.innerWidth >= 1024) return;
+                if (panel === 'left') {
+                    leftPanel.classList.add('open');
+                    rightPanel.classList.remove('open');
+                    setMobileToggleState('left');
+                } else if (panel === 'right') {
+                    rightPanel.classList.add('open');
+                    leftPanel.classList.remove('open');
+                    setMobileToggleState('right');
+                } else {
+                    leftPanel.classList.remove('open');
+                    rightPanel.classList.remove('open');
+                    setMobileToggleState('');
+                }
+            }
+
             async function loadChat(chatId) {
                 const chat = await getChatById(chatId);
                 if (!chat) return null;
@@ -599,12 +994,15 @@
                 const chat = await getChatById(currentChatId);
                 return chat ? chat.messages.map(message => ({
                     sender: message.sender,
-                    content: message.content
+                    content: message.type === 'image'
+                        ? (message.content ? `[图片] ${message.content}` : '[图片]')
+                        : message.content
                 })) : [];
             }
 
-            async function requestAssistantReply(messageText) {
+            async function requestAssistantReply(messageText, imagePayload = null) {
                 const history = await getCurrentChatHistoryForApi();
+                const fallbackText = imagePayload ? `我上传了一张图片：${imagePayload.fileName}${messageText ? `。补充说明：${messageText}` : '。请先帮我确认收到并给出分析建议。'}` : messageText;
                 const response = await fetch(CHAT_API_URL, {
                     method: 'POST',
                     headers: {
@@ -612,8 +1010,13 @@
                     },
                     body: JSON.stringify({
                         session_id: currentChatId,
-                        message: messageText,
-                        history
+                        message: fallbackText,
+                        history,
+                        latest_image: imagePayload ? {
+                            file_name: imagePayload.name,
+                            mime_type: imagePayload.mimeType,
+                            data_url: imagePayload.dataUrl
+                        } : null
                     })
                 });
                 if (!response.ok) {
@@ -695,8 +1098,19 @@
 
             window.sendMessage = async function() {
                 const text = chatInput.value.trim();
-                if (!text || isSending) return;
-                const userMessage = appendMessage(text, 'user');
+                if ((!text && !pendingImage) || isSending) return;
+                let userMessage;
+                if (pendingImage) {
+                    userMessage = appendMessage(text, 'user', {
+                        type: 'image',
+                        imageDataUrl: pendingImage.dataUrl,
+                        mimeType: pendingImage.mimeType,
+                        fileName: pendingImage.name,
+                        fileSize: pendingImage.size
+                    });
+                } else {
+                    userMessage = appendMessage(text, 'user');
+                }
                 chatInput.value = '';
                 chatInput.style.height = 'auto';
                 try {
@@ -706,7 +1120,9 @@
                 }
                 setSendingState(true);
                 try {
-                    const replyText = await requestAssistantReply(text);
+                    const currentImage = pendingImage;
+                    clearPendingImage();
+                    const replyText = await requestAssistantReply(text, currentImage);
                     const aiMessage = appendMessage(replyText, 'ai');
                     try {
                         await syncCurrentChat(aiMessage);
@@ -714,6 +1130,7 @@
                         showToast('AI 回复保存失败');
                     }
                 } catch (error) {
+                    clearPendingImage();
                     appendMessage('当前后端接口暂时不可用，请确认 FastAPI 服务已经启动。', 'ai');
                     showToast('接口请求失败，请先启动后端服务');
                 } finally {
@@ -750,24 +1167,27 @@
                     rightPanel.classList.add('mobile-collapse');
                     leftPanel.classList.remove('open');
                     rightPanel.classList.remove('open');
+                    setMobileToggleState('');
                 } else {
                     leftPanel.classList.remove('mobile-collapse');
                     rightPanel.classList.remove('mobile-collapse');
                     leftPanel.classList.add('open');
                     rightPanel.classList.add('open');
+                    setMobileToggleState('');
                 }
             }
 
             initMobile();
+            updateNoteSearchState('');
             window.addEventListener('resize', () => {
                 clearTimeout(window._rt);
                 window._rt = setTimeout(initMobile, 200);
             });
             mobileToggleLeft.addEventListener('click', () => {
-                if (window.innerWidth < 1024) leftPanel.classList.toggle('open');
+                if (window.innerWidth < 1024) showMobilePanel('left');
             });
             mobileToggleRight.addEventListener('click', () => {
-                if (window.innerWidth < 1024) rightPanel.classList.toggle('open');
+                if (window.innerWidth < 1024) showMobilePanel('right');
             });
 
             window.toggleSettings = function() {
@@ -865,6 +1285,95 @@
             historyBtn.addEventListener('click', openHistoryPanel);
             historyOverlay.addEventListener('click', closeHistoryPanel);
             historyCloseBtn.addEventListener('click', closeHistoryPanel);
+            noteSearchToggle.addEventListener('click', () => {
+                if (noteSearchPanel.classList.contains('open')) {
+                    closeNoteSearch();
+                } else {
+                    openNoteSearch();
+                }
+            });
+            noteSearchInput.addEventListener('input', (event) => updateNoteSearchState(event.target.value));
+            noteSearchClear.addEventListener('click', () => {
+                noteSearchInput.value = '';
+                updateNoteSearchState('');
+                noteSearchInput.focus();
+            });
+            noteCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const title = card.dataset.noteTitle || '这道错题';
+                    chatInput.value = `帮我讲一下「${title}」这类题的常见陷阱和解法`;
+                    chatInput.dispatchEvent(new Event('input'));
+                    chatInput.focus();
+                    showToast(`已带入：${title}`);
+                });
+            });
+            uploadImageBtn.addEventListener('click', () => chatImageInput.click());
+            pendingUploadRemove.addEventListener('click', clearPendingImage);
+            chatImageInput.addEventListener('change', () => {
+                const [file] = chatImageInput.files || [];
+                if (!file) return;
+                if (!IMAGE_ACCEPT_TYPES.includes(file.type)) {
+                    showToast('仅支持 JPG、PNG、WebP 图片');
+                    clearPendingImage();
+                    return;
+                }
+                if (file.size > IMAGE_MAX_SIZE) {
+                    showToast('图片不能超过 4MB');
+                    clearPendingImage();
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    pendingImage = {
+                        name: file.name,
+                        size: file.size,
+                        mimeType: file.type,
+                        dataUrl: String(event.target.result || '')
+                    };
+                    renderPendingImage();
+                };
+                reader.readAsDataURL(file);
+            });
+            profileBtn.addEventListener('click', openProfileSheet);
+            profileOverlay.addEventListener('click', closeProfileSheet);
+            profileCloseBtn.addEventListener('click', closeProfileSheet);
+            profileCancelBtn.addEventListener('click', closeProfileSheet);
+            profileUploadBtn.addEventListener('click', () => profileAvatarInput.click());
+            profileResetAvatarBtn.addEventListener('click', () => {
+                profileDraftAvatar = '';
+                renderAvatar(profileAvatarPreview, {
+                    nickname: profileNameInput.value.trim() || '同学',
+                    avatarDataUrl: ''
+                });
+            });
+            profileNameInput.addEventListener('input', () => {
+                renderAvatar(profileAvatarPreview, {
+                    nickname: profileNameInput.value.trim() || '同学',
+                    avatarDataUrl: profileDraftAvatar
+                });
+            });
+            profileAvatarInput.addEventListener('change', () => {
+                const [file] = profileAvatarInput.files || [];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    profileDraftAvatar = String(event.target.result || '');
+                    renderAvatar(profileAvatarPreview, {
+                        nickname: profileNameInput.value.trim() || '同学',
+                        avatarDataUrl: profileDraftAvatar
+                    });
+                };
+                reader.readAsDataURL(file);
+            });
+            profileSaveBtn.addEventListener('click', async () => {
+                try {
+                    await saveUserProfile();
+                    closeProfileSheet();
+                    showToast('个人资料已保存');
+                } catch (error) {
+                    showToast('个人资料保存失败');
+                }
+            });
             clearHistoryBtn.addEventListener('click', async () => {
                 if (!confirm('确定要清空全部历史对话吗？此操作不可撤销。')) return;
                 await handleClearHistory();
@@ -878,20 +1387,24 @@
                 }
                 if (e.key === 'Escape') {
                     if (document.getElementById('settings-panel').classList.contains('open')) toggleSettings();
+                    else if (profileSheet.classList.contains('open')) closeProfileSheet();
                     else if (historyPanel.classList.contains('open')) closeHistoryPanel();
+                    else if (noteSearchPanel.classList.contains('open')) closeNoteSearch();
                     else if (window.innerWidth < 1024) {
-                        leftPanel.classList.remove('open');
-                        rightPanel.classList.remove('open');
+                        showMobilePanel('');
                     }
                 }
             });
 
             openDB()
-                .then(ensureActiveChat)
+                .then(async () => {
+                    await Promise.all([ensureActiveChat(), loadUserProfile()]);
+                })
                 .catch(() => {
                     chatWindow.innerHTML = '';
                     appendMessage(defaultGreeting, 'ai');
                     chatMeta.textContent = '当前浏览器无法保存历史对话';
+                    applyUserProfile(userProfile);
                     showToast('IndexedDB 初始化失败，历史记录不可用');
                 });
         })();
