@@ -10,8 +10,8 @@
             theme: {
                 extend: {
                     colors: {
-                        brand: '#375a8c',
-                        bg: '#f0f4f8',
+                        brand: '#7d92b2',
+                        bg: '#f7faff',
                     }
                 }
             }
@@ -19,10 +19,28 @@
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        .custom-scrollbar::-webkit-scrollbar { width:5px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background:transparent; border-radius:10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background:#c4d4e4; border-radius:10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background:#a0b8d0; }
+        :root {
+            --brand: #7287a2;
+            --brand-deep: #5d728c;
+            --brand-soft: #d9e1eb;
+            --ink: #566477;
+            --heading-ink: #48576a;
+            --heading-soft: #5d6e83;
+            --paper: #f9fbfd;
+            --paper-soft: #f1f5f8;
+            --paper-deep: #e4ebf1;
+            --panel-stroke: rgba(119, 133, 153, 0.16);
+            --shadow-soft: 0 24px 44px rgba(111, 125, 145, 0.08), 0 8px 18px rgba(187, 196, 208, 0.12);
+            --shadow-press: inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(204, 214, 225, 0.26);
+            --shadow-card: 0 2px 0 rgba(214, 223, 234, 0.72), 0 14px 24px rgba(118, 132, 153, 0.08), 0 28px 44px rgba(190, 198, 210, 0.12);
+            --shadow-lift: 0 3px 0 rgba(210, 220, 232, 0.8), 0 18px 30px rgba(115, 128, 149, 0.12), 0 34px 52px rgba(193, 201, 214, 0.18);
+            --shadow-inset: inset 2px 2px 4px rgba(255,255,255,0.94), inset -3px -4px 8px rgba(208, 217, 228, 0.28);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cfd8e5; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #b6c3d6; }
 
         @keyframes fadeInUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
         .message-animate { animation: fadeInUp 0.35s ease-out; }
@@ -30,6 +48,11 @@
         .timer-ring { transition:0.3s; }
         .timer-ring.active { animation: rotate-ring 2s linear infinite; }
         @keyframes rotate-ring { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+        @keyframes depthBreath {
+            0% { transform: scale(1) translate3d(0, 0, 0); opacity: 0.88; }
+            50% { transform: scale(1.035) translate3d(-1.2%, 0.8%, 0); opacity: 1; }
+            100% { transform: scale(1) translate3d(0, 0, 0); opacity: 0.88; }
+        }
 
         .vertical-text { writing-mode: vertical-rl; text-orientation: mixed; letter-spacing:0.3em; }
 
@@ -53,42 +76,258 @@
         }
         .mobile-collapse.open { max-height: 800px; opacity: 1; margin-bottom: 1rem; }
 
-        .note-card {
-            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-        }
-        .note-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-            border-color: #93b4e8;
-        }
-        .extend-card {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .extend-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-
         body {
+            position: relative;
+            isolation: isolate;
             background:
-                radial-gradient(circle at top left, rgba(55, 90, 140, 0.08), transparent 26%),
-                linear-gradient(180deg, #f5f8fc 0%, #eef3f9 100%);
+                radial-gradient(circle at 14% 10%, rgba(220, 228, 237, 0.58), transparent 24%),
+                radial-gradient(circle at 84% 14%, rgba(237, 242, 247, 0.72), transparent 22%),
+                radial-gradient(circle at 76% 76%, rgba(225, 232, 240, 0.58), transparent 28%),
+                linear-gradient(180deg, #fbfcfd 0%, #f4f7fa 100%);
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background:
+                linear-gradient(128deg, rgba(255,255,255,0.44) 0%, rgba(255,255,255,0) 38%),
+                radial-gradient(circle at 18% 26%, rgba(150, 162, 178, 0.05) 0 1px, transparent 1px 100%),
+                radial-gradient(circle at 76% 34%, rgba(148, 160, 176, 0.045) 0 1px, transparent 1px 100%),
+                repeating-linear-gradient(0deg, rgba(120, 132, 148, 0.018) 0 1px, transparent 1px 14px),
+                repeating-linear-gradient(90deg, rgba(173, 183, 195, 0.014) 0 1px, transparent 1px 18px);
+            opacity: 0.62;
+            pointer-events: none;
+            z-index: -2;
+        }
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(58% 44% at 88% 10%, rgba(68, 82, 104, 0.2) 0%, rgba(68, 82, 104, 0.12) 24%, rgba(68, 82, 104, 0.04) 42%, transparent 58%),
+                radial-gradient(34% 26% at 8% 88%, rgba(94, 108, 128, 0.1) 0%, rgba(94, 108, 128, 0.04) 46%, transparent 64%),
+                linear-gradient(115deg, rgba(112, 126, 145, 0.03) 12%, transparent 12%, transparent 58%, rgba(112, 126, 145, 0.025) 58%, rgba(112, 126, 145, 0.025) 64%, transparent 64%),
+                radial-gradient(circle at 24% 22%, rgba(255,255,255,0.54), transparent 18%),
+                radial-gradient(circle at 74% 20%, rgba(214,223,234,0.34), transparent 20%);
+            mix-blend-mode: multiply;
+            transform-origin: 82% 18%;
+            animation: depthBreath 13s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
         }
 
         .glass-panel {
-            background: rgba(255,255,255,0.8);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            box-shadow: 0 14px 40px rgba(31, 41, 55, 0.08);
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(241,246,250,0.96) 100%);
+            border: 1px solid rgba(255,255,255,0.7);
+            box-shadow: var(--shadow-soft), var(--shadow-press);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            background-clip: padding-box;
+        }
+        .glass-panel::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(135deg, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0) 38%),
+                repeating-linear-gradient(0deg, rgba(122, 136, 154, 0.014) 0 1px, transparent 1px 16px);
+            opacity: 0.65;
+            pointer-events: none;
+        }
+        .glass-panel::after {
+            content: "";
+            position: absolute;
+            inset: 0.5px 0.5px auto 0.5px;
+            height: 14px;
+            border-radius: inherit;
+            background: linear-gradient(180deg, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0.06) 100%);
+            opacity: 0.62;
+            pointer-events: none;
         }
 
-        .hero-glow { box-shadow: 0 12px 30px rgba(55, 90, 140, 0.12); }
+        header .font-bold.text-brand,
+        #settings-panel h3.text-brand,
+        #left-panel h2.text-brand,
+        #right-panel h2.text-brand,
+        #history-panel h3.text-brand,
+        #profile-sheet h3.text-brand,
+        section h1.font-extrabold.text-brand,
+        .vertical-text.text-brand {
+            color: var(--heading-ink);
+        }
+        header a .font-bold.text-brand {
+            color: #39495f;
+        }
+
+        #left-panel .note-card p,
+        #right-panel .extend-card h3,
+        #chat-meta {
+            color: var(--heading-soft) !important;
+        }
+
+        .note-card,
+        .extend-card,
+        .history-item,
+        #pending-upload,
+        #note-search-panel > div,
+        #chat-window .bg-gray-100.border,
+        #chat-window .bg-white.border {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.975) 0%, rgba(241,245,249,0.96) 100%);
+            border-color: var(--panel-stroke);
+            box-shadow: var(--shadow-card), var(--shadow-press);
+            background-clip: padding-box;
+        }
+        #left-panel,
+        #right-panel {
+            border-color: rgba(255,255,255,0.58);
+            box-shadow: 0 18px 34px rgba(116, 129, 147, 0.1), 0 6px 16px rgba(191, 199, 211, 0.12), inset 0 1px 0 rgba(255,255,255,0.74);
+        }
+        #left-panel::before,
+        #left-panel::after,
+        #right-panel::before,
+        #right-panel::after {
+            display: none;
+        }
+        #left-panel .note-card,
+        #right-panel .extend-card {
+            border-color: rgba(198, 208, 220, 0.92);
+            box-shadow: 0 12px 22px rgba(124, 138, 157, 0.08), 0 2px 8px rgba(197, 205, 216, 0.08);
+        }
+        .note-card::before,
+        .extend-card::before,
+        .history-item::before,
+        #pending-upload::before,
+        #note-search-panel > div::before,
+        #chat-window .bg-gray-100.border::before,
+        #chat-window .bg-white.border::before,
+        .composer-shell::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(140deg, rgba(255,255,255,0.38) 0%, rgba(255,255,255,0) 46%),
+                repeating-linear-gradient(0deg, rgba(117, 130, 146, 0.012) 0 1px, transparent 1px 17px);
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        #left-panel .note-card::before,
+        #right-panel .extend-card::before,
+        #left-panel .note-card::after,
+        #right-panel .extend-card::after {
+            display: none;
+        }
+        .note-card::after,
+        .extend-card::after,
+        .history-item::after,
+        #pending-upload::after,
+        #note-search-panel > div::after,
+        #chat-window .bg-gray-100.border::after,
+        #chat-window .bg-white.border::after,
+        .composer-shell::after {
+            content: "";
+            position: absolute;
+            inset: 0.5px;
+            border-radius: inherit;
+            border: 1px solid rgba(255,255,255,0.44);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.68), inset 0 -1px 0 rgba(205, 214, 226, 0.22);
+            pointer-events: none;
+        }
+
+        .note-card,
+        .extend-card,
+        .history-item,
+        #pending-upload {
+            transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+        }
+        .note-card:hover,
+        .extend-card:hover,
+        .history-item:hover,
+        #pending-upload:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lift), var(--shadow-press);
+            border-color: rgba(130, 147, 178, 0.28);
+        }
+
+        .note-card > div:first-child,
+        .extend-card > div:first-child,
+        #pending-upload-preview {
+            position: relative;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), 0 8px 16px rgba(128, 142, 161, 0.12);
+        }
+
+        .history-item.active {
+            box-shadow: 0 3px 0 rgba(209, 219, 232, 0.82), 0 20px 36px rgba(122, 136, 155, 0.14), var(--shadow-press);
+        }
+
+        .hero-glow {
+            background: linear-gradient(145deg, #8a9bb1 0%, #6f829c 100%);
+            box-shadow: 0 16px 30px rgba(106, 122, 145, 0.16), inset 0 1px 0 rgba(255,255,255,0.34);
+        }
+
+        .soft-icon-btn,
+        .sidebar-collapse-btn,
+        #note-search-toggle,
+        #upload-image-btn,
+        #pending-upload-remove,
+        #profile-close-btn {
+            background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(243,248,253,0.97) 100%);
+            border: 1px solid rgba(255,255,255,0.72);
+            box-shadow: var(--shadow-card), var(--shadow-press);
+        }
+
+        .soft-primary-btn,
+        .soft-send-btn,
+        .mobile-switch-btn.active {
+            background: linear-gradient(135deg, #8d9fb7 0%, #6f839d 100%);
+            color: #ffffff;
+            border-color: rgba(255,255,255,0.48);
+            box-shadow: 0 18px 32px rgba(112, 128, 150, 0.18), inset 0 1px 0 rgba(255,255,255,0.24);
+        }
+
+        .soft-secondary-btn,
+        .soft-pill-btn,
+        #font-size-group button,
+        .mobile-switch-btn {
+            background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(242,247,253,0.97) 100%);
+            border: 1px solid rgba(255,255,255,0.72);
+            box-shadow: var(--shadow-card), var(--shadow-press);
+        }
+
+        .soft-icon-btn:hover,
+        .soft-secondary-btn:hover,
+        .soft-pill-btn:hover,
+        .soft-primary-btn:hover,
+        .soft-send-btn:hover,
+        .mobile-switch-btn:hover,
+        #font-size-group button:hover,
+        .sidebar-collapse-btn:hover,
+        #note-search-toggle:hover,
+        #upload-image-btn:hover,
+        #pending-upload-remove:hover,
+        #profile-close-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lift), var(--shadow-press);
+        }
 
         .mobile-switch-btn.active {
-            background: #375a8c;
             color: #ffffff;
-            border-color: rgba(55, 90, 140, 0.24);
-            box-shadow: 0 10px 24px rgba(55, 90, 140, 0.16);
+        }
+
+        .composer-shell:focus-within {
+            border-color: rgba(204, 214, 233, 0.95);
+            box-shadow: 0 18px 34px rgba(138, 151, 176, 0.16), var(--shadow-press);
+        }
+        .composer-shell {
+            position: relative;
+            overflow: hidden;
         }
 
         .profile-avatar-button {
@@ -107,21 +346,26 @@
         .profile-sheet { transform: translateY(16px); opacity: 0; transition: transform 0.28s ease, opacity 0.28s ease; }
         .profile-sheet.open { transform: translateY(0); opacity: 1; }
 
+        #profile-avatar-preview {
+            background: linear-gradient(145deg, #91a4c3 0%, #738cab 100%);
+            box-shadow: 0 18px 30px rgba(125, 146, 178, 0.18), inset 0 1px 0 rgba(255,255,255,0.3);
+        }
+
         .avatar-option {
             transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
         }
         .avatar-option:hover {
             transform: translateY(-1px);
-            box-shadow: 0 8px 20px rgba(55, 90, 140, 0.1);
-            border-color: rgba(55, 90, 140, 0.22);
+            box-shadow: var(--shadow-lift), var(--shadow-press);
+            border-color: rgba(125, 146, 178, 0.22);
         }
 
         .pending-upload {
             transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         .pending-upload:hover {
-            border-color: #93b4e8;
-            box-shadow: 0 8px 20px rgba(55, 90, 140, 0.08);
+            border-color: rgba(125, 146, 178, 0.24);
+            box-shadow: var(--shadow-lift), var(--shadow-press);
         }
 
         .chat-image-bubble img {
@@ -147,30 +391,337 @@
             opacity: 1;
             margin-bottom: 0.75rem;
         }
+        .note-card.is-active-note {
+            border-color: rgba(120, 141, 170, 0.46);
+            box-shadow: 0 14px 24px rgba(118, 132, 153, 0.11), inset 0 0 0 1px rgba(255,255,255,0.36);
+        }
+        .flashcard-sheet {
+            background: linear-gradient(180deg, rgba(250, 248, 240, 0.96) 0%, rgba(244, 240, 228, 0.96) 100%);
+        }
+        .flashcard-stage,
+        .flashcard-side {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(245, 240, 226, 0.92) 100%);
+            border: 1px solid rgba(229, 218, 193, 0.8);
+            box-shadow: 0 18px 34px rgba(155, 141, 116, 0.08), inset 0 1px 0 rgba(255,255,255,0.74);
+        }
+        .flashcard-stage::before,
+        .flashcard-side::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(135deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 46%),
+                repeating-linear-gradient(0deg, rgba(173, 159, 129, 0.02) 0 1px, transparent 1px 18px);
+            pointer-events: none;
+        }
+        .flashcard-counter-pill,
+        .flashcard-status-chip,
+        .flashcard-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 28px;
+            padding: 0 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(210, 198, 173, 0.86);
+            background: rgba(255,255,255,0.68);
+            color: #756a55;
+            font-weight: 600;
+        }
+        .flashcard-chip-answer {
+            color: #8b7250;
+            background: rgba(253, 248, 228, 0.88);
+        }
+        .flashcard-status-chip.is-mastered {
+            color: #59724d;
+            background: rgba(235, 246, 227, 0.92);
+            border-color: rgba(173, 199, 160, 0.9);
+        }
+        .flashcard-stack {
+            position: relative;
+            min-height: 420px;
+            perspective: 1400px;
+        }
+        .flashcard-motion-layer {
+            position: relative;
+            min-height: inherit;
+            transform-origin: center center;
+            will-change: transform, opacity, filter;
+        }
+        .flashcard-shadow-card {
+            position: absolute;
+            inset: 28px 18px 18px;
+            border-radius: 28px;
+            background: linear-gradient(180deg, rgba(227, 214, 185, 0.62) 0%, rgba(239, 229, 202, 0.48) 100%);
+            border: 1px solid rgba(223, 208, 177, 0.8);
+            box-shadow: 0 22px 30px rgba(151, 136, 102, 0.08);
+            pointer-events: none;
+        }
+        .flashcard-shadow-mid {
+            transform: rotate(-3deg) translate(-8px, -4px);
+        }
+        .flashcard-shadow-back {
+            transform: rotate(4deg) translate(10px, -10px);
+            opacity: 0.84;
+        }
+        .flashcard-card {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            min-height: 420px;
+            border: 0;
+            background: transparent;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease;
+            border-radius: 28px;
+        }
+        .flashcard-card.is-flipped {
+            transform: rotateY(180deg);
+        }
+        @keyframes flashcardLeaveNext {
+            0% { opacity: 1; transform: translate3d(0, 0, 0) rotate(0deg) scale(1); filter: blur(0); }
+            100% { opacity: 0; transform: translate3d(-52px, 6px, 0) rotate(-6deg) scale(0.96); filter: blur(1px); }
+        }
+        @keyframes flashcardLeavePrev {
+            0% { opacity: 1; transform: translate3d(0, 0, 0) rotate(0deg) scale(1); filter: blur(0); }
+            100% { opacity: 0; transform: translate3d(52px, 6px, 0) rotate(6deg) scale(0.96); filter: blur(1px); }
+        }
+        @keyframes flashcardEnterNext {
+            0% { opacity: 0; transform: translate3d(56px, -4px, 0) rotate(5deg) scale(0.965); filter: blur(1px); }
+            100% { opacity: 1; transform: translate3d(0, 0, 0) rotate(0deg) scale(1); filter: blur(0); }
+        }
+        @keyframes flashcardEnterPrev {
+            0% { opacity: 0; transform: translate3d(-56px, -4px, 0) rotate(-5deg) scale(0.965); filter: blur(1px); }
+            100% { opacity: 1; transform: translate3d(0, 0, 0) rotate(0deg) scale(1); filter: blur(0); }
+        }
+        @keyframes flashcardSideFade {
+            0% { opacity: 0; transform: translate3d(14px, 0, 0); }
+            100% { opacity: 1; transform: translate3d(0, 0, 0); }
+        }
+        .flashcard-stack.is-leaving-next .flashcard-motion-layer {
+            animation: flashcardLeaveNext 180ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        .flashcard-stack.is-leaving-prev .flashcard-motion-layer {
+            animation: flashcardLeavePrev 180ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        .flashcard-stack.is-entering-next .flashcard-motion-layer {
+            animation: flashcardEnterNext 240ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+        .flashcard-stack.is-entering-prev .flashcard-motion-layer {
+            animation: flashcardEnterPrev 240ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+        .flashcard-stack.is-leaving-next .flashcard-shadow-mid {
+            transform: rotate(-8deg) translate(-22px, 2px);
+        }
+        .flashcard-stack.is-leaving-next .flashcard-shadow-back {
+            transform: rotate(7deg) translate(16px, -18px);
+        }
+        .flashcard-stack.is-leaving-prev .flashcard-shadow-mid {
+            transform: rotate(2deg) translate(10px, 1px);
+        }
+        .flashcard-stack.is-leaving-prev .flashcard-shadow-back {
+            transform: rotate(-2deg) translate(-10px, -14px);
+        }
+        .flashcard-stack.is-entering-next .flashcard-shadow-mid,
+        .flashcard-stack.is-entering-prev .flashcard-shadow-mid,
+        .flashcard-stack.is-entering-next .flashcard-shadow-back,
+        .flashcard-stack.is-entering-prev .flashcard-shadow-back {
+            transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .flashcard-side.is-refreshing {
+            animation: flashcardSideFade 220ms ease-out;
+        }
+        .flashcard-face {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 28px 24px;
+            border-radius: 28px;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            background: linear-gradient(180deg, rgba(255, 252, 244, 0.98) 0%, rgba(249, 244, 230, 0.98) 100%);
+            border: 1px solid rgba(223, 210, 182, 0.9);
+            box-shadow: 0 22px 44px rgba(154, 138, 108, 0.14), inset 0 1px 0 rgba(255,255,255,0.78);
+            text-align: left;
+        }
+        .flashcard-face::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background:
+                radial-gradient(circle at 18% 14%, rgba(255,255,255,0.28), transparent 18%),
+                repeating-linear-gradient(0deg, rgba(180, 166, 133, 0.02) 0 1px, transparent 1px 18px);
+            pointer-events: none;
+        }
+        .flashcard-back {
+            transform: rotateY(180deg);
+        }
+        .flashcard-point-list li {
+            position: relative;
+            padding-left: 16px;
+            line-height: 1.55;
+        }
+        .flashcard-point-list li::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0.58em;
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(182, 151, 92, 0.8);
+        }
+        .flashcard-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(186, 171, 141, 0.9);
+            background: rgba(255,255,255,0.72);
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+        .flashcard-dot.active {
+            background: #c9a85a;
+            transform: scale(1.12);
+            border-color: #c9a85a;
+        }
+        .flashcard-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.74);
+            border: 1px solid rgba(219, 205, 176, 0.9);
+            font-size: 12px;
+            color: #706757;
+        }
+        body.night-mode .flashcard-sheet {
+            background: linear-gradient(180deg, rgba(24, 31, 46, 0.98) 0%, rgba(17, 24, 39, 0.98) 100%);
+            border-color: rgba(76, 93, 122, 0.5) !important;
+        }
+        body.night-mode .flashcard-stage,
+        body.night-mode .flashcard-side {
+            background: linear-gradient(180deg, rgba(20, 28, 44, 0.96) 0%, rgba(16, 23, 37, 0.98) 100%);
+            border-color: rgba(70, 87, 116, 0.54);
+            box-shadow: 0 18px 34px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.02);
+        }
+        body.night-mode .flashcard-stage::before,
+        body.night-mode .flashcard-side::before {
+            background:
+                linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0) 46%),
+                repeating-linear-gradient(0deg, rgba(120, 136, 162, 0.012) 0 1px, transparent 1px 18px);
+        }
+        body.night-mode .flashcard-counter-pill,
+        body.night-mode .flashcard-status-chip,
+        body.night-mode .flashcard-chip,
+        body.night-mode .flashcard-tag {
+            background: rgba(27, 39, 58, 0.92);
+            color: #d9e5fb;
+            border-color: rgba(82, 100, 128, 0.7);
+        }
+        body.night-mode .flashcard-status-chip.is-mastered {
+            color: #cce7c6;
+            background: rgba(38, 61, 48, 0.9);
+            border-color: rgba(88, 126, 95, 0.78);
+        }
+        body.night-mode .flashcard-shadow-card {
+            background: linear-gradient(180deg, rgba(40, 53, 77, 0.78) 0%, rgba(29, 39, 58, 0.72) 100%);
+            border-color: rgba(62, 80, 108, 0.7);
+            box-shadow: 0 18px 26px rgba(0,0,0,0.22);
+        }
+        body.night-mode .flashcard-face {
+            background: linear-gradient(180deg, rgba(28, 39, 59, 0.98) 0%, rgba(20, 29, 45, 0.98) 100%);
+            border-color: rgba(74, 92, 122, 0.78);
+            box-shadow: 0 22px 44px rgba(0,0,0,0.28);
+        }
+        body.night-mode .flashcard-face::before {
+            background:
+                radial-gradient(circle at 18% 14%, rgba(255,255,255,0.04), transparent 18%),
+                repeating-linear-gradient(0deg, rgba(136, 151, 176, 0.012) 0 1px, transparent 1px 18px);
+        }
+        body.night-mode #flashcard-front-question,
+        body.night-mode #flashcard-back-answer,
+        body.night-mode #flashcard-side-title {
+            color: #edf3ff !important;
+        }
+        body.night-mode #flashcard-subtitle,
+        body.night-mode #flashcard-front-hint,
+        body.night-mode #flashcard-side-summary,
+        body.night-mode #flashcard-side-tip,
+        body.night-mode .flashcard-point-list,
+        body.night-mode .flashcard-face p,
+        body.night-mode .flashcard-side p {
+            color: #c1cee4 !important;
+        }
+        @media (max-width: 767px) {
+            .flashcard-stack {
+                min-height: 360px;
+            }
+            .flashcard-motion-layer {
+                min-height: 360px;
+            }
+            .flashcard-card {
+                min-height: 360px;
+            }
+            .flashcard-face {
+                padding: 22px 18px;
+            }
+            .flashcard-shadow-card {
+                inset: 24px 12px 14px;
+            }
+        }
 
         /* 夜间模式 */
-        body.night-mode { background:#1a1f2e; }
+        body.night-mode {
+            background:
+                radial-gradient(circle at 14% 10%, rgba(61, 74, 103, 0.4), transparent 24%),
+                radial-gradient(circle at 82% 12%, rgba(40, 54, 79, 0.42), transparent 22%),
+                linear-gradient(180deg, #111827 0%, #0f172a 100%) !important;
+        }
+        body.night-mode::before,
+        body.night-mode::after {
+            opacity: 0.28;
+        }
         body.night-mode,
         body.night-mode .text-gray-800,
         body.night-mode .text-gray-700,
         body.night-mode .text-gray-600,
         body.night-mode .text-gray-500,
-        body.night-mode .text-gray-400 { color: #e5e7eb !important; }
-        body.night-mode .text-brand { color: #a3c2f0 !important; }
-        body.night-mode .bg-white { background:#1f2937 !important; }
-        body.night-mode .bg-gray-100 { background:#374151 !important; }
-        body.night-mode .bg-gray-50 { background:#2c3a4f !important; }
-        body.night-mode .bg-\[\#eef4fb\] { background:#2c3a4f !important; }
+        body.night-mode .text-gray-400 { color: #dbe5f4 !important; }
+        body.night-mode .text-brand { color: #bfd1ef !important; }
+        body.night-mode header .font-bold.text-brand,
+        body.night-mode #settings-panel h3.text-brand,
+        body.night-mode #left-panel h2.text-brand,
+        body.night-mode #right-panel h2.text-brand,
+        body.night-mode #history-panel h3.text-brand,
+        body.night-mode #profile-sheet h3.text-brand,
+        body.night-mode section h1.font-extrabold.text-brand,
+        body.night-mode .vertical-text.text-brand {
+            color: #edf3ff !important;
+        }
+        body.night-mode header a .font-bold.text-brand {
+            color: #f7fbff !important;
+        }
+        body.night-mode .bg-white,
+        body.night-mode .bg-gray-100,
+        body.night-mode .bg-gray-50,
+        body.night-mode .bg-\[\#eef4fb\] { background: #162033 !important; }
         body.night-mode .border-gray-200,
-        body.night-mode .border-gray-100 { border-color:#4b5563 !important; }
-        body.night-mode header { background:#1f2937 !important; }
+        body.night-mode .border-gray-100 { border-color:#334155 !important; }
+        body.night-mode header { background: rgba(16, 23, 38, 0.88) !important; }
         body.night-mode .bg-brand { background:#5a7fae !important; }
-        body.night-mode .hover\:bg-gray-100:hover { background:#374151 !important; }
+        body.night-mode .hover\:bg-gray-100:hover { background:#1e293b !important; }
         body.night-mode .chat-bubble-ai { background:#374151 !important; color:#e5e7eb; border-color:#4b5563; }
         body.night-mode .chat-bubble-user { background:#1f2937 !important; color:#e5e7eb; border-color:#4b5563; }
         body.night-mode .bg-\[\#f8fafc\] { background:#1f2937 !important; }
         body.night-mode input,
-        body.night-mode textarea { color: #e5e7eb !important; }
+        body.night-mode textarea { color: #ecf2ff !important; }
+        body.night-mode input::placeholder,
+        body.night-mode textarea::placeholder { color: rgba(219, 229, 244, 0.56) !important; }
         body.night-mode .bg-\[\#e6f4ea\],
         body.night-mode .bg-\[\#fef7e0\],
         body.night-mode .bg-\[\#fce8e6\],
@@ -183,33 +734,197 @@
         body.night-mode .text-red-700,
         body.night-mode .text-purple-900,
         body.night-mode .text-purple-700 { color: #e5e7eb !important; }
-        body.night-mode .note-card:hover { box-shadow: 0 8px 20px rgba(255,255,255,0.1); }
+        body.night-mode .note-card,
+        body.night-mode .extend-card,
+        body.night-mode .history-item,
+        body.night-mode #pending-upload,
+        body.night-mode #note-search-panel > div,
+        body.night-mode .composer-shell,
+        body.night-mode .soft-secondary-btn,
+        body.night-mode .soft-pill-btn,
+        body.night-mode .mobile-switch-btn,
+        body.night-mode .soft-icon-btn,
+        body.night-mode .sidebar-collapse-btn,
+        body.night-mode #font-size-group button {
+            background: linear-gradient(180deg, rgba(22, 32, 51, 0.96) 0%, rgba(15, 23, 42, 0.98) 100%) !important;
+            color: #e7eefb !important;
+            border-color: rgba(94, 114, 148, 0.34) !important;
+            box-shadow: 0 18px 34px rgba(0,0,0,0.36), inset 0 1px 0 rgba(255,255,255,0.03) !important;
+        }
+        body.night-mode .note-card::before,
+        body.night-mode .extend-card::before,
+        body.night-mode .history-item::before,
+        body.night-mode #pending-upload::before,
+        body.night-mode #note-search-panel > div::before,
+        body.night-mode #chat-window .bg-gray-100.border::before,
+        body.night-mode #chat-window .bg-white.border::before,
+        body.night-mode .composer-shell::before,
+        body.night-mode .glass-panel::before {
+            opacity: 0.28;
+            background:
+                linear-gradient(145deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 42%),
+                repeating-linear-gradient(0deg, rgba(136, 153, 179, 0.01) 0 1px, transparent 1px 18px);
+        }
+        body.night-mode #left-panel::before,
+        body.night-mode #left-panel::after,
+        body.night-mode #right-panel::before,
+        body.night-mode #right-panel::after,
+        body.night-mode #left-panel .note-card::before,
+        body.night-mode #left-panel .note-card::after,
+        body.night-mode #right-panel .extend-card::before,
+        body.night-mode #right-panel .extend-card::after,
+        body.night-mode .glass-panel::after {
+            display: none;
+        }
+        body.night-mode .note-card::after,
+        body.night-mode .extend-card::after,
+        body.night-mode .history-item::after,
+        body.night-mode #pending-upload::after,
+        body.night-mode #note-search-panel > div::after,
+        body.night-mode #chat-window .bg-gray-100.border::after,
+        body.night-mode #chat-window .bg-white.border::after,
+        body.night-mode .composer-shell::after,
+        body.night-mode .glass-panel::after {
+            border-color: rgba(255,255,255,0.08);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(132, 151, 180, 0.08);
+            opacity: 0.5;
+        }
+        body.night-mode .soft-primary-btn,
+        body.night-mode .soft-send-btn,
+        body.night-mode .mobile-switch-btn.active,
+        body.night-mode #font-size-group button.bg-brand {
+            background: linear-gradient(135deg, #6f89b0 0%, #587298 100%) !important;
+            color: #ffffff !important;
+            border-color: rgba(177, 197, 227, 0.24) !important;
+        }
+        body.night-mode .note-card:hover { box-shadow: 0 18px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05) !important; }
         body.night-mode .timer-ring { border-color: #a3c2f0 !important; }
-        body.night-mode #timer-btn { background-color: #2c3a4f !important; }
-        body.night-mode #timer-btn:hover { background-color: #374151 !important; }
-        body.night-mode .history-item.active { background: #2c3a4f !important; border-color: #5a7fae !important; }
-        body.night-mode .glass-panel { background: rgba(31, 41, 55, 0.82) !important; }
-        body.night-mode .mobile-switch-btn.active { background: #5a7fae !important; }
+        body.night-mode .history-item.active { background: linear-gradient(180deg, rgba(33, 50, 78, 0.98) 0%, rgba(24, 36, 58, 0.98) 100%) !important; border-color: #6f89b0 !important; }
+        body.night-mode .glass-panel { background: linear-gradient(180deg, rgba(17, 24, 39, 0.88) 0%, rgba(15, 23, 42, 0.92) 100%) !important; }
+        body.night-mode #left-panel,
+        body.night-mode #right-panel {
+            border-color: rgba(90, 107, 132, 0.44) !important;
+            box-shadow: 0 18px 34px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.02) !important;
+        }
+        body.night-mode #left-panel .note-card,
+        body.night-mode #right-panel .extend-card {
+            border-color: rgba(82, 100, 128, 0.48) !important;
+            box-shadow: 0 14px 24px rgba(0,0,0,0.24) !important;
+        }
         body.night-mode .avatar-option:hover { box-shadow: 0 10px 24px rgba(90, 127, 174, 0.18); }
+        body.night-mode #right-panel .extend-card h3,
+        body.night-mode #right-panel .extend-card p,
+        body.night-mode #right-panel .extend-card strong,
+        body.night-mode #left-panel .note-card p,
+        body.night-mode #right-panel .extend-card i,
+        body.night-mode #left-panel .note-card i,
+        body.night-mode #history-panel .delete-history-btn,
+        body.night-mode #history-close-btn,
+        body.night-mode #clear-history-btn,
+        body.night-mode #settings-panel button,
+        body.night-mode #profile-sheet button,
+        body.night-mode #profile-sheet label,
+        body.night-mode #profile-sheet p,
+        body.night-mode #profile-sheet .text-gray-600,
+        body.night-mode #profile-sheet .text-gray-700 {
+            color: #e7eefb !important;
+        }
+        body.night-mode .note-card > div:first-child,
+        body.night-mode .extend-card {
+            background: linear-gradient(135deg, rgba(45, 59, 88, 0.96) 0%, rgba(28, 39, 61, 0.98) 100%) !important;
+        }
+        body.night-mode .extend-card [class*="opacity-10"],
+        body.night-mode .note-card [class*="fa-regular"] {
+            color: rgba(191, 209, 239, 0.22) !important;
+        }
 
         /* 护眼模式 */
-        body.warm-mode { background: #FCFAF2 !important; color: #3E3A39; }
-        body.warm-mode header { background: #F5F0E5 !important; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+        body.warm-mode {
+            background:
+                radial-gradient(circle at 12% 8%, rgba(218, 227, 236, 0.72), transparent 24%),
+                radial-gradient(circle at 86% 12%, rgba(241, 236, 228, 0.82), transparent 22%),
+                radial-gradient(circle at 70% 78%, rgba(223, 229, 236, 0.58), transparent 28%),
+                linear-gradient(180deg, #fcfaf7 0%, #f4eee6 100%) !important;
+            color: #3E3A39;
+        }
+        body.warm-mode::before {
+            opacity: 0.7;
+            background:
+                linear-gradient(120deg, rgba(255,255,255,0.34) 0%, rgba(255,255,255,0) 42%),
+                radial-gradient(circle at 22% 18%, rgba(120,132,148,0.04) 0 1px, transparent 1px 100%),
+                repeating-linear-gradient(0deg, rgba(144, 154, 174, 0.024) 0 1px, transparent 1px 14px),
+                repeating-linear-gradient(90deg, rgba(196, 182, 164, 0.018) 0 1px, transparent 1px 18px);
+        }
+        body.warm-mode::after {
+            opacity: 1;
+            background:
+                radial-gradient(56% 42% at 88% 10%, rgba(92, 88, 84, 0.16) 0%, rgba(92, 88, 84, 0.09) 24%, rgba(92, 88, 84, 0.03) 42%, transparent 58%),
+                radial-gradient(32% 24% at 10% 90%, rgba(132, 122, 112, 0.08) 0%, rgba(132, 122, 112, 0.035) 46%, transparent 64%),
+                radial-gradient(circle at 24% 22%, rgba(255,255,255,0.56), transparent 18%),
+                radial-gradient(circle at 74% 20%, rgba(221,231,244,0.42), transparent 20%);
+            transform-origin: 80% 16%;
+            animation: depthBreath 14s ease-in-out infinite;
+        }
+        body.warm-mode header { background: rgba(245, 240, 229, 0.88) !important; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
         body.warm-mode .bg-white { background: #F5F0E5 !important; }
         body.warm-mode .bg-gray-100 { background: #EAE4D9 !important; }
         body.warm-mode .bg-gray-50 { background: #E3DBCD !important; }
         body.warm-mode .bg-\[\#eef4fb\] { background: #E3DBCD !important; }
         body.warm-mode .border-gray-200,
         body.warm-mode .border-gray-100 { border-color: #E0D8C8 !important; }
-        body.warm-mode .text-brand { color: #3E3A39 !important; }
-        body.warm-mode .bg-brand { background: #EAA348 !important; }
+        body.warm-mode .text-brand { color: #5f708d !important; }
+        body.warm-mode header .font-bold.text-brand,
+        body.warm-mode #settings-panel h3.text-brand,
+        body.warm-mode #left-panel h2.text-brand,
+        body.warm-mode #right-panel h2.text-brand,
+        body.warm-mode #history-panel h3.text-brand,
+        body.warm-mode #profile-sheet h3.text-brand,
+        body.warm-mode section h1.font-extrabold.text-brand,
+        body.warm-mode .vertical-text.text-brand {
+            color: #534d48 !important;
+        }
+        body.warm-mode header a .font-bold.text-brand {
+            color: #473d33 !important;
+        }
+        body.warm-mode .bg-brand { background: #7d92b2 !important; }
         body.warm-mode .hover\:bg-gray-100:hover { background: #D9CFBC !important; }
+        body.warm-mode .glass-panel {
+            background: linear-gradient(180deg, rgba(255,255,255,0.88) 0%, rgba(247,242,234,0.94) 100%) !important;
+            box-shadow: 0 22px 40px rgba(131, 145, 170, 0.12), 0 6px 14px rgba(180, 166, 148, 0.08), inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -1px 0 rgba(203, 196, 184, 0.22) !important;
+        }
+        body.warm-mode .note-card,
+        body.warm-mode .extend-card,
+        body.warm-mode .history-item,
+        body.warm-mode #pending-upload,
+        body.warm-mode #note-search-panel > div,
+        body.warm-mode .composer-shell,
+        body.warm-mode #chat-window .bg-gray-100.border,
+        body.warm-mode #chat-window .bg-white.border,
+        body.warm-mode .soft-secondary-btn,
+        body.warm-mode .soft-pill-btn,
+        body.warm-mode #font-size-group button,
+        body.warm-mode .mobile-switch-btn,
+        body.warm-mode .soft-icon-btn,
+        body.warm-mode .sidebar-collapse-btn {
+            background: linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(247,241,232,0.94) 100%) !important;
+            border-color: rgba(141, 154, 176, 0.18) !important;
+            box-shadow: 0 16px 36px rgba(154, 164, 184, 0.12), 0 3px 10px rgba(182, 168, 151, 0.07), inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -1px 0 rgba(203, 196, 184, 0.22) !important;
+        }
+        body.warm-mode .soft-primary-btn,
+        body.warm-mode .soft-send-btn,
+        body.warm-mode .mobile-switch-btn.active,
+        body.warm-mode #font-size-group button.bg-brand,
+        body.warm-mode #profile-avatar-preview,
+        body.warm-mode .hero-glow {
+            background: linear-gradient(135deg, #8d9fb7 0%, #6f839d 100%) !important;
+            color: #ffffff !important;
+            border-color: rgba(255,255,255,0.48) !important;
+            box-shadow: 0 18px 32px rgba(112, 128, 150, 0.18), inset 0 1px 0 rgba(255,255,255,0.24) !important;
+        }
         body.warm-mode .chat-bubble-ai { background: #F5F0E5 !important; color: #3E3A39; border-color: #E0D8C8; }
         body.warm-mode .chat-bubble-user { background: #FFFFFF !important; color: #3E3A39; border-color: #E0D8C8; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
         body.warm-mode .bg-\[\#f8fafc\] { background: #F5F0E5 !important; }
-        body.warm-mode .history-item.active { background: #EAE4D9 !important; border-color: #EAA348 !important; }
-        body.warm-mode .glass-panel { background: rgba(245, 240, 229, 0.88) !important; }
-        body.warm-mode .mobile-switch-btn.active { background: #eaa348 !important; }
+        body.warm-mode .history-item.active { background: linear-gradient(180deg, rgba(229,236,247,0.95) 0%, rgba(244,238,228,0.96) 100%) !important; border-color: rgba(125, 146, 178, 0.32) !important; }
 
         :root { --chat-font-size: 16px; }
         .chat-text { font-size: var(--chat-font-size); }
@@ -227,11 +942,43 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.06);
         }
         .history-item.active {
-            border-color: #375a8c;
-            background: #eef4fb;
+            border-color: rgba(125, 146, 178, 0.32);
+            background: linear-gradient(180deg, rgba(229,236,247,0.95) 0%, rgba(244,238,228,0.96) 100%);
+            box-shadow: var(--shadow-lift), var(--shadow-press);
         }
 
-        #toast { transition: opacity 0.3s ease, transform 0.3s ease; transform: translateX(-50%) scale(0.95); }
+        #font-size-group button.bg-brand,
+        #font-size-group button.text-white {
+            background: linear-gradient(135deg, #91a4c3 0%, #738cab 100%);
+            color: #ffffff;
+            border-color: rgba(255,255,255,0.48);
+            box-shadow: 0 18px 32px rgba(125, 146, 178, 0.2), inset 0 1px 0 rgba(255,255,255,0.26);
+        }
+
+        #timer-btn.bg-green-50 {
+            background: linear-gradient(135deg, #e4f0dd 0%, #d5e8ca 100%) !important;
+            border-color: rgba(164, 188, 140, 0.48) !important;
+            box-shadow: 0 18px 30px rgba(173, 192, 145, 0.18), inset 0 1px 0 rgba(255,255,255,0.36) !important;
+        }
+
+        #note-search-input,
+        #profile-name-input,
+        #chat-input {
+            color: var(--ink);
+        }
+
+        #note-search-input::placeholder,
+        #profile-name-input::placeholder,
+        #chat-input::placeholder {
+            color: rgba(89, 102, 126, 0.55);
+        }
+
+        #toast {
+            background: linear-gradient(135deg, rgba(107, 127, 159, 0.94) 0%, rgba(89, 104, 129, 0.96) 100%);
+            box-shadow: 0 20px 38px rgba(89, 102, 126, 0.22);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            transform: translateX(-50%) scale(0.95);
+        }
         #toast.show { opacity: 1; pointer-events: auto; transform: translateX(-50%) scale(1); }
 
         @media (max-width: 1023px) {
@@ -239,7 +986,7 @@
         }
     </style>
 </head>
-<body class="bg-[#f0f4f8] min-h-screen font-sans antialiased flex flex-col h-screen overflow-hidden">
+<body class="bg-transparent min-h-screen font-sans antialiased flex flex-col h-screen overflow-hidden">
 
     <header class="glass-panel sticky top-0 z-50 h-16 flex items-center justify-between px-4 lg:px-6 shrink-0 border-b border-white/60">
         <div class="flex items-center gap-2 sm:gap-3">
@@ -247,12 +994,12 @@
                 <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center hero-glow bg-brand"><i class="fa-solid fa-graduation-cap text-white text-sm sm:text-base"></i></div>
                 <span class="text-lg sm:text-xl md:text-2xl font-bold text-brand tracking-tight whitespace-nowrap">陶然AI助教</span>
             </a>
-            <span class="hidden sm:inline text-xs bg-blue-100 text-brand px-2 py-0.5 rounded-full font-medium ml-1">高考英语</span>
+            <span class="hidden sm:inline text-xs text-brand px-2.5 py-1 rounded-full font-medium ml-1 border border-white/70 shadow-sm" style="background: linear-gradient(180deg, rgba(247,250,255,0.98) 0%, rgba(233,241,251,0.95) 100%);">高考英语</span>
         </div>
         <div class="flex items-center gap-2 sm:gap-4">
-            <button id="share-btn" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full hover:bg-gray-100 flex items-center justify-center transition text-gray-500 hover:text-brand" title="分享"><i class="fa-solid fa-share-from-square text-sm sm:text-base"></i></button>
-            <button id="settings-btn" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full hover:bg-gray-100 flex items-center justify-center transition text-gray-500 hover:text-brand" title="设置" onclick="toggleSettings()"><i class="fa-solid fa-gear text-sm sm:text-base"></i></button>
-            <button id="profile-btn" class="profile-avatar-button w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-brand flex items-center justify-center text-white text-sm sm:text-base shadow-md hover:shadow-lg transition" title="用户资料">
+            <button id="share-btn" class="soft-icon-btn w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition text-gray-500 hover:text-brand" title="分享"><i class="fa-solid fa-share-from-square text-sm sm:text-base"></i></button>
+            <button id="settings-btn" class="soft-icon-btn w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition text-gray-500 hover:text-brand" title="设置" onclick="toggleSettings()"><i class="fa-solid fa-gear text-sm sm:text-base"></i></button>
+            <button id="profile-btn" class="profile-avatar-button soft-primary-btn w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white text-sm sm:text-base transition" title="用户资料">
                 <i class="fa-regular fa-user"></i>
             </button>
         </div>
@@ -270,12 +1017,12 @@
 
     <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative gap-0 lg:gap-4 md:gap-5 p-3 sm:p-4 md:p-6">
         <div class="lg:hidden flex gap-2 mb-3 flex-wrap">
-            <button id="mobile-toggle-left" class="mobile-switch-btn flex-1 min-w-[80px] glass-panel rounded-2xl py-2.5 sm:py-3 text-sm font-semibold text-brand shadow-sm transition flex items-center justify-center gap-1.5 border border-white/60"> <i class="fa-solid fa-book-open text-xs"></i> 错题笔记</button>
-            <button id="mobile-toggle-right" class="mobile-switch-btn flex-1 min-w-[80px] glass-panel rounded-2xl py-2.5 sm:py-3 text-sm font-semibold text-brand shadow-sm transition flex items-center justify-center gap-1.5 border border-white/60"> 拓展 <i class="fa-solid fa-puzzle-piece text-xs"></i></button>
+            <button id="mobile-toggle-left" class="mobile-switch-btn flex-1 min-w-[80px] rounded-2xl py-2.5 sm:py-3 text-sm font-semibold text-brand transition flex items-center justify-center gap-1.5"> <i class="fa-solid fa-book-open text-xs"></i> 错题笔记</button>
+            <button id="mobile-toggle-right" class="mobile-switch-btn flex-1 min-w-[80px] rounded-2xl py-2.5 sm:py-3 text-sm font-semibold text-brand transition flex items-center justify-center gap-1.5"> 拓展 <i class="fa-solid fa-puzzle-piece text-xs"></i></button>
         </div>
 
         <!-- 左栏 -->
-        <aside id="left-panel" class="w-full lg:w-[20%] flex-shrink-0 order-2 lg:order-1 glass-panel rounded-3xl shadow-md p-3 sm:p-4 md:p-5 h-full flex flex-col mobile-collapse open lg:max-h-none lg:opacity-100 lg:overflow-visible border border-white/60 transition-all duration-300">
+        <aside id="left-panel" class="w-full lg:w-[20%] flex-shrink-0 order-2 lg:order-1 glass-panel rounded-[24px] shadow-md p-3 sm:p-4 md:p-5 h-full flex flex-col mobile-collapse open lg:max-h-none lg:opacity-100 lg:overflow-visible border border-white/60 transition-all duration-300">
             <div class="sidebar-content flex flex-col h-full">
                 <div class="flex items-center justify-between mb-3 sm:mb-4">
                     <h2 class="text-base sm:text-lg font-bold text-brand flex items-center gap-2"><i class="fa-solid fa-book-open text-sm"></i> 错题笔记</h2>
@@ -296,10 +1043,10 @@
                 </div>
                 <div class="flex-1 overflow-y-auto custom-scrollbar space-y-2.5 sm:space-y-3 mb-3 sm:mb-4 pr-1">
                     <div id="note-list">
-                        <div class="note-card bg-white border border-gray-200 rounded-xl p-2.5 sm:p-3 shadow-sm cursor-pointer mb-2.5 sm:mb-3" data-note-title="阅读理解细节题 · 2025真题" data-note-keywords="阅读 细节题 真题 定位 同义替换 2025"><div class="h-10 sm:h-12 md:h-14 bg-gradient-to-r from-blue-400 to-blue-500 rounded-lg mb-2 flex items-center justify-center text-white/60"><i class="fa-regular fa-image"></i></div><p class="text-xs text-gray-500 truncate">阅读理解细节题 · 2025真题</p></div>
-                        <div class="note-card bg-white border border-gray-200 rounded-xl p-2.5 sm:p-3 shadow-sm cursor-pointer mb-2.5 sm:mb-3" data-note-title="完形填空逻辑题 · 模拟卷" data-note-keywords="完形 逻辑题 模拟卷 上下文 词义辨析"><div class="h-10 sm:h-12 md:h-14 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg mb-2 flex items-center justify-center text-white/60"><i class="fa-regular fa-image"></i></div><p class="text-xs text-gray-500 truncate">完形填空逻辑题 · 模拟卷</p></div>
-                        <div class="note-card bg-white border border-gray-200 rounded-xl p-2.5 sm:p-3 shadow-sm cursor-pointer mb-2.5 sm:mb-3" data-note-title="语法填空易错点 · 非谓语" data-note-keywords="语法填空 易错点 非谓语 to do doing done"><div class="h-10 sm:h-12 md:h-14 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-lg mb-2 flex items-center justify-center text-white/60"><i class="fa-regular fa-image"></i></div><p class="text-xs text-gray-500 truncate">语法填空易错点 · 非谓语</p></div>
-                        <div class="note-card bg-white border border-gray-200 rounded-xl p-2.5 sm:p-3 shadow-sm cursor-pointer" data-note-title="七选五篇章结构 · 核心词" data-note-keywords="七选五 篇章结构 核心词 衔接词 指代"><div class="h-10 sm:h-12 md:h-14 bg-gradient-to-r from-indigo-400 to-blue-500 rounded-lg mb-2 flex items-center justify-center text-white/60"><i class="fa-regular fa-image"></i></div><p class="text-xs text-gray-500 truncate">七选五篇章结构 · 核心词</p></div>
+                        <div class="note-card bg-white border border-gray-200 rounded-[18px] p-2.5 sm:p-3 shadow-sm cursor-pointer mb-2.5 sm:mb-3" data-note-id="reading-detail" data-note-title="阅读理解细节题 · 2025真题" data-note-keywords="阅读 细节题 真题 定位 同义替换 2025"><div class="h-10 sm:h-12 md:h-14 rounded-[14px] mb-2 flex items-center justify-center text-[#74879f]" style="background: linear-gradient(135deg, #edf1f5 0%, #dde5ec 100%);"><i class="fa-regular fa-image"></i></div><p class="text-xs text-gray-500 truncate">阅读理解细节题 · 2025真题</p></div>
+                        <div class="note-card bg-white border border-gray-200 rounded-[18px] p-2.5 sm:p-3 shadow-sm cursor-pointer mb-2.5 sm:mb-3" data-note-id="cloze-logic" data-note-title="完形填空逻辑题 · 模拟卷" data-note-keywords="完形 逻辑题 模拟卷 上下文 词义辨析"><div class="h-10 sm:h-12 md:h-14 rounded-[14px] mb-2 flex items-center justify-center text-[#7f8898]" style="background: linear-gradient(135deg, #f2f3f5 0%, #e2e6ea 100%);"><i class="fa-regular fa-image"></i></div><p class="text-xs text-gray-500 truncate">完形填空逻辑题 · 模拟卷</p></div>
+                        <div class="note-card bg-white border border-gray-200 rounded-[18px] p-2.5 sm:p-3 shadow-sm cursor-pointer mb-2.5 sm:mb-3" data-note-id="grammar-nonfinite" data-note-title="语法填空易错点 · 非谓语" data-note-keywords="语法填空 易错点 非谓语 to do doing done"><div class="h-10 sm:h-12 md:h-14 rounded-[14px] mb-2 flex items-center justify-center text-[#748f98]" style="background: linear-gradient(135deg, #eef2f2 0%, #dfe6e8 100%);"><i class="fa-regular fa-image"></i></div><p class="text-xs text-gray-500 truncate">语法填空易错点 · 非谓语</p></div>
+                        <div class="note-card bg-white border border-gray-200 rounded-[18px] p-2.5 sm:p-3 shadow-sm cursor-pointer" data-note-id="seven-cloze-structure" data-note-title="七选五篇章结构 · 核心词" data-note-keywords="七选五 篇章结构 核心词 衔接词 指代"><div class="h-10 sm:h-12 md:h-14 rounded-[14px] mb-2 flex items-center justify-center text-[#7a8595]" style="background: linear-gradient(135deg, #f3f0eb 0%, #e1e5ea 100%);"><i class="fa-regular fa-image"></i></div><p class="text-xs text-gray-500 truncate">七选五篇章结构 · 核心词</p></div>
                     </div>
                     <div id="note-search-empty" class="hidden bg-white border border-dashed border-gray-200 rounded-2xl px-4 py-6 text-center">
                         <p class="text-sm font-medium text-gray-600">没有找到匹配的错题</p>
@@ -307,8 +1054,8 @@
                     </div>
                 </div>
                 <div class="flex gap-2 sm:gap-3 shrink-0">
-                    <button class="flex-1 bg-brand text-white py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold hover:bg-[#2c4a73] transition shadow-md flex items-center justify-center gap-1.5"><i class="fa-solid fa-plus text-xs"></i> 添加</button>
-                    <button class="flex-1 bg-brand text-white py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold hover:bg-[#2c4a73] transition shadow-md flex items-center justify-center gap-1.5"><i class="fa-solid fa-folder-tree text-xs"></i> 分类</button>
+                    <button class="soft-primary-btn flex-1 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-1.5"><i class="fa-solid fa-plus text-xs"></i> 添加</button>
+                    <button class="soft-secondary-btn flex-1 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-semibold text-brand transition flex items-center justify-center gap-1.5"><i class="fa-solid fa-folder-tree text-xs"></i> 分类</button>
                 </div>
             </div>
             <div class="sidebar-expand-inner hidden flex-col items-center justify-center cursor-pointer" onclick="toggleLeftDesktop()">
@@ -318,20 +1065,20 @@
         </aside>
 
         <!-- 中栏 -->
-        <section class="flex-1 flex flex-col h-full glass-panel lg:bg-transparent lg:rounded-[28px] lg:shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] lg:mt-2 lg:mx-2 border border-white/60 relative overflow-hidden order-1 lg:order-2 min-h-0">
+        <section class="flex-1 flex flex-col h-full glass-panel lg:bg-transparent lg:rounded-[24px] lg:shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] lg:mt-2 lg:mx-2 border border-white/60 relative overflow-hidden order-1 lg:order-2 min-h-0">
             <div class="px-4 py-3 flex items-center gap-2 sm:gap-3 border-b border-white/60 bg-white/55 backdrop-blur-sm z-10">
-                <button id="timer-btn" class="flex items-center gap-2 bg-[#eef4fb] hover:bg-[#dde8f5] text-brand font-semibold px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm transition shadow-sm" onclick="toggleTimer()"><span class="w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-brand flex items-center justify-center flex-shrink-0 timer-ring" id="timer-icon"><i class="fa-solid fa-play text-[10px] sm:text-xs text-brand ml-0.5"></i></span><span id="timer-text" class="text-brand">开始学习计时</span></button>
-                <button id="history-btn" class="flex items-center gap-2 bg-gray-50 hover:bg-gray-100 text-gray-600 font-semibold px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm transition shadow-sm"><i class="fa-solid fa-clock-rotate-left text-sm"></i>历史对话</button>
-                <button id="new-chat-btn" class="flex items-center gap-2 bg-brand hover:bg-[#2c4a73] text-white font-semibold px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm transition shadow-md ml-auto" onclick="createNewChat()"><i class="fa-solid fa-plus text-xs"></i>创建新对话</button>
+                <button id="timer-btn" class="soft-pill-btn flex items-center gap-2 text-brand font-semibold px-3 sm:px-4 py-2 rounded-2xl text-xs sm:text-sm transition" onclick="toggleTimer()"><span class="w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-brand flex items-center justify-center flex-shrink-0 timer-ring" id="timer-icon"><i class="fa-solid fa-play text-[10px] sm:text-xs text-brand ml-0.5"></i></span><span id="timer-text" class="text-brand">开始学习计时</span></button>
+                <button id="history-btn" class="soft-pill-btn flex items-center gap-2 text-gray-600 font-semibold px-3 sm:px-4 py-2 rounded-2xl text-xs sm:text-sm transition"><i class="fa-solid fa-clock-rotate-left text-sm"></i>历史对话</button>
+                <button id="new-chat-btn" class="soft-primary-btn flex items-center gap-2 text-white font-semibold px-3 sm:px-4 py-2 rounded-2xl text-xs sm:text-sm transition ml-auto" onclick="createNewChat()"><i class="fa-solid fa-plus text-xs"></i>创建新对话</button>
             </div>
             <div class="px-4 sm:px-5 md:px-6 pt-3 sm:pt-4 pb-2 shrink-0"><h1 class="text-xl sm:text-2xl font-extrabold text-brand tracking-wide">对话</h1><p id="chat-meta" class="text-xs text-gray-400 mt-0.5">陶然AI助教 · 陪你冲刺高考英语</p></div>
             <div id="chat-window" class="flex-1 overflow-y-auto custom-scrollbar px-3 sm:px-4 md:px-5 py-3 space-y-5" style="min-height:0;">
                 <div class="message-animate flex flex-col items-start"><span class="text-[11px] text-gray-400 mb-1 ml-1">陶然AI助教 · 刚刚</span><div class="bg-gray-100 border border-gray-200 text-gray-800 px-4 py-3 rounded-2xl rounded-tl-sm max-w-[85%] shadow-sm chat-text leading-relaxed">Hi！我是陶然AI助教 🎓 专攻高考英语，阅读、完形、语法都可以问我~</div></div>
             </div>
             <div class="p-3 lg:p-4 shrink-0 bg-white/30 border-t border-white/60">
-                <div id="pending-upload" class="pending-upload hidden mb-3 bg-white/80 border border-gray-200 rounded-2xl p-3">
+                <div id="pending-upload" class="pending-upload hidden mb-3 bg-white/80 border border-gray-200 rounded-[18px] p-3">
                     <div class="flex items-start gap-3">
-                        <img id="pending-upload-preview" src="" alt="待发送图片预览" class="w-20 h-20 rounded-xl object-cover border border-gray-200">
+                        <img id="pending-upload-preview" src="" alt="待发送图片预览" class="w-20 h-20 rounded-[14px] object-cover border border-gray-200">
                         <div class="flex-1 min-w-0">
                             <p id="pending-upload-name" class="text-sm font-medium text-gray-700 truncate"></p>
                             <p id="pending-upload-meta" class="text-xs text-gray-400 mt-1"></p>
@@ -340,27 +1087,27 @@
                         <button id="pending-upload-remove" class="w-8 h-8 rounded-full hover:bg-gray-100 text-gray-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark"></i></button>
                     </div>
                 </div>
-                <div class="bg-white/70 rounded-[22px] p-1.5 flex items-end border border-white/80 focus-within:border-teal-300 focus-within:ring-4 focus-within:ring-teal-50 transition-all duration-300 shadow-[0_8px_24px_rgba(13,148,136,0.08)]">
-                    <button id="upload-image-btn" class="p-2.5 text-brand hover:bg-blue-100 rounded-xl transition mb-0.5 ml-0.5"><i class="fa-solid fa-paperclip text-lg"></i></button>
+                <div class="composer-shell rounded-[18px] p-1.5 flex items-end border border-white/80 transition-all duration-300 shadow-[0_12px_28px_rgba(150,160,180,0.12)]" style="background: linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(242,247,253,0.97) 100%);">
+                    <button id="upload-image-btn" class="soft-icon-btn p-2.5 text-brand rounded-xl transition mb-0.5 ml-0.5"><i class="fa-solid fa-paperclip text-lg"></i></button>
                     <input id="chat-image-input" type="file" accept="image/png,image/jpeg,image/webp" class="hidden">
                     <textarea id="chat-input" class="flex-1 max-h-32 min-h-[40px] bg-transparent border-none focus:ring-0 resize-none p-2.5 text-[14px] text-gray-700 placeholder-gray-400 leading-relaxed outline-none" rows="1" placeholder="输入你想探讨的高考英语问题..." onkeydown="handleInputKey(event)"></textarea>
-                    <button id="send-btn" class="m-1 w-9 h-9 bg-brand text-white rounded-full flex items-center justify-center hover:bg-blue-800 transition shrink-0 shadow-md" onclick="sendMessage()"><i class="fa-solid fa-arrow-up text-sm"></i></button>
+                    <button id="send-btn" class="soft-send-btn m-1 w-9 h-9 rounded-full flex items-center justify-center transition shrink-0" onclick="sendMessage()"><i class="fa-solid fa-arrow-up text-sm"></i></button>
                 </div>
             </div>
         </section>
 
         <!-- 右栏 -->
-        <aside id="right-panel" class="w-full lg:w-[25%] flex-shrink-0 order-3 lg:order-3 glass-panel rounded-3xl shadow-md p-3 sm:p-4 md:p-5 h-full flex flex-col mobile-collapse open lg:max-h-none lg:opacity-100 lg:overflow-visible border border-white/60 transition-all duration-300">
+        <aside id="right-panel" class="w-full lg:w-[25%] flex-shrink-0 order-3 lg:order-3 glass-panel rounded-[24px] shadow-md p-3 sm:p-4 md:p-5 h-full flex flex-col mobile-collapse open lg:max-h-none lg:opacity-100 lg:overflow-visible border border-white/60 transition-all duration-300">
             <div class="sidebar-content flex flex-col h-full">
                 <div class="flex items-center justify-between mb-3 sm:mb-4">
                     <h2 class="text-base sm:text-lg font-bold text-brand flex items-center gap-2"><i class="fa-solid fa-puzzle-piece text-sm"></i> 拓 展</h2>
                     <button class="sidebar-collapse-btn w-7 h-7 sm:w-8 sm:h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition text-gray-400 hover:text-brand hidden lg:flex" onclick="toggleRightDesktop()"><i class="fa-solid fa-arrow-right text-xs sm:text-sm"></i></button>
                 </div>
                 <div class="flex-1 overflow-y-auto custom-scrollbar space-y-3 sm:space-y-4 pr-1">
-                    <div class="extend-card bg-[#e6f4ea] rounded-2xl shadow-sm p-4 relative overflow-hidden cursor-pointer"><div class="absolute -right-4 -bottom-4 text-green-500 opacity-10 text-7xl"><i class="fa-solid fa-layer-group"></i></div><h3 class="font-bold text-green-900 mb-1 text-[15px]">闪卡</h3><p class="text-[13px] text-green-700 font-medium">高考高频词汇短语</p></div>
-                    <div class="extend-card bg-[#fef7e0] rounded-2xl shadow-sm p-4 relative overflow-hidden cursor-pointer"><div class="absolute -right-3 -bottom-3 text-yellow-500 opacity-10 text-7xl"><i class="fa-solid fa-calendar-check"></i></div><h3 class="font-bold text-yellow-900 mb-1 text-[15px]">日历</h3><p class="text-[13px] text-yellow-700 font-medium">下次月考 倒计时: <strong class="text-yellow-900 text-lg ml-1">5</strong> Day</p></div>
-                    <div class="extend-card bg-[#fce8e6] rounded-2xl shadow-sm p-4 relative overflow-hidden cursor-pointer"><div class="absolute -right-3 -bottom-3 text-red-500 opacity-10 text-7xl"><i class="fa-solid fa-book-open"></i></div><h3 class="font-bold text-red-900 mb-1 text-[15px]">知识笔记</h3><p class="text-[13px] text-red-700 font-medium">语法体系与写作模板</p></div>
-                    <div class="extend-card bg-[#f3e8fd] rounded-2xl shadow-sm p-4 relative overflow-hidden cursor-pointer"><div class="absolute -right-2 -bottom-2 text-purple-500 opacity-10 text-7xl"><i class="fa-solid fa-store"></i></div><h3 class="font-bold text-purple-900 mb-1 text-[15px]">商城</h3><p class="text-[13px] text-purple-700 font-medium">高考冲刺专区</p></div>
+                    <div id="flashcard-entry" class="extend-card rounded-[20px] shadow-sm p-4 relative overflow-hidden cursor-pointer" style="background: linear-gradient(135deg, #eef2f6 0%, #e0e7ee 100%);"><div class="absolute -right-4 -bottom-4 text-[#90a0b3] opacity-10 text-7xl"><i class="fa-solid fa-layer-group"></i></div><h3 class="font-bold text-[#607186] mb-1 text-[15px]">闪卡</h3><p id="flashcard-entry-desc" class="text-[13px] text-[#748396] font-medium">把错题笔记翻成卡片，随手复习</p></div>
+                    <div class="extend-card rounded-[20px] shadow-sm p-4 relative overflow-hidden cursor-pointer" style="background: linear-gradient(135deg, #f2efea 0%, #e5e2dc 100%);"><div class="absolute -right-3 -bottom-3 text-[#afa495] opacity-10 text-7xl"><i class="fa-solid fa-calendar-check"></i></div><h3 class="font-bold text-[#7f766c] mb-1 text-[15px]">日历</h3><p class="text-[13px] text-[#92877b] font-medium">下次月考 倒计时: <strong class="text-[#7f766c] text-lg ml-1">5</strong> Day</p></div>
+                    <div class="extend-card rounded-[20px] shadow-sm p-4 relative overflow-hidden cursor-pointer" style="background: linear-gradient(135deg, #efedf1 0%, #e2e1e7 100%);"><div class="absolute -right-3 -bottom-3 text-[#9e9aac] opacity-10 text-7xl"><i class="fa-solid fa-book-open"></i></div><h3 class="font-bold text-[#6f6b82] mb-1 text-[15px]">知识笔记</h3><p class="text-[13px] text-[#817d92] font-medium">语法体系与写作模板</p></div>
+                    <div class="extend-card rounded-[20px] shadow-sm p-4 relative overflow-hidden cursor-pointer" style="background: linear-gradient(135deg, #edf1f2 0%, #dfe5e8 100%);"><div class="absolute -right-2 -bottom-2 text-[#90a0ac] opacity-10 text-7xl"><i class="fa-solid fa-store"></i></div><h3 class="font-bold text-[#647482] mb-1 text-[15px]">商城</h3><p class="text-[13px] text-[#788796] font-medium">高考冲刺专区</p></div>
                 </div>
             </div>
             <div class="sidebar-expand-inner hidden flex-col items-center justify-center cursor-pointer" onclick="toggleRightDesktop()">
@@ -390,7 +1137,7 @@
         <div id="history-list" class="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-1"></div>
     </div>
     <div id="profile-overlay" class="fixed inset-0 bg-black bg-opacity-40 z-[75] hidden"></div>
-    <div id="profile-sheet" class="profile-sheet fixed inset-x-4 top-1/2 -translate-y-1/2 sm:inset-x-auto sm:right-6 sm:top-24 sm:translate-y-0 sm:w-[340px] glass-panel rounded-3xl shadow-2xl z-[80] border border-white/70 p-5 hidden">
+    <div id="profile-sheet" class="profile-sheet fixed inset-x-4 top-1/2 -translate-y-1/2 sm:inset-x-auto sm:right-6 sm:top-24 sm:translate-y-0 sm:w-[340px] glass-panel rounded-[24px] shadow-2xl z-[80] border border-white/70 p-5 hidden">
         <div class="flex items-start justify-between gap-4 mb-4">
             <div>
                 <h3 class="text-base font-bold text-brand">个人资料</h3>
@@ -404,8 +1151,8 @@
                 <div class="flex-1">
                     <p class="text-sm font-semibold text-gray-700 mb-2">头像</p>
                     <div class="flex gap-2 flex-wrap">
-                        <button id="profile-upload-btn" class="avatar-option px-3 py-2 rounded-xl text-sm font-semibold text-brand bg-blue-50 border border-blue-100">更换头像</button>
-                        <button id="profile-reset-avatar-btn" class="avatar-option px-3 py-2 rounded-xl text-sm font-semibold text-gray-600 bg-white border border-gray-200">默认</button>
+                        <button id="profile-upload-btn" class="avatar-option soft-secondary-btn px-3 py-2 rounded-xl text-sm font-semibold text-brand">更换头像</button>
+                        <button id="profile-reset-avatar-btn" class="avatar-option soft-secondary-btn px-3 py-2 rounded-xl text-sm font-semibold text-gray-600">默认</button>
                     </div>
                     <input id="profile-avatar-input" type="file" accept="image/*" class="hidden">
                 </div>
@@ -415,8 +1162,91 @@
                 <input id="profile-name-input" type="text" maxlength="20" class="w-full rounded-2xl border border-gray-200 bg-white/85 px-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-50 transition" placeholder="输入昵称">
             </div>
             <div class="flex gap-3 pt-1">
-                <button id="profile-cancel-btn" class="flex-1 rounded-2xl border border-gray-200 bg-white py-3 text-sm font-semibold text-gray-600 transition hover:bg-gray-50">取消</button>
-                <button id="profile-save-btn" class="flex-1 rounded-2xl bg-brand py-3 text-sm font-semibold text-white shadow-md transition hover:bg-[#2c4a73]">保存</button>
+                <button id="profile-cancel-btn" class="soft-secondary-btn flex-1 rounded-2xl py-3 text-sm font-semibold text-gray-600 transition">取消</button>
+                <button id="profile-save-btn" class="soft-primary-btn flex-1 rounded-2xl py-3 text-sm font-semibold text-white transition">保存</button>
+            </div>
+        </div>
+    </div>
+    <div id="flashcard-overlay" class="fixed inset-0 bg-[rgba(16,24,39,0.42)] backdrop-blur-[2px] z-[84] hidden"></div>
+    <div id="flashcard-modal" class="fixed inset-x-3 top-1/2 -translate-y-1/2 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-[920px] max-w-[calc(100vw-24px)] z-[85] hidden">
+        <div class="flashcard-sheet glass-panel rounded-[28px] border border-white/70 shadow-2xl px-4 py-4 sm:px-6 sm:py-5">
+            <div class="flex items-start justify-between gap-4 mb-4">
+                <div>
+                    <p class="text-[11px] uppercase tracking-[0.24em] text-gray-400 mb-2">Flash Review</p>
+                    <h3 class="text-lg sm:text-xl font-bold text-brand">错题闪卡</h3>
+                    <p id="flashcard-subtitle" class="text-xs sm:text-sm text-gray-500 mt-1">把错题笔记翻成卡片，进行快速复习。</p>
+                </div>
+                <button id="flashcard-close-btn" class="w-10 h-10 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition shrink-0"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_280px] items-start">
+                <div class="flashcard-stage rounded-[24px] px-3 py-3 sm:px-4 sm:py-4">
+                    <div class="flex items-center justify-between gap-3 mb-3">
+                        <div class="flex items-center gap-2 text-xs text-gray-500">
+                            <span id="flashcard-counter" class="flashcard-counter-pill">CARD 1 / 4</span>
+                            <span id="flashcard-status" class="flashcard-status-chip">未掌握</span>
+                        </div>
+                        <button id="flashcard-mark-btn" class="soft-secondary-btn px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold text-brand">标记掌握</button>
+                    </div>
+                    <div id="flashcard-stack" class="flashcard-stack">
+                        <div id="flashcard-motion-layer" class="flashcard-motion-layer">
+                            <div class="flashcard-shadow-card flashcard-shadow-back"></div>
+                            <div class="flashcard-shadow-card flashcard-shadow-mid"></div>
+                            <button id="flashcard-card" class="flashcard-card" type="button" aria-label="翻转闪卡">
+                                <div class="flashcard-face flashcard-front">
+                                    <div class="flex items-center justify-between gap-3 mb-5">
+                                        <span id="flashcard-front-type" class="flashcard-chip">阅读理解</span>
+                                        <span class="text-[11px] tracking-[0.18em] uppercase text-gray-400">Front</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-[12px] text-gray-400 mb-2">这道题最容易错在哪里？</p>
+                                        <h4 id="flashcard-front-question" class="text-[22px] sm:text-[28px] leading-[1.35] font-semibold text-[#4d5d70]">题面加载中...</h4>
+                                    </div>
+                                    <div class="mt-auto pt-6">
+                                        <p id="flashcard-front-hint" class="text-sm text-gray-500 leading-relaxed">点击卡片查看答案与拆解。</p>
+                                    </div>
+                                </div>
+                                <div class="flashcard-face flashcard-back">
+                                    <div class="flex items-center justify-between gap-3 mb-5">
+                                        <span class="flashcard-chip flashcard-chip-answer">答案拆解</span>
+                                        <span class="text-[11px] tracking-[0.18em] uppercase text-gray-400">Back</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-[12px] text-gray-400 mb-2">拆题思路</p>
+                                        <h4 id="flashcard-back-answer" class="text-[18px] sm:text-[22px] leading-[1.5] font-semibold text-[#4b5a6c]">答案内容加载中...</h4>
+                                    </div>
+                                    <ul id="flashcard-back-points" class="flashcard-point-list mt-5 space-y-2 text-sm text-gray-600"></ul>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap items-center justify-between gap-3 mt-4">
+                        <div id="flashcard-dots" class="flex items-center gap-2"></div>
+                        <div class="flex items-center gap-2">
+                            <button id="flashcard-prev-btn" class="soft-secondary-btn px-3.5 py-2.5 rounded-xl text-sm font-semibold text-gray-600">上一张</button>
+                            <button id="flashcard-flip-btn" class="soft-pill-btn px-3.5 py-2.5 rounded-xl text-sm font-semibold text-brand">翻面</button>
+                            <button id="flashcard-next-btn" class="soft-primary-btn px-3.5 py-2.5 rounded-xl text-sm font-semibold text-white">下一张</button>
+                        </div>
+                    </div>
+                </div>
+                <aside id="flashcard-side" class="flashcard-side rounded-[24px] px-4 py-4 sm:px-5 sm:py-5">
+                    <div class="mb-4">
+                        <p class="text-[11px] uppercase tracking-[0.2em] text-gray-400 mb-2">Preview</p>
+                        <h4 id="flashcard-side-title" class="text-base font-bold text-brand">阅读理解细节题 · 2025真题</h4>
+                        <p id="flashcard-side-summary" class="text-sm text-gray-500 mt-2 leading-relaxed">当前闪卡基于错题笔记生成，适合做 30 秒快速复盘。</p>
+                    </div>
+                    <div class="mb-4">
+                        <p class="text-xs font-semibold text-gray-500 mb-2">关键词</p>
+                        <div id="flashcard-tags" class="flex flex-wrap gap-2"></div>
+                    </div>
+                    <div class="mb-4">
+                        <p class="text-xs font-semibold text-gray-500 mb-2">复习提醒</p>
+                        <p id="flashcard-side-tip" class="text-sm text-gray-600 leading-relaxed">先判断题型，再找定位词，最后回原文比对。</p>
+                    </div>
+                    <div class="flashcard-side-actions grid gap-2">
+                        <button id="flashcard-ask-btn" class="soft-primary-btn w-full rounded-2xl py-3 text-sm font-semibold text-white">带入对话继续问</button>
+                        <button id="flashcard-jump-note-btn" class="soft-secondary-btn w-full rounded-2xl py-3 text-sm font-semibold text-brand">定位到错题笔记</button>
+                    </div>
+                </aside>
             </div>
         </div>
     </div>
@@ -465,6 +1295,34 @@
             const mobileToggleLeft = document.getElementById('mobile-toggle-left');
             const mobileToggleRight = document.getElementById('mobile-toggle-right');
             const noteCards = Array.from(document.querySelectorAll('.note-card'));
+            const flashcardEntry = document.getElementById('flashcard-entry');
+            const flashcardEntryDesc = document.getElementById('flashcard-entry-desc');
+            const flashcardOverlay = document.getElementById('flashcard-overlay');
+            const flashcardModal = document.getElementById('flashcard-modal');
+            const flashcardCloseBtn = document.getElementById('flashcard-close-btn');
+            const flashcardSubtitle = document.getElementById('flashcard-subtitle');
+            const flashcardCounter = document.getElementById('flashcard-counter');
+            const flashcardStatus = document.getElementById('flashcard-status');
+            const flashcardMarkBtn = document.getElementById('flashcard-mark-btn');
+            const flashcardStack = document.getElementById('flashcard-stack');
+            const flashcardMotionLayer = document.getElementById('flashcard-motion-layer');
+            const flashcardCard = document.getElementById('flashcard-card');
+            const flashcardSide = document.getElementById('flashcard-side');
+            const flashcardFrontType = document.getElementById('flashcard-front-type');
+            const flashcardFrontQuestion = document.getElementById('flashcard-front-question');
+            const flashcardFrontHint = document.getElementById('flashcard-front-hint');
+            const flashcardBackAnswer = document.getElementById('flashcard-back-answer');
+            const flashcardBackPoints = document.getElementById('flashcard-back-points');
+            const flashcardDots = document.getElementById('flashcard-dots');
+            const flashcardPrevBtn = document.getElementById('flashcard-prev-btn');
+            const flashcardFlipBtn = document.getElementById('flashcard-flip-btn');
+            const flashcardNextBtn = document.getElementById('flashcard-next-btn');
+            const flashcardSideTitle = document.getElementById('flashcard-side-title');
+            const flashcardSideSummary = document.getElementById('flashcard-side-summary');
+            const flashcardTags = document.getElementById('flashcard-tags');
+            const flashcardSideTip = document.getElementById('flashcard-side-tip');
+            const flashcardAskBtn = document.getElementById('flashcard-ask-btn');
+            const flashcardJumpNoteBtn = document.getElementById('flashcard-jump-note-btn');
             const defaultGreeting = "Hi！我是陶然AI助教 🎓 专攻高考英语，阅读、完形、语法都可以问我~";
             const CHAT_API_URL = "/api/chat";
             const IMAGE_ACCEPT_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -475,6 +1333,61 @@
             const PROFILE_STORE_NAME = 'user_settings';
             const ACTIVE_CHAT_KEY = 'taoran-active-chat-id';
             const PROFILE_KEY = 'profile';
+            const FLASHCARD_STATE_KEY = 'taoran-flashcard-state';
+            const NOTE_FLASHCARDS = [
+                {
+                    id: 'reading-detail',
+                    title: '阅读理解细节题 · 2025真题',
+                    category: '阅读理解',
+                    frontQuestion: '细节题最容易错在“看见原词就选”，而忽略了同义改写。你会先抓哪两个定位点？',
+                    frontHint: '先找题干中的时间、人物、动作，再回原文核对同义替换，不要只盯表面词。',
+                    answer: '先抓题干中的定位词，再核对原文中的同义表达。细节题的正确项常常不是原词复现，而是“换一种说法但意思更准”。',
+                    bullets: ['题干先圈出时间、人名、动作词', '回原文定位后，看上下句是否限定条件', '选项里一旦出现绝对化表达，优先提高警惕'],
+                    tags: ['阅读', '细节题', '同义替换', '定位'],
+                    summary: '这张卡复习的是细节题的定位顺序和同义改写识别。',
+                    tip: '别急着看选项，先自己说出原文在讲什么，再做匹配。',
+                    prompt: '帮我系统讲一下「阅读理解细节题」里同义替换的常见设错方式，并给我一个做题步骤'
+                },
+                {
+                    id: 'cloze-logic',
+                    title: '完形填空逻辑题 · 模拟卷',
+                    category: '完形填空',
+                    frontQuestion: '完形逻辑题不是先看词义，而是先判断上下文关系。遇到空格时，你先看“句内”还是“句间”？',
+                    frontHint: '先看前后句逻辑，再决定是转折、递进、因果还是并列。',
+                    answer: '先看句间关系，再回句内做语义校验。完形逻辑题的关键不是词本身，而是它能否把前后文逻辑接起来。',
+                    bullets: ['先判断空格承接的是前句还是后句', '优先识别 however / instead / therefore 一类信号', '词义相近时，谁更符合逻辑谁才是答案'],
+                    tags: ['完形', '逻辑关系', '上下文', '词义辨析'],
+                    summary: '这张卡用于练“先逻辑后词义”的完形思路。',
+                    tip: '拿不准时，把四个选项代回去读一遍，看逻辑最顺的是谁。',
+                    prompt: '帮我梳理完形填空逻辑题的判断顺序，尤其是转折、递进和因果怎么快速分辨'
+                },
+                {
+                    id: 'grammar-nonfinite',
+                    title: '语法填空易错点 · 非谓语',
+                    category: '语法填空',
+                    frontQuestion: '非谓语题最常错在“会背形式，但不会判断和主语的关系”。看到动词空时，你先问自己什么？',
+                    frontHint: '先判断这个动词和句子主语是主动、被动，还是表示将来目的。',
+                    answer: '先判断逻辑主语和动词的关系，再决定用 doing / done / to do。形式不是背出来的，是关系推出来的。',
+                    bullets: ['主动且进行，多看 doing', '被动或完成，多看 done', '表示目的、将来或结果倾向，多看 to do'],
+                    tags: ['语法填空', '非谓语', '主动被动', 'to do'],
+                    summary: '这张卡帮助你把非谓语的形式选择，转成关系判断题。',
+                    tip: '把空格动词先还原成谓语句，看主语“做它”还是“被它做”。',
+                    prompt: '帮我用最清晰的方式讲一下非谓语 doing、done、to do 的判断逻辑，并给几个高考风例子'
+                },
+                {
+                    id: 'seven-cloze-structure',
+                    title: '七选五篇章结构 · 核心词',
+                    category: '七选五',
+                    frontQuestion: '七选五经常不是单句匹配，而是看段落功能。遇到空格时，你先判断“内容”还是“位置功能”？',
+                    frontHint: '先看空格在段首、段中还是段尾，再判断它是总起、承接还是总结。',
+                    answer: '先判断空格位置的篇章功能，再看代词、衔接词和复现词。七选五本质上是段落结构题，不只是句子意思题。',
+                    bullets: ['段首常是主题句或过渡句', '段中多看代词指代和并列承接', '段尾常是总结、建议或结果句'],
+                    tags: ['七选五', '篇章结构', '衔接词', '指代'],
+                    summary: '这张卡帮你把七选五从“看着像”升级成“按结构判断”。',
+                    tip: '先给空格定角色，再去四个选项里找最合适的句子。',
+                    prompt: '帮我讲清楚七选五怎么通过段落位置判断句子功能，并结合指代词和衔接词说明'
+                }
+            ];
             let toastTimer;
             let timerRunning = false;
             let timerSec = 0;
@@ -485,6 +1398,12 @@
             let pendingImage = null;
             let currentViewportMode = window.innerWidth < 1024 ? 'mobile' : 'desktop';
             let profileDraftAvatar = '';
+            let selectedNoteId = NOTE_FLASHCARDS[0].id;
+            let flashcardIndex = 0;
+            let flashcardFlipped = false;
+            let flashcardState = loadFlashcardState();
+            let flashcardAnimating = false;
+            let flashcardWheelLocked = false;
             let userProfile = {
                 nickname: '同学',
                 avatarDataUrl: ''
@@ -849,7 +1768,7 @@
                     const item = document.createElement('div');
                     const lastMessage = chat.messages[chat.messages.length - 1];
                     const preview = getMessagePreview(lastMessage).slice(0, 42);
-                    item.className = `history-item rounded-2xl border border-gray-200 p-3 cursor-pointer ${chat.id === currentChatId ? 'active' : 'bg-white'}`;
+                    item.className = `history-item rounded-[18px] border border-gray-200 p-3 cursor-pointer ${chat.id === currentChatId ? 'active' : 'bg-white'}`;
                     item.innerHTML = `
                         <div class="flex items-start gap-3">
                             <div class="flex-1 min-w-0">
@@ -930,6 +1849,197 @@
                     await saveProfileRecord(nextProfile);
                 }
                 applyUserProfile(nextProfile);
+            }
+
+            function loadFlashcardState() {
+                try {
+                    const parsed = JSON.parse(localStorage.getItem(FLASHCARD_STATE_KEY) || '{}');
+                    return {
+                        masteredIds: Array.isArray(parsed.masteredIds) ? parsed.masteredIds : []
+                    };
+                } catch (error) {
+                    return { masteredIds: [] };
+                }
+            }
+
+            function saveFlashcardState() {
+                try {
+                    localStorage.setItem(FLASHCARD_STATE_KEY, JSON.stringify(flashcardState));
+                } catch (error) {
+                    // 忽略本地存储异常，保留当前会话体验
+                }
+            }
+
+            function getNoteById(noteId) {
+                return NOTE_FLASHCARDS.find(note => note.id === noteId) || NOTE_FLASHCARDS[0];
+            }
+
+            function isFlashcardMastered(noteId) {
+                return flashcardState.masteredIds.includes(noteId);
+            }
+
+            function buildNotePrompt(note) {
+                return note ? note.prompt : '帮我讲一下这道错题的解法和常见陷阱';
+            }
+
+            function setSelectedNote(noteId, options = {}) {
+                const note = getNoteById(noteId);
+                selectedNoteId = note.id;
+                noteCards.forEach(card => {
+                    card.classList.toggle('is-active-note', card.dataset.noteId === note.id);
+                });
+                if (flashcardEntryDesc) {
+                    const masteredCount = flashcardState.masteredIds.length;
+                    flashcardEntryDesc.textContent = `当前卡组：${note.title} · 已掌握 ${masteredCount}/${NOTE_FLASHCARDS.length}`;
+                }
+                if (options.scrollIntoView) {
+                    const targetCard = noteCards.find(card => card.dataset.noteId === note.id);
+                    if (targetCard) {
+                        targetCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                }
+            }
+
+            function renderFlashcardDots(activeIndex) {
+                flashcardDots.innerHTML = '';
+                NOTE_FLASHCARDS.forEach((note, index) => {
+                    const dot = document.createElement('button');
+                    dot.type = 'button';
+                    dot.className = `flashcard-dot ${index === activeIndex ? 'active' : ''}`;
+                    dot.title = note.title;
+                    dot.setAttribute('aria-label', `切换到第 ${index + 1} 张闪卡`);
+                    dot.addEventListener('click', () => {
+                        navigateFlashcardToIndex(index);
+                    });
+                    flashcardDots.appendChild(dot);
+                });
+            }
+
+            function renderFlashcard() {
+                const note = NOTE_FLASHCARDS[flashcardIndex];
+                const mastered = isFlashcardMastered(note.id);
+                flashcardCard.classList.toggle('is-flipped', flashcardFlipped);
+                flashcardCounter.textContent = `CARD ${flashcardIndex + 1} / ${NOTE_FLASHCARDS.length}`;
+                flashcardStatus.textContent = mastered ? '已掌握' : '未掌握';
+                flashcardStatus.classList.toggle('is-mastered', mastered);
+                flashcardMarkBtn.textContent = mastered ? '取消掌握' : '标记掌握';
+                flashcardSubtitle.textContent = `当前正在复习：${note.title}`;
+                flashcardFrontType.textContent = note.category;
+                flashcardFrontQuestion.textContent = note.frontQuestion;
+                flashcardFrontHint.textContent = note.frontHint;
+                flashcardBackAnswer.textContent = note.answer;
+                flashcardBackPoints.innerHTML = note.bullets.map(item => `<li>${escapeHtml(item)}</li>`).join('');
+                flashcardSideTitle.textContent = note.title;
+                flashcardSideSummary.textContent = note.summary;
+                flashcardSideTip.textContent = note.tip;
+                flashcardTags.innerHTML = note.tags.map(tag => `<span class="flashcard-tag">${escapeHtml(tag)}</span>`).join('');
+                flashcardPrevBtn.disabled = flashcardIndex === 0;
+                flashcardNextBtn.disabled = flashcardIndex === NOTE_FLASHCARDS.length - 1;
+                flashcardPrevBtn.classList.toggle('opacity-60', flashcardIndex === 0);
+                flashcardNextBtn.classList.toggle('opacity-60', flashcardIndex === NOTE_FLASHCARDS.length - 1);
+                renderFlashcardDots(flashcardIndex);
+                setSelectedNote(note.id);
+            }
+
+            function openFlashcardModal(noteId = selectedNoteId) {
+                const nextIndex = NOTE_FLASHCARDS.findIndex(note => note.id === noteId);
+                flashcardIndex = nextIndex >= 0 ? nextIndex : 0;
+                flashcardFlipped = false;
+                renderFlashcard();
+                flashcardStack.classList.remove('is-leaving-next', 'is-leaving-prev', 'is-entering-next', 'is-entering-prev');
+                flashcardSide.classList.remove('is-refreshing');
+                flashcardOverlay.classList.remove('hidden');
+                flashcardModal.classList.remove('hidden');
+            }
+
+            function closeFlashcardModal() {
+                flashcardModal.classList.add('hidden');
+                flashcardOverlay.classList.add('hidden');
+                flashcardFlipped = false;
+                flashcardAnimating = false;
+                flashcardStack.classList.remove('is-leaving-next', 'is-leaving-prev', 'is-entering-next', 'is-entering-prev');
+                flashcardSide.classList.remove('is-refreshing');
+            }
+
+            function flipFlashcard() {
+                if (flashcardAnimating) return;
+                flashcardFlipped = !flashcardFlipped;
+                flashcardCard.classList.toggle('is-flipped', flashcardFlipped);
+            }
+
+            function navigateFlashcardToIndex(nextIndex) {
+                if (flashcardAnimating || nextIndex === flashcardIndex) return;
+                if (nextIndex < 0 || nextIndex >= NOTE_FLASHCARDS.length) return;
+                const direction = nextIndex > flashcardIndex ? 'next' : 'prev';
+                flashcardAnimating = true;
+                flashcardStack.classList.remove('is-entering-next', 'is-entering-prev');
+                flashcardStack.classList.add(direction === 'next' ? 'is-leaving-next' : 'is-leaving-prev');
+                window.setTimeout(() => {
+                    flashcardIndex = nextIndex;
+                    flashcardFlipped = false;
+                    renderFlashcard();
+                    flashcardStack.classList.remove('is-leaving-next', 'is-leaving-prev');
+                    flashcardStack.classList.add(direction === 'next' ? 'is-entering-next' : 'is-entering-prev');
+                    flashcardSide.classList.remove('is-refreshing');
+                    void flashcardSide.offsetWidth;
+                    flashcardSide.classList.add('is-refreshing');
+                    window.setTimeout(() => {
+                        flashcardStack.classList.remove('is-entering-next', 'is-entering-prev');
+                        flashcardSide.classList.remove('is-refreshing');
+                        flashcardAnimating = false;
+                    }, 240);
+                }, 180);
+            }
+
+            function goFlashcard(step) {
+                const nextIndex = flashcardIndex + step;
+                navigateFlashcardToIndex(nextIndex);
+            }
+
+            function handleFlashcardWheel(event) {
+                if (flashcardModal.classList.contains('hidden')) return;
+                const deltaY = event.deltaY || 0;
+                if (Math.abs(deltaY) < 18 || flashcardWheelLocked) return;
+                event.preventDefault();
+                flashcardWheelLocked = true;
+                goFlashcard(deltaY > 0 ? 1 : -1);
+                window.setTimeout(() => {
+                    flashcardWheelLocked = false;
+                }, 260);
+            }
+
+            function toggleFlashcardMastered() {
+                const note = NOTE_FLASHCARDS[flashcardIndex];
+                const masteredIds = new Set(flashcardState.masteredIds);
+                if (masteredIds.has(note.id)) {
+                    masteredIds.delete(note.id);
+                    showToast(`已取消「${note.title}」掌握标记`);
+                } else {
+                    masteredIds.add(note.id);
+                    showToast(`已标记「${note.title}」为掌握`);
+                }
+                flashcardState.masteredIds = Array.from(masteredIds);
+                saveFlashcardState();
+                renderFlashcard();
+            }
+
+            function sendFlashcardToChat() {
+                const note = NOTE_FLASHCARDS[flashcardIndex];
+                chatInput.value = buildNotePrompt(note);
+                chatInput.dispatchEvent(new Event('input'));
+                chatInput.focus();
+                closeFlashcardModal();
+                showToast(`已带入：${note.title}`);
+            }
+
+            function jumpToFlashcardNote() {
+                const note = NOTE_FLASHCARDS[flashcardIndex];
+                closeFlashcardModal();
+                if (window.innerWidth < 1024) {
+                    showMobilePanel('left');
+                }
+                setSelectedNote(note.id, { scrollIntoView: true });
+                showToast(`已定位到：${note.title}`);
             }
 
             function setMobileToggleState(activePanel) {
@@ -1301,6 +2411,17 @@
             historyBtn.addEventListener('click', openHistoryPanel);
             historyOverlay.addEventListener('click', closeHistoryPanel);
             historyCloseBtn.addEventListener('click', closeHistoryPanel);
+            flashcardEntry.addEventListener('click', () => openFlashcardModal(selectedNoteId));
+            flashcardOverlay.addEventListener('click', closeFlashcardModal);
+            flashcardCloseBtn.addEventListener('click', closeFlashcardModal);
+            flashcardCard.addEventListener('click', flipFlashcard);
+            flashcardFlipBtn.addEventListener('click', flipFlashcard);
+            flashcardPrevBtn.addEventListener('click', () => goFlashcard(-1));
+            flashcardNextBtn.addEventListener('click', () => goFlashcard(1));
+            flashcardMarkBtn.addEventListener('click', toggleFlashcardMastered);
+            flashcardAskBtn.addEventListener('click', sendFlashcardToChat);
+            flashcardJumpNoteBtn.addEventListener('click', jumpToFlashcardNote);
+            flashcardModal.addEventListener('wheel', handleFlashcardWheel, { passive: false });
             noteSearchToggle.addEventListener('click', () => {
                 if (noteSearchPanel.classList.contains('open')) {
                     closeNoteSearch();
@@ -1316,11 +2437,12 @@
             });
             noteCards.forEach(card => {
                 card.addEventListener('click', () => {
-                    const title = card.dataset.noteTitle || '这道错题';
-                    chatInput.value = `帮我讲一下「${title}」这类题的常见陷阱和解法`;
+                    const note = getNoteById(card.dataset.noteId);
+                    setSelectedNote(note.id);
+                    chatInput.value = buildNotePrompt(note);
                     chatInput.dispatchEvent(new Event('input'));
                     chatInput.focus();
-                    showToast(`已带入：${title}`);
+                    showToast(`已带入：${note.title}`);
                 });
             });
             uploadImageBtn.addEventListener('click', () => chatImageInput.click());
@@ -1401,8 +2523,26 @@
                     chatInput.focus();
                     showToast('⌨️ 输入框已聚焦');
                 }
+                if (!flashcardModal.classList.contains('hidden')) {
+                    if (e.key === 'ArrowLeft') {
+                        e.preventDefault();
+                        goFlashcard(-1);
+                        return;
+                    }
+                    if (e.key === 'ArrowRight') {
+                        e.preventDefault();
+                        goFlashcard(1);
+                        return;
+                    }
+                    if (e.key === ' ' || e.key === 'Enter') {
+                        e.preventDefault();
+                        flipFlashcard();
+                        return;
+                    }
+                }
                 if (e.key === 'Escape') {
                     if (document.getElementById('settings-panel').classList.contains('open')) toggleSettings();
+                    else if (!flashcardModal.classList.contains('hidden')) closeFlashcardModal();
                     else if (profileSheet.classList.contains('open')) closeProfileSheet();
                     else if (historyPanel.classList.contains('open')) closeHistoryPanel();
                     else if (noteSearchPanel.classList.contains('open')) closeNoteSearch();
@@ -1415,12 +2555,14 @@
             openDB()
                 .then(async () => {
                     await Promise.all([ensureActiveChat(), loadUserProfile()]);
+                    setSelectedNote(selectedNoteId);
                 })
                 .catch(() => {
                     chatWindow.innerHTML = '';
                     appendMessage(defaultGreeting, 'ai');
                     chatMeta.textContent = '当前浏览器无法保存历史对话';
                     applyUserProfile(userProfile);
+                    setSelectedNote(selectedNoteId);
                     showToast('IndexedDB 初始化失败，历史记录不可用');
                 });
         })();
