@@ -5,6 +5,7 @@
 - 前端：`demotrial.html`
 - 后端：`FastAPI`
 - 接口：`POST /api/chat`
+- 模型接入框架：`Qwen 文本 / 视觉 / OCR`
 
 ## 启动方式
 
@@ -20,13 +21,37 @@ python -m venv .venv
 .\.venv\Scripts\python -m pip install -r requirements.txt
 ```
 
-3. 启动服务
+3. 配置环境变量
+
+先复制一份环境变量模板：
+
+```powershell
+Copy-Item .env.example .env
+```
+
+当前已预留这些模型：
+
+- 视觉模型：`qwen3-vl-flash`
+- 纯 OCR 模型：`qwen-vl-ocr-latest`
+- 文本模型：`qwen-flash`
+- 文本增强模型：`qwen-plus`
+
+主要环境变量：
+
+- `QWEN_API_KEY`
+- `QWEN_BASE_URL`
+- `QWEN_TEXT_MODEL`
+- `QWEN_BACKUP_TEXT_MODEL`
+- `QWEN_VISION_MODEL`
+- `QWEN_OCR_MODEL`
+
+4. 启动服务
 
 ```powershell
 .\.venv\Scripts\python -m uvicorn app:app --reload
 ```
 
-4. 打开页面
+5. 打开页面
 
 访问 `http://127.0.0.1:8000`
 
@@ -43,7 +68,11 @@ python -m venv .venv
   "history": [
     { "sender": "user", "content": "你好" },
     { "sender": "ai", "content": "你好呀" }
-  ]
+  ],
+  "preferred_text_model": "qwen-flash",
+  "preferred_vision_model": "qwen3-vl-flash",
+  "preferred_ocr_model": "qwen-vl-ocr-latest",
+  "use_ocr_first": true
 }
 ```
 
@@ -51,8 +80,25 @@ python -m venv .venv
 
 ```json
 {
-  "reply": "这道题我们可以按题干定位来拆解。"
+  "reply": "这道题我们可以按题干定位来拆解。",
+  "meta": {
+    "route": "text",
+    "provider": "dashscope-compatible",
+    "text_model": "qwen-flash",
+    "vision_model": null,
+    "ocr_model": null,
+    "used_demo_fallback": false
+  }
 }
 ```
 
-目前后端回复是演示用规则逻辑，后续可以直接替换成真实模型调用。
+## 当前模型路由
+
+- 纯文本问题：走 `qwen-flash`
+- 图片问题：默认先走 `qwen-vl-ocr-latest`，再把 OCR 结果和图片一起交给 `qwen3-vl-flash`
+- 如果没配置 API Key，或者模型调用失败：自动回退到当前 demo 回复逻辑
+
+## 额外接口
+
+- `GET /health`：查看服务状态和当前模型配置
+- `GET /api/model-config`：查看当前后端模型框架配置

@@ -325,9 +325,30 @@
             border-color: rgba(204, 214, 233, 0.95);
             box-shadow: 0 18px 34px rgba(138, 151, 176, 0.16), var(--shadow-press);
         }
+        .composer-shell.drag-active {
+            border-color: rgba(125, 146, 178, 0.88);
+            box-shadow: 0 20px 36px rgba(125, 146, 178, 0.2), var(--shadow-press);
+            background: linear-gradient(180deg, rgba(251,253,255,0.99) 0%, rgba(232,239,248,0.98) 100%) !important;
+        }
         .composer-shell {
             position: relative;
             overflow: hidden;
+        }
+        .composer-shell.drag-active::after {
+            content: "松手即可上传图片";
+            position: absolute;
+            inset: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            border: 1px dashed rgba(125, 146, 178, 0.55);
+            background: rgba(255,255,255,0.55);
+            color: #6f839d;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            pointer-events: none;
         }
 
         .profile-avatar-button {
@@ -394,6 +415,500 @@
         .note-card.is-active-note {
             border-color: rgba(120, 141, 170, 0.46);
             box-shadow: 0 14px 24px rgba(118, 132, 153, 0.11), inset 0 0 0 1px rgba(255,255,255,0.36);
+        }
+        .calendar-shell {
+            position: relative;
+            padding: 14px 12px 12px;
+            border-radius: 18px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.56) 0%, rgba(255,249,242,0.5) 100%);
+            border: 1px solid rgba(211, 198, 179, 0.7);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.62), 0 8px 18px rgba(164, 149, 126, 0.08);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        .calendar-content {
+            max-height: 780px;
+            opacity: 1;
+            overflow: hidden;
+            transition: max-height 0.28s ease, opacity 0.22s ease, margin-top 0.22s ease;
+        }
+        .calendar-card.is-collapsed .calendar-content {
+            max-height: 0;
+            opacity: 0;
+            margin-top: -2px;
+            pointer-events: none;
+        }
+        .calendar-toggle-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 32px;
+            padding: 0 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(205, 191, 172, 0.76);
+            background: rgba(255,255,255,0.7);
+            color: #7a7064;
+            font-size: 12px;
+            font-weight: 700;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+        }
+        .calendar-toggle-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 16px rgba(160, 145, 120, 0.12);
+            background: rgba(255,255,255,0.82);
+        }
+        .calendar-toggle-btn i {
+            transition: transform 0.22s ease;
+        }
+        .calendar-card:not(.is-collapsed) .calendar-toggle-btn i {
+            transform: rotate(180deg);
+        }
+        .calendar-month-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #6d6358;
+            letter-spacing: 0.02em;
+        }
+        .calendar-nav-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 999px;
+            border: 1px solid rgba(205, 191, 172, 0.76);
+            background: rgba(255,255,255,0.68);
+            color: #7a7064;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+        }
+        .calendar-nav-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 16px rgba(160, 145, 120, 0.12);
+            background: rgba(255,255,255,0.82);
+        }
+        .calendar-weekdays,
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 6px;
+        }
+        .calendar-weekdays {
+            margin-bottom: 8px;
+        }
+        .calendar-weekdays span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 22px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #948878;
+        }
+        .calendar-day-button,
+        .calendar-day-placeholder {
+            height: 34px;
+            border-radius: 12px;
+        }
+        .calendar-day-button {
+            position: relative;
+            border: 1px solid transparent;
+            background: rgba(255,255,255,0.5);
+            color: #6f665e;
+            font-size: 13px;
+            font-weight: 600;
+            transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease, background-color 0.16s ease;
+        }
+        .calendar-day-button:hover {
+            transform: translateY(-1px);
+            border-color: rgba(189, 173, 150, 0.74);
+            box-shadow: 0 8px 16px rgba(166, 149, 121, 0.08);
+        }
+        .calendar-day-button.is-today {
+            background: linear-gradient(180deg, rgba(139, 155, 183, 0.2) 0%, rgba(108, 128, 164, 0.28) 100%);
+            border-color: rgba(114, 134, 168, 0.42);
+            color: #50627e;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.4);
+        }
+        .calendar-day-button.is-selected {
+            background: linear-gradient(180deg, rgba(132, 151, 181, 0.96) 0%, rgba(104, 124, 156, 0.98) 100%);
+            border-color: rgba(99, 118, 149, 0.92);
+            color: #ffffff;
+            box-shadow: 0 10px 18px rgba(102, 121, 151, 0.2);
+        }
+        .calendar-day-button.is-selected.is-today::after {
+            background: rgba(255,255,255,0.78);
+        }
+        .calendar-day-button.is-today::after {
+            content: "";
+            position: absolute;
+            right: 6px;
+            top: 6px;
+            width: 5px;
+            height: 5px;
+            border-radius: 999px;
+            background: rgba(80, 98, 126, 0.8);
+        }
+        .calendar-day-number {
+            position: relative;
+            z-index: 2;
+        }
+        .calendar-day-button.has-marker .calendar-day-number {
+            font-weight: 700;
+        }
+        .calendar-day-scribble {
+            position: absolute;
+            inset: 2px;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .calendar-day-scribble::before,
+        .calendar-day-scribble::after {
+            content: "";
+            position: absolute;
+            inset: 1px 2px 2px 1px;
+            border-radius: 52% 46% 54% 44% / 42% 58% 41% 59%;
+            border: 2px solid rgba(206, 84, 82, 0.72);
+            opacity: 0.95;
+        }
+        .calendar-day-scribble::before {
+            transform: rotate(-8deg) scale(1.04, 0.92);
+            filter: blur(0.15px);
+        }
+        .calendar-day-scribble::after {
+            inset: 2px 1px 1px 2px;
+            transform: rotate(7deg) scale(0.97, 1.05);
+            border-color: rgba(220, 92, 88, 0.58);
+        }
+        .calendar-day-button.is-countdown .calendar-day-scribble::before {
+            border-color: rgba(94, 120, 168, 0.82);
+        }
+        .calendar-day-button.is-countdown .calendar-day-scribble::after {
+            border-color: rgba(123, 145, 190, 0.66);
+        }
+        .calendar-day-button.is-countdown.has-schedule .calendar-day-scribble::before {
+            border-color: rgba(206, 84, 82, 0.76);
+        }
+        .calendar-day-button.is-countdown.has-schedule .calendar-day-scribble::after {
+            border-color: rgba(96, 121, 171, 0.58);
+        }
+        .calendar-day-badge {
+            position: absolute;
+            right: 2px;
+            bottom: 2px;
+            min-width: 14px;
+            height: 14px;
+            padding: 0 3px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.92);
+            color: #c85b57;
+            font-size: 10px;
+            line-height: 14px;
+            font-weight: 700;
+            z-index: 3;
+            box-shadow: 0 3px 6px rgba(161, 110, 91, 0.14);
+        }
+        .calendar-day-placeholder {
+            background: transparent;
+            border: 1px dashed rgba(210, 196, 177, 0.14);
+            opacity: 0.35;
+        }
+        .calendar-footer {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed rgba(197, 181, 160, 0.5);
+        }
+        .calendar-footer-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .calendar-selected-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #685e54;
+        }
+        .calendar-relative-text {
+            margin-top: 3px;
+            font-size: 12px;
+            line-height: 1.45;
+            color: #8f8478;
+        }
+        .calendar-selected-events {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .calendar-event-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 28px;
+            padding: 0 10px;
+            border-radius: 999px;
+            border: 1px dashed rgba(194, 175, 153, 0.78);
+            background: rgba(255,255,255,0.62);
+            color: #725f51;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .calendar-event-chip::before {
+            content: "";
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            border: 2px solid rgba(210, 88, 85, 0.66);
+            transform: rotate(-16deg);
+            box-shadow: 1px 0 0 rgba(233, 120, 114, 0.4);
+        }
+        .calendar-event-chip.is-countdown::before {
+            border-color: rgba(104, 127, 171, 0.78);
+            box-shadow: 1px 0 0 rgba(142, 161, 198, 0.42);
+        }
+        .calendar-editor-toggle {
+            min-height: 32px;
+            padding: 0 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(205, 191, 172, 0.78);
+            background: rgba(255,255,255,0.78);
+            color: #7a7064;
+            font-size: 12px;
+            font-weight: 700;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+        }
+        .calendar-editor-toggle:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 16px rgba(160, 145, 120, 0.12);
+        }
+        .calendar-editor {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.28s ease, opacity 0.22s ease, margin-top 0.22s ease;
+        }
+        .calendar-editor.open {
+            max-height: 420px;
+            opacity: 1;
+            margin-top: 12px;
+        }
+        .calendar-editor-section + .calendar-editor-section {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed rgba(197, 181, 160, 0.5);
+        }
+        .calendar-editor-heading {
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            color: #76685c;
+            margin-bottom: 10px;
+        }
+        .calendar-editor-grid {
+            display: grid;
+            gap: 10px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .calendar-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .calendar-field span {
+            font-size: 11px;
+            font-weight: 700;
+            color: #8c7d6e;
+        }
+        .calendar-text-input {
+            width: 100%;
+            min-height: 38px;
+            padding: 0 12px;
+            border-radius: 14px;
+            border: 1px solid rgba(206, 191, 171, 0.76);
+            background: rgba(255,255,255,0.78);
+            color: #63574c;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+        }
+        .calendar-text-input:focus {
+            border-color: rgba(128, 150, 185, 0.7);
+            box-shadow: 0 0 0 4px rgba(137, 155, 189, 0.12);
+        }
+        .calendar-save-btn {
+            margin-top: 10px;
+            width: 100%;
+            min-height: 38px;
+            border-radius: 14px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .calendar-event-empty {
+            margin-top: 10px;
+            font-size: 12px;
+            line-height: 1.45;
+            color: #93867a;
+        }
+        .calendar-event-list {
+            margin-top: 10px;
+            display: grid;
+            gap: 8px;
+        }
+        .calendar-event-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 16px;
+            border: 1px dashed rgba(198, 181, 160, 0.74);
+            background: rgba(255,255,255,0.62);
+        }
+        .calendar-event-item-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #66594e;
+        }
+        .calendar-event-item-date {
+            font-size: 11px;
+            color: #93867a;
+            margin-top: 3px;
+        }
+        .calendar-event-delete {
+            flex-shrink: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 999px;
+            border: 1px solid rgba(213, 193, 171, 0.8);
+            background: rgba(255,255,255,0.8);
+            color: #9a7e74;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
+        }
+        .calendar-event-delete:hover {
+            transform: translateY(-1px);
+            color: #c95c57;
+            box-shadow: 0 8px 16px rgba(160, 145, 120, 0.12);
+        }
+        body.night-mode .calendar-shell {
+            background: linear-gradient(180deg, rgba(29, 39, 58, 0.86) 0%, rgba(20, 29, 43, 0.94) 100%);
+            border-color: rgba(76, 92, 119, 0.54);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 10px 20px rgba(0,0,0,0.18);
+        }
+        body.night-mode .calendar-month-label,
+        body.night-mode .calendar-selected-label {
+            color: #edf3ff;
+        }
+        body.night-mode .calendar-weekdays span,
+        body.night-mode .calendar-relative-text,
+        body.night-mode #calendar-today-text {
+            color: #b9c7de !important;
+        }
+        body.night-mode .calendar-nav-btn {
+            background: rgba(22, 34, 53, 0.92);
+            border-color: rgba(76, 92, 119, 0.72);
+            color: #d8e4fa;
+        }
+        body.night-mode .calendar-toggle-btn {
+            background: rgba(22, 34, 53, 0.92);
+            border-color: rgba(76, 92, 119, 0.72);
+            color: #d8e4fa;
+        }
+        body.night-mode .calendar-day-button {
+            background: rgba(23, 35, 54, 0.88);
+            color: #dbe7fb;
+        }
+        body.night-mode .calendar-day-button:hover {
+            border-color: rgba(100, 122, 156, 0.82);
+            box-shadow: 0 10px 18px rgba(0,0,0,0.18);
+        }
+        body.night-mode .calendar-day-button.is-today {
+            background: linear-gradient(180deg, rgba(71, 93, 128, 0.52) 0%, rgba(56, 78, 111, 0.7) 100%);
+            border-color: rgba(110, 136, 178, 0.62);
+            color: #f6f9ff;
+        }
+        body.night-mode .calendar-day-button.is-today::after {
+            background: rgba(228, 238, 255, 0.76);
+        }
+        body.night-mode .calendar-day-button.is-selected {
+            background: linear-gradient(180deg, rgba(120, 148, 194, 0.98) 0%, rgba(88, 115, 162, 0.98) 100%);
+            border-color: rgba(138, 166, 211, 0.78);
+            color: #fff;
+        }
+        body.night-mode .calendar-day-placeholder {
+            border-color: rgba(86, 103, 130, 0.18);
+        }
+        body.night-mode .calendar-footer {
+            border-top-color: rgba(89, 107, 137, 0.44);
+        }
+        body.night-mode .calendar-editor-section + .calendar-editor-section {
+            border-top-color: rgba(89, 107, 137, 0.44);
+        }
+        body.night-mode .calendar-editor-toggle,
+        body.night-mode .calendar-event-delete {
+            background: rgba(22, 34, 53, 0.92);
+            border-color: rgba(76, 92, 119, 0.72);
+            color: #d8e4fa;
+        }
+        body.night-mode .calendar-event-chip,
+        body.night-mode .calendar-event-item {
+            background: rgba(24, 35, 53, 0.86);
+            border-color: rgba(85, 103, 132, 0.72);
+            color: #dde8fb;
+        }
+        body.night-mode .calendar-editor-heading,
+        body.night-mode .calendar-field span,
+        body.night-mode .calendar-event-item-title {
+            color: #edf3ff;
+        }
+        body.night-mode .calendar-text-input {
+            background: rgba(22, 34, 53, 0.92);
+            border-color: rgba(76, 92, 119, 0.72);
+            color: #edf3ff;
+        }
+        body.night-mode .calendar-event-empty,
+        body.night-mode .calendar-event-item-date,
+        body.night-mode #calendar-countdown-text {
+            color: #b9c7de !important;
+        }
+        body.night-mode .calendar-day-badge {
+            background: rgba(16, 24, 39, 0.94);
+            color: #ffd6d2;
+        }
+        body.warm-mode .calendar-shell {
+            background: linear-gradient(180deg, rgba(255,255,255,0.62) 0%, rgba(248, 241, 229, 0.7) 100%);
+            border-color: rgba(214, 198, 173, 0.74);
+        }
+        body.warm-mode .calendar-month-label,
+        body.warm-mode .calendar-selected-label {
+            color: #605144;
+        }
+        body.warm-mode .calendar-weekdays span,
+        body.warm-mode .calendar-relative-text,
+        body.warm-mode #calendar-today-text {
+            color: #8b7867 !important;
+        }
+        body.warm-mode .calendar-nav-btn {
+            color: #735f4e;
+            border-color: rgba(203, 186, 160, 0.78);
+            background: rgba(255,255,255,0.76);
+        }
+        body.warm-mode .calendar-toggle-btn {
+            color: #735f4e;
+            border-color: rgba(203, 186, 160, 0.78);
+            background: rgba(255,255,255,0.76);
+        }
+        body.warm-mode .calendar-editor-toggle,
+        body.warm-mode .calendar-event-delete,
+        body.warm-mode .calendar-text-input {
+            color: #735f4e;
+            border-color: rgba(203, 186, 160, 0.78);
+            background: rgba(255,255,255,0.76);
+        }
+
+        @media (max-width: 767px) {
+            .calendar-editor-grid {
+                grid-template-columns: 1fr;
+            }
         }
         .flashcard-sheet {
             background: linear-gradient(180deg, rgba(250, 248, 240, 0.96) 0%, rgba(244, 240, 228, 0.96) 100%);
@@ -927,7 +1442,47 @@
         body.warm-mode .history-item.active { background: linear-gradient(180deg, rgba(229,236,247,0.95) 0%, rgba(244,238,228,0.96) 100%) !important; border-color: rgba(125, 146, 178, 0.32) !important; }
 
         :root { --chat-font-size: 16px; }
-        .chat-text { font-size: var(--chat-font-size); }
+        .chat-text { font-size: var(--chat-font-size); line-height: 1.75; word-break: break-word; }
+        .chat-markdown p { margin: 0; }
+        .chat-markdown p + p { margin-top: 0.6em; }
+        .chat-markdown strong { font-weight: 700; }
+        .chat-markdown em { font-style: italic; }
+        .chat-markdown code {
+            display: inline-block;
+            padding: 0.04em 0.38em;
+            margin: 0 0.08em;
+            border-radius: 0.45em;
+            background: rgba(148, 163, 184, 0.16);
+            font-size: 0.92em;
+        }
+        .chat-markdown .chat-md-h1,
+        .chat-markdown .chat-md-h2,
+        .chat-markdown .chat-md-h3 {
+            margin: 0;
+            font-weight: 800;
+            line-height: 1.45;
+        }
+        .chat-markdown .chat-md-h1 { font-size: 1.14em; }
+        .chat-markdown .chat-md-h2 { font-size: 1.08em; }
+        .chat-markdown .chat-md-h3 { font-size: 1.02em; }
+        .chat-markdown .chat-md-gap { height: 0.68em; }
+        .chat-markdown .chat-md-hr {
+            margin: 0.15em 0;
+            border: 0;
+            border-top: 1px dashed rgba(148, 163, 184, 0.52);
+        }
+        .chat-markdown .chat-md-blockquote {
+            margin: 0;
+            padding-left: 0.8em;
+            border-left: 3px solid rgba(148, 163, 184, 0.7);
+            color: inherit;
+            opacity: 0.94;
+        }
+        .chat-markdown .chat-md-list {
+            margin: 0;
+            padding-left: 1.3em;
+        }
+        .chat-markdown .chat-md-list li + li { margin-top: 0.3em; }
 
         .settings-panel { transform: translateX(100%); transition: transform 0.3s ease; }
         .settings-panel.open { transform: translateX(0); }
@@ -1065,7 +1620,7 @@
         </aside>
 
         <!-- 中栏 -->
-        <section class="flex-1 flex flex-col h-full glass-panel lg:bg-transparent lg:rounded-[24px] lg:shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] lg:mt-2 lg:mx-2 border border-white/60 relative overflow-hidden order-1 lg:order-2 min-h-0">
+        <section id="chat-stage" class="flex-1 flex flex-col h-full glass-panel lg:bg-transparent lg:rounded-[24px] lg:shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] lg:mt-2 lg:mx-2 border border-white/60 relative overflow-hidden order-1 lg:order-2 min-h-0">
             <div class="px-4 py-3 flex items-center gap-2 sm:gap-3 border-b border-white/60 bg-white/55 backdrop-blur-sm z-10">
                 <button id="timer-btn" class="soft-pill-btn flex items-center gap-2 text-brand font-semibold px-3 sm:px-4 py-2 rounded-2xl text-xs sm:text-sm transition" onclick="toggleTimer()"><span class="w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-brand flex items-center justify-center flex-shrink-0 timer-ring" id="timer-icon"><i class="fa-solid fa-play text-[10px] sm:text-xs text-brand ml-0.5"></i></span><span id="timer-text" class="text-brand">开始学习计时</span></button>
                 <button id="history-btn" class="soft-pill-btn flex items-center gap-2 text-gray-600 font-semibold px-3 sm:px-4 py-2 rounded-2xl text-xs sm:text-sm transition"><i class="fa-solid fa-clock-rotate-left text-sm"></i>历史对话</button>
@@ -1087,7 +1642,7 @@
                         <button id="pending-upload-remove" class="w-8 h-8 rounded-full hover:bg-gray-100 text-gray-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark"></i></button>
                     </div>
                 </div>
-                <div class="composer-shell rounded-[18px] p-1.5 flex items-end border border-white/80 transition-all duration-300 shadow-[0_12px_28px_rgba(150,160,180,0.12)]" style="background: linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(242,247,253,0.97) 100%);">
+                <div id="composer-shell" class="composer-shell rounded-[18px] p-1.5 flex items-end border border-white/80 transition-all duration-300 shadow-[0_12px_28px_rgba(150,160,180,0.12)]" style="background: linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(242,247,253,0.97) 100%);">
                     <button id="upload-image-btn" class="soft-icon-btn p-2.5 text-brand rounded-xl transition mb-0.5 ml-0.5"><i class="fa-solid fa-paperclip text-lg"></i></button>
                     <input id="chat-image-input" type="file" accept="image/png,image/jpeg,image/webp" class="hidden">
                     <textarea id="chat-input" class="flex-1 max-h-32 min-h-[40px] bg-transparent border-none focus:ring-0 resize-none p-2.5 text-[14px] text-gray-700 placeholder-gray-400 leading-relaxed outline-none" rows="1" placeholder="输入你想探讨的高考英语问题..." onkeydown="handleInputKey(event)"></textarea>
@@ -1105,7 +1660,75 @@
                 </div>
                 <div class="flex-1 overflow-y-auto custom-scrollbar space-y-3 sm:space-y-4 pr-1">
                     <div id="flashcard-entry" class="extend-card rounded-[20px] shadow-sm p-4 relative overflow-hidden cursor-pointer" style="background: linear-gradient(135deg, #eef2f6 0%, #e0e7ee 100%);"><div class="absolute -right-4 -bottom-4 text-[#90a0b3] opacity-10 text-7xl"><i class="fa-solid fa-layer-group"></i></div><h3 class="font-bold text-[#607186] mb-1 text-[15px]">闪卡</h3><p id="flashcard-entry-desc" class="text-[13px] text-[#748396] font-medium">把错题笔记翻成卡片，随手复习</p></div>
-                    <div class="extend-card rounded-[20px] shadow-sm p-4 relative overflow-hidden cursor-pointer" style="background: linear-gradient(135deg, #f2efea 0%, #e5e2dc 100%);"><div class="absolute -right-3 -bottom-3 text-[#afa495] opacity-10 text-7xl"><i class="fa-solid fa-calendar-check"></i></div><h3 class="font-bold text-[#7f766c] mb-1 text-[15px]">日历</h3><p class="text-[13px] text-[#92877b] font-medium">下次月考 倒计时: <strong class="text-[#7f766c] text-lg ml-1">5</strong> Day</p></div>
+                    <div id="calendar-card" class="extend-card calendar-card is-collapsed rounded-[20px] shadow-sm p-4 relative overflow-hidden" style="background: linear-gradient(135deg, #f2efea 0%, #e5e2dc 100%);">
+                        <div class="absolute -right-3 -bottom-3 text-[#afa495] opacity-10 text-7xl"><i class="fa-solid fa-calendar-check"></i></div>
+                        <div class="flex items-start justify-between gap-3 mb-3 relative z-[1]">
+                            <div>
+                                <h3 class="font-bold text-[#7f766c] mb-1 text-[15px]">日历</h3>
+                                <p id="calendar-today-text" class="text-[13px] text-[#92877b] font-medium">今天</p>
+                                <p id="calendar-countdown-text" class="text-[12px] text-[#8f8376] font-semibold mt-1">开学倒计时：-- 天</p>
+                            </div>
+                            <button id="calendar-toggle-btn" class="calendar-toggle-btn shrink-0" type="button" aria-expanded="false" aria-controls="calendar-content">
+                                <span id="calendar-toggle-label">展开</span>
+                                <i class="fa-solid fa-chevron-down text-[11px]"></i>
+                            </button>
+                        </div>
+                        <div id="calendar-content" class="calendar-content">
+                        <div class="calendar-shell relative z-[1]">
+                            <div class="flex items-center justify-between gap-2 mb-3">
+                                <button id="calendar-prev-btn" class="calendar-nav-btn" aria-label="上一月"><i class="fa-solid fa-chevron-left text-[11px]"></i></button>
+                                <p id="calendar-month-label" class="calendar-month-label">2026年08月</p>
+                                <button id="calendar-next-btn" class="calendar-nav-btn" aria-label="下一月"><i class="fa-solid fa-chevron-right text-[11px]"></i></button>
+                            </div>
+                            <div class="calendar-weekdays">
+                                <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+                            </div>
+                            <div id="calendar-grid" class="calendar-grid" role="grid" aria-label="学习日历"></div>
+                            <div class="calendar-footer">
+                                <div class="calendar-footer-header">
+                                    <div>
+                                        <p id="calendar-selected-label" class="calendar-selected-label">今天</p>
+                                        <p id="calendar-relative-text" class="calendar-relative-text">已为你定位到今天的真实日期</p>
+                                    </div>
+                                    <button id="calendar-editor-toggle" class="calendar-editor-toggle" type="button" aria-expanded="false" aria-controls="calendar-editor">设置</button>
+                                </div>
+                                <div id="calendar-selected-events" class="calendar-selected-events hidden"></div>
+                                <div id="calendar-editor" class="calendar-editor" aria-hidden="true">
+                                    <div class="calendar-editor-section">
+                                        <p class="calendar-editor-heading">倒计时设置</p>
+                                        <div class="calendar-editor-grid">
+                                            <label class="calendar-field">
+                                                <span>名称</span>
+                                                <input id="calendar-countdown-title" class="calendar-text-input" type="text" maxlength="12" placeholder="例如：开学">
+                                            </label>
+                                            <label class="calendar-field">
+                                                <span>日期</span>
+                                                <input id="calendar-countdown-date" class="calendar-text-input" type="date">
+                                            </label>
+                                        </div>
+                                        <button id="calendar-countdown-save" class="soft-secondary-btn calendar-save-btn" type="button">保存倒计时</button>
+                                    </div>
+                                    <div class="calendar-editor-section">
+                                        <p class="calendar-editor-heading">添加日程</p>
+                                        <div class="calendar-editor-grid">
+                                            <label class="calendar-field">
+                                                <span>日程名</span>
+                                                <input id="calendar-event-title" class="calendar-text-input" type="text" maxlength="18" placeholder="例如：英语摸底考">
+                                            </label>
+                                            <label class="calendar-field">
+                                                <span>日期</span>
+                                                <input id="calendar-event-date" class="calendar-text-input" type="date">
+                                            </label>
+                                        </div>
+                                        <button id="calendar-event-add-btn" class="soft-primary-btn calendar-save-btn text-white" type="button">添加日程</button>
+                                        <p id="calendar-event-empty" class="calendar-event-empty">还没有自定义日程，添加后会在日历上用手绘圈圈标出来。</p>
+                                        <div id="calendar-event-list" class="calendar-event-list"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
                     <div class="extend-card rounded-[20px] shadow-sm p-4 relative overflow-hidden cursor-pointer" style="background: linear-gradient(135deg, #efedf1 0%, #e2e1e7 100%);"><div class="absolute -right-3 -bottom-3 text-[#9e9aac] opacity-10 text-7xl"><i class="fa-solid fa-book-open"></i></div><h3 class="font-bold text-[#6f6b82] mb-1 text-[15px]">知识笔记</h3><p class="text-[13px] text-[#817d92] font-medium">语法体系与写作模板</p></div>
                     <div class="extend-card rounded-[20px] shadow-sm p-4 relative overflow-hidden cursor-pointer" style="background: linear-gradient(135deg, #edf1f2 0%, #dfe5e8 100%);"><div class="absolute -right-2 -bottom-2 text-[#90a0ac] opacity-10 text-7xl"><i class="fa-solid fa-store"></i></div><h3 class="font-bold text-[#647482] mb-1 text-[15px]">商城</h3><p class="text-[13px] text-[#788796] font-medium">高考冲刺专区</p></div>
                 </div>
@@ -1255,10 +1878,12 @@
         (function() {
             const toast = document.getElementById('toast');
             const toastMsg = document.getElementById('toast-message');
+            const chatStage = document.getElementById('chat-stage');
             const chatInput = document.getElementById('chat-input');
             const chatImageInput = document.getElementById('chat-image-input');
             const uploadImageBtn = document.getElementById('upload-image-btn');
             const chatWindow = document.getElementById('chat-window');
+            const composerShell = document.getElementById('composer-shell');
             const chatMeta = document.getElementById('chat-meta');
             const pendingUpload = document.getElementById('pending-upload');
             const pendingUploadPreview = document.getElementById('pending-upload-preview');
@@ -1323,8 +1948,32 @@
             const flashcardSideTip = document.getElementById('flashcard-side-tip');
             const flashcardAskBtn = document.getElementById('flashcard-ask-btn');
             const flashcardJumpNoteBtn = document.getElementById('flashcard-jump-note-btn');
+            const calendarTodayText = document.getElementById('calendar-today-text');
+            const calendarCountdownText = document.getElementById('calendar-countdown-text');
+            const calendarCard = document.getElementById('calendar-card');
+            const calendarContent = document.getElementById('calendar-content');
+            const calendarToggleBtn = document.getElementById('calendar-toggle-btn');
+            const calendarToggleLabel = document.getElementById('calendar-toggle-label');
+            const calendarPrevBtn = document.getElementById('calendar-prev-btn');
+            const calendarNextBtn = document.getElementById('calendar-next-btn');
+            const calendarMonthLabel = document.getElementById('calendar-month-label');
+            const calendarGrid = document.getElementById('calendar-grid');
+            const calendarSelectedLabel = document.getElementById('calendar-selected-label');
+            const calendarRelativeText = document.getElementById('calendar-relative-text');
+            const calendarSelectedEvents = document.getElementById('calendar-selected-events');
+            const calendarEditorToggle = document.getElementById('calendar-editor-toggle');
+            const calendarEditor = document.getElementById('calendar-editor');
+            const calendarCountdownTitleInput = document.getElementById('calendar-countdown-title');
+            const calendarCountdownDateInput = document.getElementById('calendar-countdown-date');
+            const calendarCountdownSaveBtn = document.getElementById('calendar-countdown-save');
+            const calendarEventTitleInput = document.getElementById('calendar-event-title');
+            const calendarEventDateInput = document.getElementById('calendar-event-date');
+            const calendarEventAddBtn = document.getElementById('calendar-event-add-btn');
+            const calendarEventEmpty = document.getElementById('calendar-event-empty');
+            const calendarEventList = document.getElementById('calendar-event-list');
             const defaultGreeting = "Hi！我是陶然AI助教 🎓 专攻高考英语，阅读、完形、语法都可以问我~";
-            const CHAT_API_URL = "/api/chat";
+            const DEFAULT_LOCAL_API_BASE = 'http://127.0.0.1:8000';
+            const CHAT_API_URL = getChatApiUrl();
             const IMAGE_ACCEPT_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
             const IMAGE_MAX_SIZE = 4 * 1024 * 1024;
             const DB_NAME = 'taoran-chat-demo-db';
@@ -1333,6 +1982,7 @@
             const PROFILE_STORE_NAME = 'user_settings';
             const ACTIVE_CHAT_KEY = 'taoran-active-chat-id';
             const PROFILE_KEY = 'profile';
+            const CALENDAR_SETTINGS_KEY = 'calendar_settings';
             const FLASHCARD_STATE_KEY = 'taoran-flashcard-state';
             const NOTE_FLASHCARDS = [
                 {
@@ -1404,10 +2054,26 @@
             let flashcardState = loadFlashcardState();
             let flashcardAnimating = false;
             let flashcardWheelLocked = false;
+            let composerDragDepth = 0;
+            let calendarViewDate = new Date();
+            let calendarSelectedDate = new Date();
+            let calendarSettings = getDefaultCalendarSettings();
             let userProfile = {
                 nickname: '同学',
                 avatarDataUrl: ''
             };
+
+            function getChatApiUrl() {
+                const customBase = window.localStorage.getItem('taoran-api-base') || '';
+                const normalizedCustomBase = customBase.trim().replace(/\/$/, '');
+                if (normalizedCustomBase) {
+                    return `${normalizedCustomBase}/api/chat`;
+                }
+                if (window.location.protocol === 'file:') {
+                    return `${DEFAULT_LOCAL_API_BASE}/api/chat`;
+                }
+                return '/api/chat';
+            }
 
             function showToast(msg, dur = 2000) {
                 if (toastTimer) clearTimeout(toastTimer);
@@ -1423,6 +2089,82 @@
                     .replace(/>/g, '&gt;')
                     .replace(/"/g, '&quot;')
                     .replace(/'/g, '&#39;');
+            }
+
+            function renderInlineMarkdown(content) {
+                return escapeHtml(content)
+                    .replace(/`([^`\n]+)`/g, '<code>$1</code>')
+                    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/__(.+?)__/g, '<strong>$1</strong>')
+                    .replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s).,!?:;]|$)/g, '$1<em>$2</em>');
+            }
+
+            function renderMarkdown(content) {
+                const lines = String(content || '').replace(/\r\n?/g, '\n').split('\n');
+                const html = [];
+                let listType = '';
+                let listItems = [];
+
+                function flushList() {
+                    if (!listType || !listItems.length) return;
+                    html.push(`<${listType} class="chat-md-list">${listItems.join('')}</${listType}>`);
+                    listType = '';
+                    listItems = [];
+                }
+
+                lines.forEach(line => {
+                    const trimmed = line.trim();
+                    if (!trimmed) {
+                        flushList();
+                        if (html[html.length - 1] !== '<div class="chat-md-gap"></div>') {
+                            html.push('<div class="chat-md-gap"></div>');
+                        }
+                        return;
+                    }
+
+                    if (/^(-{3,}|\*{3,}|_{3,})$/.test(trimmed)) {
+                        flushList();
+                        html.push('<hr class="chat-md-hr">');
+                        return;
+                    }
+
+                    const headingMatch = trimmed.match(/^(#{1,3})\s+(.*)$/);
+                    if (headingMatch) {
+                        flushList();
+                        const level = headingMatch[1].length;
+                        html.push(`<h${level} class="chat-md-h${level}">${renderInlineMarkdown(headingMatch[2])}</h${level}>`);
+                        return;
+                    }
+
+                    const quoteMatch = trimmed.match(/^>\s?(.*)$/);
+                    if (quoteMatch) {
+                        flushList();
+                        html.push(`<blockquote class="chat-md-blockquote">${renderInlineMarkdown(quoteMatch[1])}</blockquote>`);
+                        return;
+                    }
+
+                    const bulletMatch = trimmed.match(/^[-*]\s+(.*)$/);
+                    if (bulletMatch) {
+                        if (listType && listType !== 'ul') flushList();
+                        listType = 'ul';
+                        listItems.push(`<li>${renderInlineMarkdown(bulletMatch[1])}</li>`);
+                        return;
+                    }
+
+                    const orderedMatch = trimmed.match(/^\d+\.\s+(.*)$/);
+                    if (orderedMatch) {
+                        if (listType && listType !== 'ol') flushList();
+                        listType = 'ol';
+                        listItems.push(`<li>${renderInlineMarkdown(orderedMatch[1])}</li>`);
+                        return;
+                    }
+
+                    flushList();
+                    html.push(`<p>${renderInlineMarkdown(trimmed)}</p>`);
+                });
+
+                flushList();
+                return html.join('') || '<p></p>';
             }
 
             function formatChatTime(value) {
@@ -1502,6 +2244,63 @@
                 pendingUpload.classList.remove('hidden');
             }
 
+            function processChatImageFile(file) {
+                if (!file) return;
+                if (!IMAGE_ACCEPT_TYPES.includes(file.type)) {
+                    showToast('仅支持 JPG、PNG、WebP 图片');
+                    clearPendingImage();
+                    return;
+                }
+                if (file.size > IMAGE_MAX_SIZE) {
+                    showToast('图片不能超过 4MB');
+                    clearPendingImage();
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    pendingImage = {
+                        name: file.name || `image-${Date.now()}.png`,
+                        size: file.size,
+                        mimeType: file.type,
+                        dataUrl: String(event.target.result || '')
+                    };
+                    renderPendingImage();
+                    showToast('已添加图片，发送即可提问');
+                };
+                reader.readAsDataURL(file);
+            }
+
+            function isImageTransfer(dataTransfer) {
+                if (!dataTransfer) return false;
+                const items = Array.from(dataTransfer.items || []);
+                if (items.some(item => item.kind === 'file' && item.type && item.type.startsWith('image/'))) {
+                    return true;
+                }
+                return Array.from(dataTransfer.files || []).some(file => file.type && file.type.startsWith('image/'));
+            }
+
+            function setComposerDragActive(active) {
+                composerShell.classList.toggle('drag-active', active);
+            }
+
+            function resetComposerDragState() {
+                composerDragDepth = 0;
+                setComposerDragActive(false);
+            }
+
+            function getClipboardImageFile(event) {
+                const items = Array.from(event.clipboardData?.items || []);
+                const imageItem = items.find(item => item.kind === 'file' && item.type && item.type.startsWith('image/'));
+                if (!imageItem) return null;
+                const file = imageItem.getAsFile();
+                if (!file) return null;
+                if (!file.name) {
+                    const ext = (file.type.split('/')[1] || 'png').replace('jpeg', 'jpg');
+                    return new File([file], `pasted-image-${Date.now()}.${ext}`, { type: file.type });
+                }
+                return file;
+            }
+
             function getMessagePreview(message) {
                 if (!message) return '暂无消息';
                 if (message.type === 'image') {
@@ -1516,6 +2315,340 @@
                     return;
                 }
                 container.innerHTML = `<i class="fa-regular fa-user ${sizeClass}"></i>`;
+            }
+
+            function getStartOfDay(date) {
+                return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            }
+
+            function isSameDay(a, b) {
+                return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+            }
+
+            function toISODate(date) {
+                return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            }
+
+            function parseISODate(value) {
+                if (!value || typeof value !== 'string') return null;
+                const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+                if (!match) return null;
+                const year = Number(match[1]);
+                const month = Number(match[2]);
+                const day = Number(match[3]);
+                const parsed = new Date(year, month - 1, day);
+                if (parsed.getFullYear() !== year || parsed.getMonth() !== month - 1 || parsed.getDate() !== day) {
+                    return null;
+                }
+                return parsed;
+            }
+
+            function getNextSchoolStartDate() {
+                const today = getStartOfDay(new Date());
+                let target = new Date(today.getFullYear(), 8, 1);
+                if (target < today) {
+                    target = new Date(today.getFullYear() + 1, 8, 1);
+                }
+                return target;
+            }
+
+            function getDefaultCalendarSettings() {
+                return {
+                    countdown: {
+                        title: '开学',
+                        date: toISODate(getNextSchoolStartDate())
+                    },
+                    schedules: []
+                };
+            }
+
+            function normalizeCalendarSettings(rawSettings) {
+                const fallback = getDefaultCalendarSettings();
+                const source = rawSettings && typeof rawSettings === 'object' ? rawSettings : {};
+                const countdownDate = parseISODate(source.countdown?.date) || parseISODate(fallback.countdown.date) || getNextSchoolStartDate();
+                const countdownTitle = (source.countdown?.title || fallback.countdown.title || '开学').trim().slice(0, 12) || '开学';
+                const schedules = Array.isArray(source.schedules) ? source.schedules : [];
+                return {
+                    countdown: {
+                        title: countdownTitle,
+                        date: toISODate(countdownDate)
+                    },
+                    schedules: schedules
+                        .map(item => {
+                            const parsedDate = parseISODate(item?.date);
+                            const title = String(item?.title || '').trim().slice(0, 18);
+                            if (!parsedDate || !title) return null;
+                            return {
+                                id: item.id || crypto.randomUUID(),
+                                title,
+                                date: toISODate(parsedDate)
+                            };
+                        })
+                        .filter(Boolean)
+                        .sort((a, b) => a.date.localeCompare(b.date))
+                };
+            }
+
+            function formatCalendarFullDate(date) {
+                return date.toLocaleDateString('zh-CN', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    weekday: 'long'
+                });
+            }
+
+            function describeRelativeDay(date) {
+                const today = getStartOfDay(new Date());
+                const target = getStartOfDay(date);
+                const diffDays = Math.round((target.getTime() - today.getTime()) / 86400000);
+                if (diffDays === 0) {
+                    return '就是今天，按今天的节奏安排学习就好。';
+                }
+                if (diffDays > 0) {
+                    return `距离今天还有 ${diffDays} 天，可以提前安排复盘和提问。`;
+                }
+                return `这一天已经过去 ${Math.abs(diffDays)} 天，可以回看当天学习内容。`;
+            }
+
+            function syncCalendarTodayText() {
+                const today = new Date();
+                calendarTodayText.textContent = `今天 · ${today.toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'short' })}`;
+            }
+
+            function getCountdownInfo() {
+                const targetDate = parseISODate(calendarSettings.countdown.date) || getNextSchoolStartDate();
+                const today = getStartOfDay(new Date());
+                const diffDays = Math.round((getStartOfDay(targetDate).getTime() - today.getTime()) / 86400000);
+                return {
+                    title: calendarSettings.countdown.title || '开学',
+                    targetDate,
+                    diffDays
+                };
+            }
+
+            function syncCalendarSummary() {
+                syncCalendarTodayText();
+                const countdownInfo = getCountdownInfo();
+                if (countdownInfo.diffDays > 0) {
+                    calendarCountdownText.textContent = `${countdownInfo.title}倒计时：${countdownInfo.diffDays} 天`;
+                } else if (countdownInfo.diffDays === 0) {
+                    calendarCountdownText.textContent = `今天就是${countdownInfo.title}`;
+                } else {
+                    calendarCountdownText.textContent = `${countdownInfo.title}已过去 ${Math.abs(countdownInfo.diffDays)} 天`;
+                }
+            }
+
+            function getCalendarEntriesForDate(date) {
+                const isoDate = toISODate(date);
+                const entries = [];
+                if (calendarSettings.countdown.date === isoDate) {
+                    entries.push({
+                        id: 'countdown',
+                        title: calendarSettings.countdown.title,
+                        type: 'countdown'
+                    });
+                }
+                calendarSettings.schedules.forEach(schedule => {
+                    if (schedule.date === isoDate) {
+                        entries.push({
+                            id: schedule.id,
+                            title: schedule.title,
+                            type: 'schedule'
+                        });
+                    }
+                });
+                return entries;
+            }
+
+            function renderSelectedCalendarEntries(entries) {
+                calendarSelectedEvents.innerHTML = '';
+                calendarSelectedEvents.classList.toggle('hidden', entries.length === 0);
+                entries.forEach(entry => {
+                    const chip = document.createElement('span');
+                    chip.className = `calendar-event-chip ${entry.type === 'countdown' ? 'is-countdown' : ''}`;
+                    chip.textContent = entry.type === 'countdown' ? `${entry.title}目标日` : entry.title;
+                    calendarSelectedEvents.appendChild(chip);
+                });
+            }
+
+            function renderCalendarEventList() {
+                const schedules = [...calendarSettings.schedules].sort((a, b) => a.date.localeCompare(b.date));
+                calendarEventList.innerHTML = '';
+                calendarEventEmpty.classList.toggle('hidden', schedules.length > 0);
+                schedules.forEach(schedule => {
+                    const item = document.createElement('div');
+                    item.className = 'calendar-event-item';
+                    item.innerHTML = `
+                        <div class="min-w-0">
+                            <p class="calendar-event-item-title truncate">${escapeHtml(schedule.title)}</p>
+                            <p class="calendar-event-item-date">${escapeHtml(schedule.date)}</p>
+                        </div>
+                        <button class="calendar-event-delete" type="button" data-schedule-id="${schedule.id}" aria-label="删除日程">
+                            <i class="fa-solid fa-xmark text-[12px]"></i>
+                        </button>
+                    `;
+                    item.querySelector('.calendar-event-delete').addEventListener('click', async () => {
+                        calendarSettings.schedules = calendarSettings.schedules.filter(entry => entry.id !== schedule.id);
+                        await persistCalendarSettings();
+                        showToast('日程已删除');
+                    });
+                    calendarEventList.appendChild(item);
+                });
+            }
+
+            function syncCalendarForm() {
+                calendarCountdownTitleInput.value = calendarSettings.countdown.title;
+                calendarCountdownDateInput.value = calendarSettings.countdown.date;
+                if (!calendarEventDateInput.value) {
+                    calendarEventDateInput.value = toISODate(calendarSelectedDate);
+                }
+            }
+
+            function setCalendarEditorOpen(open) {
+                calendarEditor.classList.toggle('open', open);
+                calendarEditor.setAttribute('aria-hidden', String(!open));
+                calendarEditorToggle.setAttribute('aria-expanded', String(open));
+                calendarEditorToggle.textContent = open ? '收起设置' : '设置';
+            }
+
+            function setCalendarCollapsed(collapsed) {
+                calendarCard.classList.toggle('is-collapsed', collapsed);
+                calendarToggleBtn.setAttribute('aria-expanded', String(!collapsed));
+                calendarToggleLabel.textContent = collapsed ? '展开' : '收起';
+                calendarContent.setAttribute('aria-hidden', String(collapsed));
+            }
+
+            function renderCalendar() {
+                const viewYear = calendarViewDate.getFullYear();
+                const viewMonth = calendarViewDate.getMonth();
+                const today = getStartOfDay(new Date());
+                const selected = getStartOfDay(calendarSelectedDate);
+                const firstDay = new Date(viewYear, viewMonth, 1);
+                const lastDay = new Date(viewYear, viewMonth + 1, 0);
+                const totalDays = lastDay.getDate();
+                const leadingBlankCount = firstDay.getDay();
+
+                calendarMonthLabel.textContent = `${viewYear}年${String(viewMonth + 1).padStart(2, '0')}月`;
+                syncCalendarSummary();
+                calendarSelectedLabel.textContent = formatCalendarFullDate(selected);
+                calendarRelativeText.textContent = describeRelativeDay(selected);
+                renderSelectedCalendarEntries(getCalendarEntriesForDate(selected));
+                syncCalendarForm();
+                calendarGrid.innerHTML = '';
+
+                for (let i = 0; i < leadingBlankCount; i += 1) {
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'calendar-day-placeholder';
+                    placeholder.setAttribute('aria-hidden', 'true');
+                    calendarGrid.appendChild(placeholder);
+                }
+
+                for (let day = 1; day <= totalDays; day += 1) {
+                    const cellDate = new Date(viewYear, viewMonth, day);
+                    const entries = getCalendarEntriesForDate(cellDate);
+                    const hasCountdown = entries.some(entry => entry.type === 'countdown');
+                    const scheduleCount = entries.filter(entry => entry.type === 'schedule').length;
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'calendar-day-button';
+                    button.innerHTML = `<span class="calendar-day-number">${day}</span>${entries.length ? '<span class="calendar-day-scribble"></span>' : ''}${scheduleCount > 1 ? `<span class="calendar-day-badge">${scheduleCount}</span>` : ''}`;
+                    button.setAttribute('role', 'gridcell');
+                    button.setAttribute('aria-label', formatCalendarFullDate(cellDate));
+                    if (entries.length) {
+                        button.classList.add('has-marker');
+                        if (scheduleCount > 0) button.classList.add('has-schedule');
+                        if (hasCountdown) button.classList.add('is-countdown');
+                        button.title = entries.map(entry => entry.type === 'countdown' ? `${entry.title}目标日` : entry.title).join(' · ');
+                    }
+                    if (isSameDay(cellDate, today)) {
+                        button.classList.add('is-today');
+                    }
+                    if (isSameDay(cellDate, selected)) {
+                        button.classList.add('is-selected');
+                        button.setAttribute('aria-current', 'date');
+                    }
+                    button.addEventListener('click', () => {
+                        calendarSelectedDate = cellDate;
+                        calendarViewDate = new Date(cellDate.getFullYear(), cellDate.getMonth(), 1);
+                        calendarEventDateInput.value = toISODate(cellDate);
+                        renderCalendar();
+                    });
+                    calendarGrid.appendChild(button);
+                }
+            }
+
+            function shiftCalendarMonth(offset) {
+                calendarViewDate = new Date(calendarViewDate.getFullYear(), calendarViewDate.getMonth() + offset, 1);
+                renderCalendar();
+            }
+
+            function resetCalendarToToday() {
+                const today = new Date();
+                calendarViewDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                calendarSelectedDate = today;
+                renderCalendar();
+            }
+
+            function toggleCalendarCollapse() {
+                setCalendarCollapsed(!calendarCard.classList.contains('is-collapsed'));
+            }
+
+            async function loadCalendarSettings() {
+                if (!db) {
+                    calendarSettings = normalizeCalendarSettings(calendarSettings);
+                    renderCalendarEventList();
+                    renderCalendar();
+                    return;
+                }
+                const stored = await getSettingsRecord(CALENDAR_SETTINGS_KEY);
+                calendarSettings = normalizeCalendarSettings(stored || calendarSettings);
+                renderCalendarEventList();
+                renderCalendar();
+            }
+
+            async function persistCalendarSettings() {
+                calendarSettings = normalizeCalendarSettings(calendarSettings);
+                renderCalendarEventList();
+                renderCalendar();
+                if (!db) return;
+                await saveSettingsRecord(CALENDAR_SETTINGS_KEY, calendarSettings);
+            }
+
+            async function saveCountdownSettings() {
+                const title = calendarCountdownTitleInput.value.trim() || '开学';
+                const targetDate = parseISODate(calendarCountdownDateInput.value);
+                if (!targetDate) {
+                    showToast('请选择有效的倒计时日期');
+                    return;
+                }
+                calendarSettings.countdown = {
+                    title: title.slice(0, 12),
+                    date: toISODate(targetDate)
+                };
+                await persistCalendarSettings();
+                showToast('倒计时已更新');
+            }
+
+            async function addCalendarSchedule() {
+                const title = calendarEventTitleInput.value.trim();
+                const targetDate = parseISODate(calendarEventDateInput.value);
+                if (!title) {
+                    showToast('先填写日程名称');
+                    return;
+                }
+                if (!targetDate) {
+                    showToast('请选择日程日期');
+                    return;
+                }
+                calendarSettings.schedules.push({
+                    id: crypto.randomUUID(),
+                    title: title.slice(0, 18),
+                    date: toISODate(targetDate)
+                });
+                calendarEventTitleInput.value = '';
+                await persistCalendarSettings();
+                showToast('日程已添加');
             }
 
             function updateNoteSearchState(keyword = '') {
@@ -1672,6 +2805,23 @@
                 });
             }
 
+            function getSettingsRecord(key) {
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction(PROFILE_STORE_NAME, 'readonly');
+                    const store = transaction.objectStore(PROFILE_STORE_NAME);
+                    const request = store.get(key);
+                    request.onsuccess = function() {
+                        resolve(request.result ? request.result.value : null);
+                    };
+                    request.onerror = function() {
+                        reject(request.error);
+                    };
+                    transaction.onerror = function() {
+                        reject(transaction.error || new Error('设置读取失败'));
+                    };
+                });
+            }
+
             function saveProfileRecord(profile) {
                 return new Promise((resolve, reject) => {
                     const transaction = db.transaction(PROFILE_STORE_NAME, 'readwrite');
@@ -1692,6 +2842,26 @@
                 });
             }
 
+            function saveSettingsRecord(key, value) {
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction(PROFILE_STORE_NAME, 'readwrite');
+                    const store = transaction.objectStore(PROFILE_STORE_NAME);
+                    const request = store.put({
+                        key,
+                        value
+                    });
+                    request.onsuccess = function() {
+                        resolve(value);
+                    };
+                    request.onerror = function() {
+                        reject(request.error);
+                    };
+                    transaction.onerror = function() {
+                        reject(transaction.error || new Error('设置保存失败'));
+                    };
+                });
+            }
+
             function appendMessage(content, sender, options = {}) {
                 const createdAt = options.createdAt || new Date().toISOString();
                 const type = options.type || 'text';
@@ -1702,8 +2872,8 @@
                     const safeCaption = content ? `<p class="mt-3 text-[14px] leading-relaxed chat-text">${escapeHtml(content).replace(/\n/g, '<br>')}</p>` : '';
                     const imageSrc = options.imageDataUrl || '';
                     const bubbleClass = sender === 'user'
-                        ? 'bg-white border border-gray-200 rounded-2xl rounded-tr-sm'
-                        : 'bg-gray-100 border border-gray-200 rounded-2xl rounded-tl-sm';
+                        ? 'chat-bubble-user bg-white border border-gray-200 rounded-2xl rounded-tr-sm'
+                        : 'chat-bubble-ai bg-gray-100 border border-gray-200 rounded-2xl rounded-tl-sm';
                     div.innerHTML = `
                         <span class="text-[11px] text-gray-400 mb-1 ${sender === 'user' ? 'mr-1' : 'ml-1'}">${sender === 'user' ? '我' : '陶然AI助教'} · ${time}</span>
                         <div class="chat-image-bubble ${bubbleClass} max-w-[85%] shadow-sm p-2">
@@ -1712,11 +2882,13 @@
                         </div>
                     `;
                 } else {
-                    const safeContent = escapeHtml(content).replace(/\n/g, '<br>');
+                    const renderedContent = sender === 'ai'
+                        ? renderMarkdown(content)
+                        : escapeHtml(content).replace(/\n/g, '<br>');
                     if (sender === 'user') {
-                        div.innerHTML = `<span class="text-[11px] text-gray-400 mb-1 mr-1">我 · ${time}</span><div class="bg-white border border-gray-200 text-gray-800 px-4 py-3 rounded-2xl rounded-tr-sm max-w-[85%] shadow-sm chat-text">${safeContent}</div>`;
+                        div.innerHTML = `<span class="text-[11px] text-gray-400 mb-1 mr-1">我 · ${time}</span><div class="chat-bubble-user bg-white border border-gray-200 text-gray-800 px-4 py-3 rounded-2xl rounded-tr-sm max-w-[85%] shadow-sm chat-text">${renderedContent}</div>`;
                     } else {
-                        div.innerHTML = `<span class="text-[11px] text-gray-400 mb-1 ml-1">陶然AI助教 · ${time}</span><div class="bg-gray-100 border border-gray-200 text-gray-800 px-4 py-3 rounded-2xl rounded-tl-sm max-w-[85%] shadow-sm chat-text">${safeContent}</div>`;
+                        div.innerHTML = `<span class="text-[11px] text-gray-400 mb-1 ml-1">陶然AI助教 · ${time}</span><div class="chat-bubble-ai bg-gray-100 border border-gray-200 text-gray-800 px-4 py-3 rounded-2xl rounded-tl-sm max-w-[85%] shadow-sm chat-text chat-markdown">${renderedContent}</div>`;
                     }
                 }
                 chatWindow.appendChild(div);
@@ -2147,6 +3319,16 @@
                 return data.reply;
             }
 
+            function getRequestErrorMessage(error) {
+                if (String(error && error.message || '').includes('Failed to fetch')) {
+                    if (window.location.protocol === 'file:') {
+                        return '请求失败：你现在大概率是直接打开的 HTML，本地后端也许还没启动。先运行 FastAPI，再重试。';
+                    }
+                    return '请求失败：当前页面没连上后端接口，请检查后端服务是否启动。';
+                }
+                return error && error.message ? error.message : '请求失败，请稍后重试。';
+            }
+
             async function handleDeleteChat(chatId) {
                 const chats = await getAllChats();
                 const target = chats.find(chat => chat.id === chatId);
@@ -2252,8 +3434,9 @@
                     }
                 } catch (error) {
                     clearPendingImage();
-                    appendMessage('当前后端接口暂时不可用，请确认 FastAPI 服务已经启动。', 'ai');
-                    showToast('接口请求失败，请先启动后端服务');
+                    const errorMessage = getRequestErrorMessage(error);
+                    appendMessage(errorMessage, 'ai');
+                    showToast(errorMessage, 2600);
                 } finally {
                     setSendingState(false);
                     chatInput.focus();
@@ -2305,6 +3488,9 @@
 
             initMobile(true);
             updateNoteSearchState('');
+            resetCalendarToToday();
+            setCalendarCollapsed(true);
+            setCalendarEditorOpen(false);
             window.addEventListener('resize', () => {
                 clearTimeout(window._rt);
                 window._rt = setTimeout(initMobile, 200);
@@ -2421,6 +3607,22 @@
             flashcardMarkBtn.addEventListener('click', toggleFlashcardMastered);
             flashcardAskBtn.addEventListener('click', sendFlashcardToChat);
             flashcardJumpNoteBtn.addEventListener('click', jumpToFlashcardNote);
+            calendarToggleBtn.addEventListener('click', toggleCalendarCollapse);
+            calendarEditorToggle.addEventListener('click', () => setCalendarEditorOpen(!calendarEditor.classList.contains('open')));
+            calendarPrevBtn.addEventListener('click', () => shiftCalendarMonth(-1));
+            calendarNextBtn.addEventListener('click', () => shiftCalendarMonth(1));
+            calendarCountdownSaveBtn.addEventListener('click', async () => {
+                await saveCountdownSettings();
+            });
+            calendarEventAddBtn.addEventListener('click', async () => {
+                await addCalendarSchedule();
+            });
+            calendarEventTitleInput.addEventListener('keydown', async event => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    await addCalendarSchedule();
+                }
+            });
             flashcardModal.addEventListener('wheel', handleFlashcardWheel, { passive: false });
             noteSearchToggle.addEventListener('click', () => {
                 if (noteSearchPanel.classList.contains('open')) {
@@ -2450,27 +3652,47 @@
             chatImageInput.addEventListener('change', () => {
                 const [file] = chatImageInput.files || [];
                 if (!file) return;
-                if (!IMAGE_ACCEPT_TYPES.includes(file.type)) {
-                    showToast('仅支持 JPG、PNG、WebP 图片');
-                    clearPendingImage();
+                processChatImageFile(file);
+                chatImageInput.value = '';
+            });
+            chatStage.addEventListener('dragenter', event => {
+                if (!isImageTransfer(event.dataTransfer)) return;
+                event.preventDefault();
+                composerDragDepth += 1;
+                setComposerDragActive(true);
+            });
+            chatStage.addEventListener('dragover', event => {
+                if (!isImageTransfer(event.dataTransfer)) return;
+                event.preventDefault();
+                event.dataTransfer.dropEffect = 'copy';
+                setComposerDragActive(true);
+            });
+            chatStage.addEventListener('dragleave', event => {
+                if (!isImageTransfer(event.dataTransfer)) return;
+                event.preventDefault();
+                composerDragDepth = Math.max(0, composerDragDepth - 1);
+                if (composerDragDepth === 0) {
+                    setComposerDragActive(false);
+                }
+            });
+            chatStage.addEventListener('drop', event => {
+                if (!isImageTransfer(event.dataTransfer)) return;
+                event.preventDefault();
+                resetComposerDragState();
+                const file = Array.from(event.dataTransfer.files || []).find(item => item.type && item.type.startsWith('image/'));
+                if (!file) {
+                    showToast('没有识别到可上传的图片');
                     return;
                 }
-                if (file.size > IMAGE_MAX_SIZE) {
-                    showToast('图片不能超过 4MB');
-                    clearPendingImage();
-                    return;
-                }
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    pendingImage = {
-                        name: file.name,
-                        size: file.size,
-                        mimeType: file.type,
-                        dataUrl: String(event.target.result || '')
-                    };
-                    renderPendingImage();
-                };
-                reader.readAsDataURL(file);
+                processChatImageFile(file);
+                chatInput.focus();
+            });
+            window.addEventListener('dragend', resetComposerDragState);
+            chatStage.addEventListener('paste', event => {
+                const imageFile = getClipboardImageFile(event);
+                if (!imageFile) return;
+                event.preventDefault();
+                processChatImageFile(imageFile);
             });
             profileBtn.addEventListener('click', openProfileSheet);
             profileOverlay.addEventListener('click', closeProfileSheet);
@@ -2545,6 +3767,7 @@
                     else if (!flashcardModal.classList.contains('hidden')) closeFlashcardModal();
                     else if (profileSheet.classList.contains('open')) closeProfileSheet();
                     else if (historyPanel.classList.contains('open')) closeHistoryPanel();
+                    else if (calendarEditor.classList.contains('open')) setCalendarEditorOpen(false);
                     else if (noteSearchPanel.classList.contains('open')) closeNoteSearch();
                     else if (window.innerWidth < 1024) {
                         showMobilePanel('');
@@ -2554,7 +3777,7 @@
 
             openDB()
                 .then(async () => {
-                    await Promise.all([ensureActiveChat(), loadUserProfile()]);
+                    await Promise.all([ensureActiveChat(), loadUserProfile(), loadCalendarSettings()]);
                     setSelectedNote(selectedNoteId);
                 })
                 .catch(() => {
@@ -2562,6 +3785,7 @@
                     appendMessage(defaultGreeting, 'ai');
                     chatMeta.textContent = '当前浏览器无法保存历史对话';
                     applyUserProfile(userProfile);
+                    loadCalendarSettings();
                     setSelectedNote(selectedNoteId);
                     showToast('IndexedDB 初始化失败，历史记录不可用');
                 });
