@@ -1637,7 +1637,7 @@
                         <div class="flex-1 min-w-0">
                             <p id="pending-upload-name" class="text-sm font-medium text-gray-700 truncate"></p>
                             <p id="pending-upload-meta" class="text-xs text-gray-400 mt-1"></p>
-                            <p class="text-xs text-gray-400 mt-2">支持 JPG / PNG / WebP，单张不超过 4MB</p>
+                            <p class="text-xs text-gray-400 mt-2">支持 JPG / PNG / WebP，单张不超过 3MB</p>
                         </div>
                         <button id="pending-upload-remove" class="w-8 h-8 rounded-full hover:bg-gray-100 text-gray-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark"></i></button>
                     </div>
@@ -1975,7 +1975,7 @@
             const DEFAULT_LOCAL_API_BASE = 'http://127.0.0.1:8000';
             const CHAT_API_URL = getChatApiUrl();
             const IMAGE_ACCEPT_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-            const IMAGE_MAX_SIZE = 4 * 1024 * 1024;
+            const IMAGE_MAX_SIZE = 3 * 1024 * 1024;
             const DB_NAME = 'taoran-chat-demo-db';
             const DB_VERSION = 2;
             const STORE_NAME = 'chat_sessions';
@@ -2073,6 +2073,11 @@
                     return `${DEFAULT_LOCAL_API_BASE}/api/chat`;
                 }
                 return '/api/chat';
+            }
+
+            function isStaticHostWithoutApi() {
+                const hostname = window.location.hostname || '';
+                return hostname.endsWith('github.io') || hostname.endsWith('githubusercontent.com');
             }
 
             function showToast(msg, dur = 2000) {
@@ -2252,7 +2257,7 @@
                     return;
                 }
                 if (file.size > IMAGE_MAX_SIZE) {
-                    showToast('图片不能超过 4MB');
+                    showToast('图片不能超过 3MB');
                     clearPendingImage();
                     return;
                 }
@@ -3320,9 +3325,22 @@
             }
 
             function getRequestErrorMessage(error) {
-                if (String(error && error.message || '').includes('Failed to fetch')) {
+                const message = String(error && error.message || '');
+                if (message.includes('request failed: 405')) {
+                    if (isStaticHostWithoutApi()) {
+                        return '请求失败：你现在打开的是 GitHub 静态页面，但 GitHub Pages 不能直接跑 FastAPI。需要把后端单独部署到可访问的 HTTPS 地址，再把接口地址配过去。';
+                    }
+                    return '请求失败：当前地址不支持这个 POST 接口，请检查你访问的是否是后端服务地址。';
+                }
+                if (message.includes('request failed: 404')) {
+                    return '请求失败：当前页面所在地址下没有 /api/chat，这通常说明前端和后端没有部署在同一个服务上。';
+                }
+                if (message.includes('Failed to fetch')) {
                     if (window.location.protocol === 'file:') {
                         return '请求失败：你现在大概率是直接打开的 HTML，本地后端也许还没启动。先运行 FastAPI，再重试。';
+                    }
+                    if (window.location.protocol === 'https:' && CHAT_API_URL.startsWith('http://')) {
+                        return '请求失败：当前页面是 HTTPS，但接口地址还是 HTTP，浏览器会直接拦截。把后端也换成 HTTPS 地址再试。';
                     }
                     return '请求失败：当前页面没连上后端接口，请检查后端服务是否启动。';
                 }

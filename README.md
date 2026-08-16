@@ -102,3 +102,48 @@ Copy-Item .env.example .env
 
 - `GET /health`：查看服务状态和当前模型配置
 - `GET /api/model-config`：查看当前后端模型框架配置
+
+## Vercel 临时部署
+
+这个项目现在可以直接部署到 Vercel，适合先做在线 demo。
+
+### 1. 导入仓库
+
+把 GitHub 仓库导入 Vercel，新建 Project 即可。
+
+仓库里已经补了：
+
+- `vercel.json`
+- `pyproject.toml`
+
+Vercel 会直接识别根目录的 `app.py` 作为 FastAPI 入口。
+
+### 2. 配置环境变量
+
+在 Vercel Project Settings -> Environment Variables 中填写：
+
+- `QWEN_API_KEY`
+- `QWEN_BASE_URL`
+- `QWEN_TEXT_MODEL`
+- `QWEN_BACKUP_TEXT_MODEL`
+- `QWEN_VISION_MODEL`
+- `QWEN_OCR_MODEL`
+
+建议值与本地 `.env` 保持一致。
+
+### 3. 部署后验证
+
+部署成功后先访问：
+
+- `/health`
+- `/api/model-config`
+
+如果这两个地址正常，再打开首页测试聊天。
+
+### 4. 当前已知限制
+
+- Vercel 适合先顶 demo，但本质上仍是函数式部署
+- 图片目前通过 `data_url` 走 JSON 请求体上传
+- 为了更稳地适配 Vercel，前端已把单张图片限制收紧到 `3MB`
+
+如果后面要长期稳定跑图片识别，建议明天迁到正式后端服务器后，再改成更适合生产的图片上传链路。
