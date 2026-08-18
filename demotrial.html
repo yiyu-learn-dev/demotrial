@@ -44,6 +44,10 @@
 
         @keyframes fadeInUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
         .message-animate { animation: fadeInUp 0.35s ease-out; }
+        @keyframes thinkingDotPulse {
+            0%, 80%, 100% { transform: translateY(0); opacity: 0.28; }
+            40% { transform: translateY(-1px); opacity: 1; }
+        }
 
         .timer-ring { transition:0.3s; }
         .timer-ring.active { animation: rotate-ring 2s linear infinite; }
@@ -1483,6 +1487,32 @@
             padding-left: 1.3em;
         }
         .chat-markdown .chat-md-list li + li { margin-top: 0.3em; }
+        .chat-thinking-bubble {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.42rem;
+            min-width: 108px;
+        }
+        .chat-thinking-label {
+            font-size: 0.95em;
+            color: inherit;
+            opacity: 0.9;
+        }
+        .chat-thinking-dots {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.28rem;
+        }
+        .chat-thinking-dots span {
+            width: 0.35rem;
+            height: 0.35rem;
+            border-radius: 999px;
+            background: currentColor;
+            opacity: 0.28;
+            animation: thinkingDotPulse 1.15s ease-in-out infinite;
+        }
+        .chat-thinking-dots span:nth-child(2) { animation-delay: 0.16s; }
+        .chat-thinking-dots span:nth-child(3) { animation-delay: 0.32s; }
 
         .settings-panel { transform: translateX(100%); transition: transform 0.3s ease; }
         .settings-panel.open { transform: translateX(0); }
@@ -2046,6 +2076,7 @@
             let currentChatId = null;
             let isSending = false;
             let pendingImage = null;
+            let pendingAiIndicator = null;
             let currentViewportMode = window.innerWidth < 1024 ? 'mobile' : 'desktop';
             let profileDraftAvatar = '';
             let selectedNoteId = NOTE_FLASHCARDS[0].id;
@@ -2221,7 +2252,7 @@
                 sendBtn.classList.toggle('cursor-not-allowed', sending);
                 uploadImageBtn.classList.toggle('opacity-60', sending);
                 uploadImageBtn.classList.toggle('cursor-not-allowed', sending);
-                chatInput.placeholder = sending ? '陶然AI助教正在思考中...' : '输入你想探讨的高考英语问题...';
+                chatInput.placeholder = '输入你想探讨的高考英语问题...';
             }
 
             function formatFileSize(size) {
@@ -2867,6 +2898,32 @@
                 });
             }
 
+            function clearThinkingIndicator() {
+                if (pendingAiIndicator && pendingAiIndicator.parentNode) {
+                    pendingAiIndicator.parentNode.removeChild(pendingAiIndicator);
+                }
+                pendingAiIndicator = null;
+            }
+
+            function appendThinkingIndicator() {
+                clearThinkingIndicator();
+                const div = document.createElement('div');
+                div.className = 'message-animate flex flex-col items-start';
+                div.innerHTML = `
+                    <span class="text-[11px] text-gray-400 mb-1 ml-1">陶然AI助教 · 正在思考</span>
+                    <div class="chat-bubble-ai bg-gray-100 border border-gray-200 text-gray-800 px-4 py-3 rounded-2xl rounded-tl-sm max-w-[85%] shadow-sm chat-text">
+                        <div class="chat-thinking-bubble" aria-live="polite" aria-label="AI 正在思考">
+                            <span class="chat-thinking-label">正在思考</span>
+                            <span class="chat-thinking-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+                        </div>
+                    </div>
+                `;
+                chatWindow.appendChild(div);
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+                pendingAiIndicator = div;
+                return div;
+            }
+
             function appendMessage(content, sender, options = {}) {
                 const createdAt = options.createdAt || new Date().toISOString();
                 const type = options.type || 'text';
@@ -2896,7 +2953,11 @@
                         div.innerHTML = `<span class="text-[11px] text-gray-400 mb-1 ml-1">陶然AI助教 · ${time}</span><div class="chat-bubble-ai bg-gray-100 border border-gray-200 text-gray-800 px-4 py-3 rounded-2xl rounded-tl-sm max-w-[85%] shadow-sm chat-text chat-markdown">${renderedContent}</div>`;
                     }
                 }
-                chatWindow.appendChild(div);
+                if (options.replaceElement && options.replaceElement.parentNode === chatWindow) {
+                    chatWindow.replaceChild(div, options.replaceElement);
+                } else {
+                    chatWindow.appendChild(div);
+                }
                 chatWindow.scrollTop = chatWindow.scrollHeight;
                 return {
                     id: crypto.randomUUID(),
@@ -2912,6 +2973,7 @@
             }
 
             function renderMessages(messages) {
+                pendingAiIndicator = null;
                 chatWindow.innerHTML = '';
                 messages.forEach(message => {
                     appendMessage(message.content || '', message.sender, {
@@ -3440,11 +3502,17 @@
                     showToast('用户消息保存失败');
                 }
                 setSendingState(true);
+                const thinkingIndicator = appendThinkingIndicator();
                 try {
                     const currentImage = pendingImage;
                     clearPendingImage();
                     const replyText = await requestAssistantReply(text, currentImage);
-                    const aiMessage = appendMessage(replyText, 'ai');
+                    const aiMessage = appendMessage(replyText, 'ai', {
+                        replaceElement: thinkingIndicator
+                    });
+                    if (pendingAiIndicator === thinkingIndicator) {
+                        pendingAiIndicator = null;
+                    }
                     try {
                         await syncCurrentChat(aiMessage);
                     } catch (error) {
@@ -3453,9 +3521,15 @@
                 } catch (error) {
                     clearPendingImage();
                     const errorMessage = getRequestErrorMessage(error);
-                    appendMessage(errorMessage, 'ai');
+                    appendMessage(errorMessage, 'ai', {
+                        replaceElement: thinkingIndicator
+                    });
+                    if (pendingAiIndicator === thinkingIndicator) {
+                        pendingAiIndicator = null;
+                    }
                     showToast(errorMessage, 2600);
                 } finally {
+                    clearThinkingIndicator();
                     setSendingState(false);
                     chatInput.focus();
                 }
