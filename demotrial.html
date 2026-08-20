@@ -2358,17 +2358,65 @@
                 return html.join('') || '<p></p>';
             }
 
+            function extractStructuredJsonCandidate(content) {
+                if (typeof content !== 'string') return '';
+                const normalized = content.trim();
+                if (!normalized) return '';
+
+                const fencedBlocks = Array.from(normalized.matchAll(/```(?:json)?\s*([\s\S]*?)\s*```/ig))
+                    .map(match => String(match[1] || '').trim())
+                    .filter(Boolean);
+
+                const candidates = fencedBlocks.length ? fencedBlocks : [normalized];
+                for (const candidate of candidates) {
+                    if (candidate.startsWith('{') && candidate.endsWith('}')) {
+                        return candidate;
+                    }
+
+                    let depth = 0;
+                    let start = -1;
+                    let inString = false;
+                    let escaped = false;
+                    for (let i = 0; i < candidate.length; i += 1) {
+                        const char = candidate[i];
+                        if (inString) {
+                            if (escaped) {
+                                escaped = false;
+                            } else if (char === '\\') {
+                                escaped = true;
+                            } else if (char === '"') {
+                                inString = false;
+                            }
+                            continue;
+                        }
+
+                        if (char === '"') {
+                            inString = true;
+                            continue;
+                        }
+                        if (char === '{') {
+                            if (depth === 0) start = i;
+                            depth += 1;
+                            continue;
+                        }
+                        if (char === '}') {
+                            if (depth > 0) depth -= 1;
+                            if (depth === 0 && start !== -1) {
+                                const jsonSlice = candidate.slice(start, i + 1).trim();
+                                if (jsonSlice.startsWith('{') && jsonSlice.endsWith('}')) {
+                                    return jsonSlice;
+                                }
+                                start = -1;
+                            }
+                        }
+                    }
+                }
+                return '';
+            }
+
             function parseStructuredReply(content) {
-                if (typeof content !== 'string') return null;
-                let normalized = content.trim();
+                const normalized = extractStructuredJsonCandidate(content);
                 if (!normalized) return null;
-                const fenceMatch = normalized.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
-                if (fenceMatch) {
-                    normalized = fenceMatch[1].trim();
-                }
-                if (!normalized.startsWith('{') || !normalized.endsWith('}')) {
-                    return null;
-                }
                 try {
                     const parsed = JSON.parse(normalized);
                     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || !('supported' in parsed)) {
