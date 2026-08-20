@@ -18,6 +18,7 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent
 HTML_FILE = BASE_DIR / "demotrial.html"
+PROMPT_FILE = BASE_DIR / "prompt_1.md"
 logger = logging.getLogger("taoran.demo")
 
 app = FastAPI(title="Taoran AI Demo API", version="0.2.0")
@@ -100,6 +101,17 @@ def get_openai_client() -> OpenAI | None:
     return OpenAI(api_key=settings.api_key, base_url=settings.base_url)
 
 
+@lru_cache(maxsize=1)
+def get_teaching_prompt() -> str:
+    if PROMPT_FILE.exists():
+        return PROMPT_FILE.read_text(encoding="utf-8").strip()
+    logger.warning("Teaching prompt file not found: %s", PROMPT_FILE)
+    return (
+        "你是陶然 AI 助教，专注高考英语辅导。"
+        "回答要清晰、温和、结构化，优先帮助用户定位题干信息、分析答案依据，并给出下一步学习建议。"
+    )
+
+
 def build_demo_reply(message: str, history: list[ChatMessage], latest_image: ImagePayload | None = None) -> str:
     text = message.strip()
     lowered = text.lower()
@@ -147,10 +159,7 @@ def build_text_messages(message: str, history: list[ChatMessage]) -> list[dict]:
     messages: list[dict] = [
         {
             "role": "system",
-            "content": (
-                "你是陶然 AI 助教，专注高考英语辅导。回答要清晰、温和、结构化，"
-                "优先帮助用户定位题干信息、分析答案依据，并给出下一步学习建议。"
-            ),
+            "content": get_teaching_prompt(),
         }
     ]
     for item in history[-10:]:
@@ -170,8 +179,9 @@ def build_vision_messages(
         {
             "role": "system",
             "content": (
-                "你是陶然 AI 助教，当前正在处理用户上传的题目图片。"
-                "请结合图片内容、用户问题和已有上下文，输出适合学生阅读的分析。"
+                f"{get_teaching_prompt()}\n\n"
+                "当前用户上传了题目图片。请结合图片内容、用户问题和已有上下文，"
+                "严格按上面的教学体系输出适合学生阅读的分析。"
             ),
         }
     ]

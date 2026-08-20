@@ -1639,8 +1639,8 @@
                     </div>
                 </div>
                 <div class="flex gap-2 sm:gap-3 shrink-0">
-                    <button class="soft-primary-btn flex-1 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-1.5"><i class="fa-solid fa-plus text-xs"></i> 添加</button>
-                    <button class="soft-secondary-btn flex-1 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-semibold text-brand transition flex items-center justify-center gap-1.5"><i class="fa-solid fa-folder-tree text-xs"></i> 分类</button>
+                    <button id="add-note-btn" class="soft-primary-btn flex-1 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-1.5"><i class="fa-solid fa-plus text-xs"></i> 添加</button>
+                    <button id="category-btn" class="soft-secondary-btn flex-1 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-semibold text-brand transition flex items-center justify-center gap-1.5"><i class="fa-solid fa-folder-tree text-xs"></i> 分类</button>
                 </div>
             </div>
             <div class="sidebar-expand-inner hidden flex-col items-center justify-center cursor-pointer" onclick="toggleLeftDesktop()">
@@ -1759,8 +1759,8 @@
                         </div>
                         </div>
                     </div>
-                    <div class="extend-card rounded-[20px] shadow-sm p-4 relative overflow-hidden cursor-pointer" style="background: linear-gradient(135deg, #efedf1 0%, #e2e1e7 100%);"><div class="absolute -right-3 -bottom-3 text-[#9e9aac] opacity-10 text-7xl"><i class="fa-solid fa-book-open"></i></div><h3 class="font-bold text-[#6f6b82] mb-1 text-[15px]">知识笔记</h3><p class="text-[13px] text-[#817d92] font-medium">语法体系与写作模板</p></div>
-                    <div class="extend-card rounded-[20px] shadow-sm p-4 relative overflow-hidden cursor-pointer" style="background: linear-gradient(135deg, #edf1f2 0%, #dfe5e8 100%);"><div class="absolute -right-2 -bottom-2 text-[#90a0ac] opacity-10 text-7xl"><i class="fa-solid fa-store"></i></div><h3 class="font-bold text-[#647482] mb-1 text-[15px]">商城</h3><p class="text-[13px] text-[#788796] font-medium">高考冲刺专区</p></div>
+                    <div id="knowledge-notes-card" class="extend-card rounded-[20px] shadow-sm p-4 relative overflow-hidden cursor-pointer" style="background: linear-gradient(135deg, #efedf1 0%, #e2e1e7 100%);"><div class="absolute -right-3 -bottom-3 text-[#9e9aac] opacity-10 text-7xl"><i class="fa-solid fa-book-open"></i></div><h3 class="font-bold text-[#6f6b82] mb-1 text-[15px]">知识笔记</h3><p class="text-[13px] text-[#817d92] font-medium">语法体系与写作模板</p></div>
+                    <div id="store-card" class="extend-card rounded-[20px] shadow-sm p-4 relative overflow-hidden cursor-pointer" style="background: linear-gradient(135deg, #edf1f2 0%, #dfe5e8 100%);"><div class="absolute -right-2 -bottom-2 text-[#90a0ac] opacity-10 text-7xl"><i class="fa-solid fa-store"></i></div><h3 class="font-bold text-[#647482] mb-1 text-[15px]">商城</h3><p class="text-[13px] text-[#788796] font-medium">高考冲刺专区</p></div>
                 </div>
             </div>
             <div class="sidebar-expand-inner hidden flex-col items-center justify-center cursor-pointer" onclick="toggleRightDesktop()">
@@ -1945,6 +1945,8 @@
             const noteSearchClear = document.getElementById('note-search-clear');
             const noteSearchMeta = document.getElementById('note-search-meta');
             const noteSearchEmpty = document.getElementById('note-search-empty');
+            const addNoteBtn = document.getElementById('add-note-btn');
+            const categoryBtn = document.getElementById('category-btn');
             const leftPanel = document.getElementById('left-panel');
             const rightPanel = document.getElementById('right-panel');
             const mobileToggleLeft = document.getElementById('mobile-toggle-left');
@@ -1952,6 +1954,8 @@
             const noteCards = Array.from(document.querySelectorAll('.note-card'));
             const flashcardEntry = document.getElementById('flashcard-entry');
             const flashcardEntryDesc = document.getElementById('flashcard-entry-desc');
+            const knowledgeNotesCard = document.getElementById('knowledge-notes-card');
+            const storeCard = document.getElementById('store-card');
             const flashcardOverlay = document.getElementById('flashcard-overlay');
             const flashcardModal = document.getElementById('flashcard-modal');
             const flashcardCloseBtn = document.getElementById('flashcard-close-btn');
@@ -2714,6 +2718,10 @@
                 noteSearchPanel.classList.remove('open');
                 noteSearchInput.value = '';
                 updateNoteSearchState('');
+            }
+
+            function showComingSoonToast() {
+                showToast('该功能暂未开放');
             }
 
             function applyUserProfile(profile) {
@@ -3716,6 +3724,10 @@
                 }
             });
             flashcardModal.addEventListener('wheel', handleFlashcardWheel, { passive: false });
+            addNoteBtn.addEventListener('click', showComingSoonToast);
+            categoryBtn.addEventListener('click', showComingSoonToast);
+            knowledgeNotesCard.addEventListener('click', showComingSoonToast);
+            storeCard.addEventListener('click', showComingSoonToast);
             noteSearchToggle.addEventListener('click', () => {
                 if (noteSearchPanel.classList.contains('open')) {
                     closeNoteSearch();
