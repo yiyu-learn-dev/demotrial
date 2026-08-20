@@ -2455,8 +2455,61 @@
                         followUp: String(parsed.follow_up || '').trim()
                     };
                 } catch (error) {
-                    return null;
+                    return parseLooseStructuredReply(normalized);
                 }
+            }
+
+            function decodeJsonLikeString(value) {
+                return String(value || '')
+                    .replace(/\\"/g, '"')
+                    .replace(/\\n/g, '\n')
+                    .replace(/\\r/g, '')
+                    .replace(/\\\\/g, '\\')
+                    .trim();
+            }
+
+            function extractJsonLikeStringField(source, key) {
+                const pattern = new RegExp(`"${key}"\\s*:\\s*"([\\s\\S]*?)"(?=\\s*,\\s*"|\\s*\\}\\s*$|\\s*\\]\\s*$)`);
+                const match = source.match(pattern);
+                return match ? decodeJsonLikeString(match[1]) : '';
+            }
+
+            function parseLooseStructuredReply(source) {
+                const supportedMatch = source.match(/"supported"\s*:\s*(true|false)/i);
+                if (!supportedMatch) return null;
+
+                const distractorBlockMatch = source.match(/"distractor_analysis"\s*:\s*\{([\s\S]*?)\}\s*(?:,|$)/);
+                const distractorBlock = distractorBlockMatch ? distractorBlockMatch[1] : '';
+                const parseDistractorValue = key => {
+                    const pattern = new RegExp(`"${key}"\\s*:\\s*"([\\s\\S]*?)"(?=\\s*,\\s*"|\\s*$)`);
+                    const match = distractorBlock.match(pattern);
+                    return match ? decodeJsonLikeString(match[1]) : '';
+                };
+
+                const cardsBlockMatch = source.match(/"knowledge_cards"\s*:\s*\[([\s\S]*?)\]\s*(?:,|$)/);
+                const knowledgeCards = cardsBlockMatch
+                    ? Array.from(cardsBlockMatch[1].matchAll(/"([\s\S]*?)"/g)).map(match => decodeJsonLikeString(match[1])).filter(Boolean)
+                    : [];
+
+                return {
+                    supported: supportedMatch[1].toLowerCase() === 'true',
+                    questionType: extractJsonLikeStringField(source, 'question_type'),
+                    subtype: extractJsonLikeStringField(source, 'subtype'),
+                    answer: extractJsonLikeStringField(source, 'answer'),
+                    confidence: extractJsonLikeStringField(source, 'confidence'),
+                    needMoreContext: /"need_more_context"\s*:\s*true/i.test(source),
+                    unsupportedReason: extractJsonLikeStringField(source, 'unsupported_reason'),
+                    stemUnderstanding: extractJsonLikeStringField(source, 'stem_understanding'),
+                    reasoningSteps: [],
+                    distractorAnalysis: {
+                        A: parseDistractorValue('A'),
+                        B: parseDistractorValue('B'),
+                        C: parseDistractorValue('C'),
+                        D: parseDistractorValue('D')
+                    },
+                    knowledgeCards,
+                    followUp: extractJsonLikeStringField(source, 'follow_up')
+                };
             }
 
             function getStructuredReplyPreview(data) {
