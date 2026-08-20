@@ -1487,6 +1487,153 @@
             padding-left: 1.3em;
         }
         .chat-markdown .chat-md-list li + li { margin-top: 0.3em; }
+        .chat-structured {
+            display: flex;
+            flex-direction: column;
+            gap: 0.82rem;
+        }
+        .chat-structured-top {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.45rem;
+        }
+        .chat-structured-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.32rem;
+            padding: 0.26rem 0.72rem;
+            border-radius: 999px;
+            font-size: 0.74em;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            border: 1px solid rgba(148, 163, 184, 0.24);
+            background: rgba(255, 255, 255, 0.52);
+        }
+        .chat-structured-badge.is-ok {
+            color: #5f7086;
+            background: rgba(226, 235, 245, 0.82);
+        }
+        .chat-structured-badge.is-muted {
+            color: #8a6d4c;
+            background: rgba(245, 233, 214, 0.88);
+            border-color: rgba(211, 181, 138, 0.35);
+        }
+        .chat-structured-meta {
+            font-size: 0.78em;
+            color: rgba(96, 107, 122, 0.9);
+        }
+        .chat-structured-card,
+        .chat-structured-answer,
+        .chat-structured-section {
+            border-radius: 1rem;
+            border: 1px solid rgba(203, 213, 225, 0.7);
+            background: rgba(255, 255, 255, 0.55);
+            padding: 0.8rem 0.9rem;
+        }
+        .chat-structured-label {
+            display: block;
+            font-size: 0.73em;
+            font-weight: 800;
+            color: #748398;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin-bottom: 0.32rem;
+        }
+        .chat-structured-text {
+            color: inherit;
+            line-height: 1.72;
+        }
+        .chat-structured-answer {
+            background: linear-gradient(180deg, rgba(234, 240, 247, 0.95) 0%, rgba(245, 247, 250, 0.95) 100%);
+        }
+        .chat-structured-answer-main {
+            font-size: 1.05em;
+            font-weight: 800;
+            color: #4d627a;
+        }
+        .chat-structured-answer-note {
+            margin-top: 0.2rem;
+            font-size: 0.8em;
+            color: rgba(102, 113, 128, 0.88);
+        }
+        .chat-structured-steps {
+            display: grid;
+            gap: 0.66rem;
+        }
+        .chat-structured-step {
+            border-radius: 0.92rem;
+            border: 1px solid rgba(203, 213, 225, 0.58);
+            background: rgba(255, 255, 255, 0.48);
+            padding: 0.72rem 0.82rem;
+        }
+        .chat-structured-step-head {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.28rem;
+        }
+        .chat-structured-step-index {
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.78em;
+            font-weight: 800;
+            color: #637891;
+            background: rgba(225, 233, 242, 0.95);
+        }
+        .chat-structured-step-focus {
+            font-weight: 700;
+            color: #5d7188;
+        }
+        .chat-structured-step-line + .chat-structured-step-line {
+            margin-top: 0.26rem;
+        }
+        .chat-structured-step-line strong {
+            color: #6f8298;
+            font-weight: 700;
+            margin-right: 0.25rem;
+        }
+        .chat-structured-grid {
+            display: grid;
+            gap: 0.55rem;
+        }
+        .chat-structured-choice {
+            display: grid;
+            grid-template-columns: 1.15rem 1fr;
+            gap: 0.55rem;
+            align-items: flex-start;
+        }
+        .chat-structured-choice-key {
+            width: 1.15rem;
+            height: 1.15rem;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(229, 235, 241, 0.95);
+            color: #667b92;
+            font-size: 0.72em;
+            font-weight: 800;
+        }
+        .chat-structured-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+        }
+        .chat-structured-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.3rem 0.65rem;
+            border-radius: 999px;
+            background: rgba(229, 235, 242, 0.88);
+            color: #66798f;
+            font-size: 0.76em;
+            font-weight: 700;
+        }
         .chat-thinking-bubble {
             display: inline-flex;
             align-items: center;
@@ -2139,6 +2286,10 @@
                     .replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s).,!?:;]|$)/g, '$1<em>$2</em>');
             }
 
+            function renderPlainText(content) {
+                return escapeHtml(content || '').replace(/\n/g, '<br>');
+            }
+
             function renderMarkdown(content) {
                 const lines = String(content || '').replace(/\r\n?/g, '\n').split('\n');
                 const html = [];
@@ -2205,6 +2356,169 @@
 
                 flushList();
                 return html.join('') || '<p></p>';
+            }
+
+            function parseStructuredReply(content) {
+                if (typeof content !== 'string') return null;
+                let normalized = content.trim();
+                if (!normalized) return null;
+                const fenceMatch = normalized.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+                if (fenceMatch) {
+                    normalized = fenceMatch[1].trim();
+                }
+                if (!normalized.startsWith('{') || !normalized.endsWith('}')) {
+                    return null;
+                }
+                try {
+                    const parsed = JSON.parse(normalized);
+                    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || !('supported' in parsed)) {
+                        return null;
+                    }
+                    const distractorSource = parsed.distractor_analysis && typeof parsed.distractor_analysis === 'object'
+                        ? parsed.distractor_analysis
+                        : {};
+                    const reasoningSteps = Array.isArray(parsed.reasoning_steps)
+                        ? parsed.reasoning_steps.map((item, index) => ({
+                            step: Number(item && item.step) || index + 1,
+                            focus: String(item && item.focus || '').trim(),
+                            basis: String(item && item.basis || '').trim(),
+                            conclusion: String(item && item.conclusion || '').trim()
+                        }))
+                        : [];
+                    return {
+                        supported: Boolean(parsed.supported),
+                        questionType: String(parsed.question_type || '').trim(),
+                        subtype: String(parsed.subtype || '').trim(),
+                        answer: String(parsed.answer || '').trim(),
+                        confidence: String(parsed.confidence || '').trim(),
+                        needMoreContext: Boolean(parsed.need_more_context),
+                        unsupportedReason: String(parsed.unsupported_reason || '').trim(),
+                        stemUnderstanding: String(parsed.stem_understanding || '').trim(),
+                        reasoningSteps,
+                        distractorAnalysis: {
+                            A: String(distractorSource.A || '').trim(),
+                            B: String(distractorSource.B || '').trim(),
+                            C: String(distractorSource.C || '').trim(),
+                            D: String(distractorSource.D || '').trim()
+                        },
+                        knowledgeCards: Array.isArray(parsed.knowledge_cards)
+                            ? parsed.knowledge_cards.map(item => String(item || '').trim()).filter(Boolean)
+                            : [],
+                        followUp: String(parsed.follow_up || '').trim()
+                    };
+                } catch (error) {
+                    return null;
+                }
+            }
+
+            function getStructuredReplyPreview(data) {
+                if (!data) return '';
+                if (!data.supported) {
+                    return data.unsupportedReason || '该题型暂不支持';
+                }
+                if (data.answer) {
+                    return `答案：${data.answer}`;
+                }
+                if (data.stemUnderstanding) {
+                    return data.stemUnderstanding;
+                }
+                if (data.subtype) {
+                    return `${data.questionType || '语法'} · ${data.subtype}`;
+                }
+                return '已生成讲题结果';
+            }
+
+            function renderStructuredReply(data) {
+                const metaParts = [];
+                if (data.questionType) metaParts.push(data.questionType);
+                if (data.subtype) metaParts.push(data.subtype);
+                if (data.confidence) metaParts.push(`置信度 ${escapeHtml(data.confidence)}`);
+                if (data.needMoreContext) metaParts.push('需要补充题干');
+
+                const distractorEntries = Object.entries(data.distractorAnalysis).filter(([, value]) => value);
+                const distractorHtml = distractorEntries.length
+                    ? `
+                        <div class="chat-structured-section">
+                            <span class="chat-structured-label">干扰项剖析</span>
+                            <div class="chat-structured-grid">
+                                ${distractorEntries.map(([key, value]) => `
+                                    <div class="chat-structured-choice">
+                                        <span class="chat-structured-choice-key">${escapeHtml(key)}</span>
+                                        <div class="chat-structured-text">${renderPlainText(value)}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `
+                    : '';
+
+                const knowledgeHtml = data.knowledgeCards.length
+                    ? `
+                        <div class="chat-structured-section">
+                            <span class="chat-structured-label">知识卡片</span>
+                            <div class="chat-structured-tags">
+                                ${data.knowledgeCards.map(item => `<span class="chat-structured-tag">${escapeHtml(item)}</span>`).join('')}
+                            </div>
+                        </div>
+                    `
+                    : '';
+
+                const answerHtml = (data.answer || data.unsupportedReason)
+                    ? `
+                        <div class="chat-structured-answer">
+                            <span class="chat-structured-label">${data.supported ? '答案' : '结果'}</span>
+                            <div class="chat-structured-answer-main">${renderPlainText(data.supported ? (data.answer || '需要确认') : (data.unsupportedReason || '当前暂不支持'))}</div>
+                            ${data.needMoreContext ? '<div class="chat-structured-answer-note">当前信息还不够，建议补充完整题干、空格位置或选项。</div>' : ''}
+                        </div>
+                    `
+                    : '';
+
+                const introHtml = data.stemUnderstanding
+                    ? `
+                        <div class="chat-structured-card">
+                            <span class="chat-structured-label">题意理解</span>
+                            <div class="chat-structured-text">${renderPlainText(data.stemUnderstanding)}</div>
+                        </div>
+                    `
+                    : '';
+
+                const followUpHtml = data.followUp
+                    ? `
+                        <div class="chat-structured-card">
+                            <div class="chat-structured-text">${renderPlainText(data.followUp)}</div>
+                        </div>
+                    `
+                    : '';
+
+                return `
+                    <div class="chat-structured">
+                        <div class="chat-structured-top">
+                            <span class="chat-structured-badge ${data.supported ? 'is-ok' : 'is-muted'}">${data.supported ? '讲题结果' : '暂不支持'}</span>
+                            ${metaParts.length ? `<span class="chat-structured-meta">${metaParts.map(item => escapeHtml(item)).join(' · ')}</span>` : ''}
+                        </div>
+                        ${introHtml}
+                        ${answerHtml}
+                        ${distractorHtml}
+                        ${knowledgeHtml}
+                        ${followUpHtml}
+                    </div>
+                `;
+            }
+
+            function renderAiMessageContent(content) {
+                const structured = parseStructuredReply(content);
+                if (structured) {
+                    return {
+                        html: renderStructuredReply(structured),
+                        isStructured: true,
+                        preview: getStructuredReplyPreview(structured)
+                    };
+                }
+                return {
+                    html: renderMarkdown(content),
+                    isStructured: false,
+                    preview: String(content || '')
+                };
             }
 
             function formatChatTime(value) {
@@ -2345,6 +2659,12 @@
                 if (!message) return '暂无消息';
                 if (message.type === 'image') {
                     return message.content ? `[图片] ${message.content}` : '[图片]';
+                }
+                if (message.sender === 'ai') {
+                    const structured = parseStructuredReply(message.content || '');
+                    if (structured) {
+                        return getStructuredReplyPreview(structured) || '已生成讲题结果';
+                    }
                 }
                 return message.content || '暂无消息';
             }
@@ -2952,13 +3272,15 @@
                         </div>
                     `;
                 } else {
+                    const aiRender = sender === 'ai' ? renderAiMessageContent(content) : null;
                     const renderedContent = sender === 'ai'
-                        ? renderMarkdown(content)
+                        ? aiRender.html
                         : escapeHtml(content).replace(/\n/g, '<br>');
                     if (sender === 'user') {
                         div.innerHTML = `<span class="text-[11px] text-gray-400 mb-1 mr-1">我 · ${time}</span><div class="chat-bubble-user bg-white border border-gray-200 text-gray-800 px-4 py-3 rounded-2xl rounded-tr-sm max-w-[85%] shadow-sm chat-text">${renderedContent}</div>`;
                     } else {
-                        div.innerHTML = `<span class="text-[11px] text-gray-400 mb-1 ml-1">陶然AI助教 · ${time}</span><div class="chat-bubble-ai bg-gray-100 border border-gray-200 text-gray-800 px-4 py-3 rounded-2xl rounded-tl-sm max-w-[85%] shadow-sm chat-text chat-markdown">${renderedContent}</div>`;
+                        const aiBubbleClass = aiRender && aiRender.isStructured ? 'chat-text' : 'chat-text chat-markdown';
+                        div.innerHTML = `<span class="text-[11px] text-gray-400 mb-1 ml-1">陶然AI助教 · ${time}</span><div class="chat-bubble-ai bg-gray-100 border border-gray-200 text-gray-800 px-4 py-3 rounded-2xl rounded-tl-sm max-w-[85%] shadow-sm ${aiBubbleClass}">${renderedContent}</div>`;
                     }
                 }
                 if (options.replaceElement && options.replaceElement.parentNode === chatWindow) {
