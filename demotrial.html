@@ -2183,6 +2183,7 @@
             const PROFILE_KEY = 'profile';
             const CALENDAR_SETTINGS_KEY = 'calendar_settings';
             const FLASHCARD_STATE_KEY = 'taoran-flashcard-state';
+            const GENERATED_FLASHCARDS_KEY = 'taoran-generated-flashcards';
             const NOTE_FLASHCARDS = [
                 {
                     id: 'reading-detail',
@@ -2252,6 +2253,7 @@
             let flashcardIndex = 0;
             let flashcardFlipped = false;
             let flashcardState = loadFlashcardState();
+            let generatedFlashcards = loadGeneratedFlashcards();
             let flashcardAnimating = false;
             let flashcardWheelLocked = false;
             let composerDragDepth = 0;
@@ -2456,7 +2458,7 @@
                         questionType: String(parsed.question_type || '').trim(),
                         subtype: String(parsed.subtype || '').trim(),
                         answer: String(parsed.answer || '').trim(),
-                        confidence: String(parsed.confidence || '').trim(),
+                        confidence: '',
                         needMoreContext: Boolean(parsed.need_more_context),
                         unsupportedReason: String(parsed.unsupported_reason || '').trim(),
                         stemUnderstanding: String(parsed.stem_understanding || '').trim(),
@@ -2514,7 +2516,7 @@
                     questionType: extractJsonLikeStringField(source, 'question_type'),
                     subtype: extractJsonLikeStringField(source, 'subtype'),
                     answer: extractJsonLikeStringField(source, 'answer'),
-                    confidence: extractJsonLikeStringField(source, 'confidence'),
+                    confidence: '',
                     needMoreContext: /"need_more_context"\s*:\s*true/i.test(source),
                     unsupportedReason: extractJsonLikeStringField(source, 'unsupported_reason'),
                     stemUnderstanding: extractJsonLikeStringField(source, 'stem_understanding'),
@@ -2551,6 +2553,13 @@
                 return '已生成讲题结果';
             }
 
+            function sanitizeStructuredMeta(text) {
+                return String(text || '')
+                    .replace(/[·•]?\s*置信度\s*(high|medium|low)\b/ig, '')
+                    .replace(/\s{2,}/g, ' ')
+                    .trim();
+            }
+
             function isMetaReasoningFocus(focus) {
                 return /^(判断题型|调用方法体系|调用语法方法论|调用阅读方法论|调用完型方法论|判断信息是否完整|判断现有信息是否足够|给出当前可判断的方向|判断请求性质|判断输入范围|确定优先讲解对象|判断空格类型)$/.test(String(focus || '').trim());
             }
@@ -2580,28 +2589,53 @@
                 const lines = steps
                     .map(joinReasoningSentence)
                     .filter(Boolean)
+                    .flatMap(splitStructuredDisplayLines)
                     .slice(0, maxCount);
 
                 if (lines.length) return lines;
 
                 if (data && data.stemUnderstanding) {
-                    return [String(data.stemUnderstanding).trim()];
+                    return splitStructuredDisplayLines(String(data.stemUnderstanding).trim()).slice(0, maxCount);
                 }
 
                 return [];
             }
 
+            function splitStructuredDisplayLines(text) {
+                const source = String(text || '').trim();
+                if (!source) return [];
+
+                const normalized = source
+                    .replace(/；(?=(?:\(\d+\)|\d+\.\s*|第\s*\d+\s*[空题]))/g, '\n')
+                    .replace(/;(?=(?:\(\d+\)|\d+\.\s*|第\s*\d+\s*[空题]))/g, '\n')
+                    .replace(/(?<=\)\s*)(?=(?:\(\d+\)|\d+\.\s*|第\s*\d+\s*[空题]))/g, '\n');
+
+                return normalized
+                    .split(/\n+/)
+                    .map(item => item.trim())
+                    .filter(Boolean);
+            }
+
+            function formatStructuredParagraphs(lines) {
+                return lines.map(item => `<p>${renderPlainText(item)}</p>`).join('');
+            }
+
+            function getStructuredAnswerLines(data) {
+                const text = data.supported ? (data.answer || '需要确认') : (data.unsupportedReason || '当前暂不支持');
+                return splitStructuredDisplayLines(String(text).replace(/\s*[；;]\s*/g, '\n'));
+            }
+
             function renderStructuredReply(data) {
                 const metaParts = [];
-                if (data.questionType) metaParts.push(data.questionType);
-                if (data.subtype) metaParts.push(data.subtype);
+                if (data.questionType) metaParts.push(sanitizeStructuredMeta(data.questionType));
+                if (data.subtype) metaParts.push(sanitizeStructuredMeta(data.subtype));
                 if (data.needMoreContext) metaParts.push('需要补充题干');
                 const explanationLines = getStructuredExplanationLines(data);
                 const explanationHtml = explanationLines.length
                     ? `
                         <div class="chat-structured-card">
                             <span class="chat-structured-label">具体讲解</span>
-                            <div class="chat-structured-text">${explanationLines.map(item => `<p>${renderPlainText(item)}</p>`).join('')}</div>
+                            <div class="chat-structured-text">${formatStructuredParagraphs(explanationLines)}</div>
                         </div>
                     `
                     : '';
@@ -2627,7 +2661,7 @@
                     ? `
                         <div class="chat-structured-answer">
                             <span class="chat-structured-label">${data.supported ? '答案' : '结果'}</span>
-                            <div class="chat-structured-answer-main">${renderPlainText(data.supported ? (data.answer || '需要确认') : (data.unsupportedReason || '当前暂不支持'))}</div>
+                            <div class="chat-structured-answer-main">${formatStructuredParagraphs(getStructuredAnswerLines(data))}</div>
                             ${data.needMoreContext ? '<div class="chat-structured-answer-note">当前信息还不够，建议补充完整题干、空格位置或选项。</div>' : ''}
                         </div>
                     `
@@ -2783,7 +2817,7 @@
                     wrapper.appendChild(answer);
                     animatedFields.push({
                         element: answer.querySelector('.chat-structured-answer-main'),
-                        text: data.supported ? (data.answer || '需要确认') : (data.unsupportedReason || '当前暂不支持')
+                        text: getStructuredAnswerLines(data).join('\n')
                     });
                 }
 
@@ -2889,65 +2923,68 @@
                     .trim();
             }
 
-            function summarizeFirstUserIntent(message) {
-                const raw = cleanTitleText(message && message.content || '');
+            function summarizeStructuredQuestionFocus(data) {
+                const raw = cleanTitleText(data && data.stemUnderstanding || '');
                 if (!raw) return '';
+
+                const simplified = raw
+                    .replace(/^(这是关于|这是一道|这道题是|这道题|这句话是|这句话|题干为|用户在问|当前消息里|当前内容里|这是|这是一则|这是一篇|这是对)\s*/g, '')
+                    .replace(/，?(考查|需要填入|需填入|要求|属于|是一道|是关于).*$|。.*$/g, '')
+                    .replace(/^['"'“”‘’]|['"'“”‘’]$/g, '')
+                    .trim();
+
+                return trimTitleLength(simplified || raw, 22);
+            }
+
+            function summarizeQuestionTitle(rawInput, structuredData = null, maxLength = 18) {
+                const raw = cleanTitleText(rawInput);
+                const structuredSummary = summarizeStructuredQuestionFocus(structuredData);
+                if (!raw) {
+                    return trimTitleLength(structuredSummary || '', maxLength);
+                }
 
                 const directMatch = raw.match(/(为什么不能填\s*[A-Za-z][A-Za-z-]*|为什么不是\s*[A-Za-z][A-Za-z-]*|为什么不选\s*[A-D])/i);
                 if (directMatch) {
-                    return trimTitleLength(directMatch[1].replace(/\s+/g, ''));
-                }
-
-                const blankMatch = raw.match(/第\s*\d+\s*[空题]/);
-                if (blankMatch) {
-                    const context = raw
-                        .replace(/^.*?(请|帮我|麻烦|想|需要|可以|能不能)?\s*(讲|讲解|分析|解释|看看|解答|解题|说明|翻译)?\s*/g, '')
-                        .replace(/^[这道这题该题题目一下一下子请先再]/g, '')
-                        .trim();
-                    return trimTitleLength(context ? `${blankMatch[0]} ${context}` : `${blankMatch[0]}讲解`);
+                    return trimTitleLength(directMatch[1].replace(/\s+/g, ''), maxLength);
                 }
 
                 const firstSentence = raw.split(/[\n。！？!?]/)[0].trim();
                 const normalized = firstSentence
-                    .replace(/^(请|帮我|麻烦|可以|能不能|想|需要|请你|老师|帮忙)?\s*/g, '')
-                    .replace(/^(讲|讲解|分析|解释|看看|看下|解答|解题|判断|总结|翻译|说明|批改|做一下|做个|讲一下|分析一下|解释一下)\s*/g, '')
-                    .replace(/^(这道题|这题|题目|这道英语题|这道语法题|这道阅读题|这个句子)\s*/g, '')
-                    .replace(/\s*(怎么做|什么意思|怎么理解|可以吗|行吗|对吗|谢谢)?$/g, '')
+                    .replace(/^(请|帮我|麻烦|可以|能不能|想|需要|请你|老师|帮忙|能否)?\s*/g, '')
+                    .replace(/^(帮我把|请把|把|将)\s*/g, '')
+                    .replace(/^(把|将)?\s*(这道题|这题|题目|这道英语题|这道语法题|这道阅读题|这个句子|这页|这张图里的题)\s*/g, '')
+                    .replace(/^(讲|讲解|分析|解释|看看|看下|解答|解题|判断|总结|翻译|说明|批改|做一下|做个|讲一下|分析一下|解释一下|存到闪卡里|加入闪卡|保存到闪卡|整理成闪卡)\s*/g, '')
+                    .replace(/^(存到闪卡里|加入闪卡|保存到闪卡|整理成闪卡)\s*/g, '')
+                    .replace(/\s*(怎么做|什么意思|怎么理解|可以吗|行吗|对吗|谢谢|存到闪卡里吧|存到闪卡里|加入闪卡吧|加入闪卡|保存起来吧|保存起来|收起来吧|记到闪卡里吧|记到闪卡里)?$/g, '')
                     .trim();
 
-                return trimTitleLength(normalized || firstSentence || raw);
+                if (normalized && normalized.length >= 4) {
+                    return trimTitleLength(normalized, maxLength);
+                }
+
+                return trimTitleLength(structuredSummary || firstSentence || raw, maxLength);
             }
 
             function isGenericChatTitle(title) {
                 const normalized = cleanTitleText(title).toLowerCase();
                 if (!normalized) return true;
-                return /^(新对话|图片提问|题目|这道题|这题|英语题|讲题|讲解|分析|解释|看看|解答|题目讲解|帮我分析|帮我讲解)$/.test(normalized);
-            }
-
-            function getFirstRoundTheme(messages) {
-                const firstUserIndex = messages.findIndex(msg => msg.sender === 'user');
-                if (firstUserIndex === -1) return '';
-                const firstAi = messages.slice(firstUserIndex + 1).find(msg => msg.sender === 'ai' && msg.content);
-                if (!firstAi) return '';
-                const structured = parseStructuredReply(firstAi.content || '');
-                if (!structured) return '';
-                const parts = [];
-                if (structured.questionType) parts.push(structured.questionType);
-                if (structured.subtype) parts.push(structured.subtype);
-                return parts.join(' · ');
+                return /^(新对话|图片提问|图片题讲解|题目|这道题|这题|英语题|讲题|讲解|分析|解释|看看|解答|题目讲解|帮我分析|帮我讲解|图片题)$/.test(normalized);
             }
 
             function buildChatTitle(messages) {
                 const firstUserMessage = messages.find(msg => msg.sender === 'user' && (msg.content || msg.type === 'image'));
                 if (!firstUserMessage) return '新对话';
-                const userSummary = summarizeFirstUserIntent(firstUserMessage);
-                const firstRoundTheme = getFirstRoundTheme(messages);
+                const firstUserIndex = messages.indexOf(firstUserMessage);
+                const firstAi = messages.slice(firstUserIndex + 1).find(msg => msg.sender === 'ai' && msg.content);
+                const structured = firstAi ? parseStructuredReply(firstAi.content || '') : null;
+                const userSummary = summarizeQuestionTitle(firstUserMessage.content || '', structured);
 
                 if (userSummary && !isGenericChatTitle(userSummary)) {
                     return userSummary;
                 }
-                if (firstRoundTheme) {
-                    return trimTitleLength(`${firstRoundTheme}讲解`);
+                const structuredSummary = summarizeStructuredQuestionFocus(structured);
+                if (structuredSummary) {
+                    return trimTitleLength(structuredSummary, 18);
                 }
                 if (firstUserMessage.type === 'image' && !firstUserMessage.content) {
                     return '图片题讲解';
@@ -3881,8 +3918,128 @@
                 }
             }
 
+            function loadGeneratedFlashcards() {
+                try {
+                    const parsed = JSON.parse(localStorage.getItem(GENERATED_FLASHCARDS_KEY) || '[]');
+                    return Array.isArray(parsed) ? parsed.filter(item => item && item.id && item.title) : [];
+                } catch (error) {
+                    return [];
+                }
+            }
+
+            function saveGeneratedFlashcards() {
+                try {
+                    localStorage.setItem(GENERATED_FLASHCARDS_KEY, JSON.stringify(generatedFlashcards));
+                } catch (error) {
+                    // 忽略本地存储异常
+                }
+            }
+
+            function getAllFlashcards() {
+                return [...generatedFlashcards, ...NOTE_FLASHCARDS];
+            }
+
+            function buildFlashcardHash(text) {
+                let hash = 0;
+                const source = String(text || '');
+                for (let index = 0; index < source.length; index += 1) {
+                    hash = ((hash << 5) - hash) + source.charCodeAt(index);
+                    hash |= 0;
+                }
+                return Math.abs(hash).toString(36);
+            }
+
+            function buildGeneratedFlashcardFromStructuredReply(data, sourceQuestion = '') {
+                if (!data || !data.supported) return null;
+                const explanationLines = getStructuredExplanationLines(data, 4);
+                const answerLines = getStructuredAnswerLines(data);
+                if (!explanationLines.length && !answerLines.length) return null;
+
+                const cleanedQuestion = cleanTitleText(sourceQuestion).replace(/\s+/g, ' ').trim();
+                const subtype = sanitizeStructuredMeta(data.subtype || '').trim();
+                const questionType = sanitizeStructuredMeta(data.questionType || '').trim() || '讲题';
+                const questionFocusedTitle = summarizeQuestionTitle(cleanedQuestion, data, 22);
+                const title = questionFocusedTitle || summarizeStructuredQuestionFocus(data) || `${questionType}${subtype ? ` · ${subtype}` : ''}`;
+                const frontQuestion = cleanedQuestion || summarizeStructuredQuestionFocus(data) || `${questionType}${subtype ? `：${subtype}` : ''}`;
+                const bullets = (data.knowledgeCards && data.knowledgeCards.length ? data.knowledgeCards : explanationLines)
+                    .map(item => String(item || '').trim())
+                    .filter(Boolean)
+                    .slice(0, 4);
+                const tags = Array.from(new Set([questionType, subtype, ...(data.knowledgeCards || [])].map(item => String(item || '').trim()).filter(Boolean))).slice(0, 5);
+                const summary = data.stemUnderstanding || explanationLines[0] || `${questionType}复盘卡`;
+                const answer = answerLines.join('；') || '需要确认';
+                const tip = data.followUp || '你可以再回到原句里代入一遍，看看这个判断是不是还能成立。';
+                const id = `generated-${buildFlashcardHash(`${frontQuestion}|${answer}`)}`;
+
+                return {
+                    id,
+                    generated: true,
+                    title,
+                    category: questionType,
+                    frontQuestion,
+                    frontHint: explanationLines[0] || '先回看题干，再自己试着判断一遍。',
+                    answer,
+                    bullets,
+                    tags,
+                    summary,
+                    tip,
+                    prompt: cleanedQuestion || `继续帮我讲一下${title}`,
+                    createdAt: new Date().toISOString()
+                };
+            }
+
+            function upsertGeneratedFlashcardFromStructuredReply(content, sourceQuestion = '') {
+                const structured = parseStructuredReply(content);
+                const card = buildGeneratedFlashcardFromStructuredReply(structured, sourceQuestion);
+                if (!card) return null;
+
+                const existingIndex = generatedFlashcards.findIndex(item => item.id === card.id);
+                if (existingIndex >= 0) {
+                    generatedFlashcards.splice(existingIndex, 1, card);
+                } else {
+                    generatedFlashcards.unshift(card);
+                }
+                generatedFlashcards = generatedFlashcards.slice(0, 24);
+                saveGeneratedFlashcards();
+                return card;
+            }
+
+            function isFlashcardSaveRequest(text) {
+                const normalized = cleanTitleText(text).toLowerCase();
+                if (!normalized) return false;
+                return /(存到闪卡|加入闪卡|保存到闪卡|放到闪卡|收进闪卡|整理成闪卡|记到闪卡|存成闪卡|做成闪卡|加到闪卡)/.test(normalized);
+            }
+
+            function getLatestStructuredReplyContext(messages) {
+                if (!Array.isArray(messages)) return null;
+                for (let index = messages.length - 1; index >= 0; index -= 1) {
+                    const message = messages[index];
+                    if (!message || message.sender !== 'ai' || message.type !== 'text' || !message.content) continue;
+                    if (!parseStructuredReply(message.content)) continue;
+
+                    let sourceQuestion = '';
+                    for (let j = index - 1; j >= 0; j -= 1) {
+                        const previous = messages[j];
+                        if (!previous || previous.sender !== 'user') continue;
+                        sourceQuestion = previous.content || previous.fileName || '';
+                        break;
+                    }
+
+                    return {
+                        aiMessage: message,
+                        sourceQuestion
+                    };
+                }
+                return null;
+            }
+
+            function buildFlashcardSaveAck(card) {
+                const title = card && card.title ? `「${card.title}」` : '这道题';
+                return `好的，已经帮你把${title}存到闪卡里了。你可以直接去闪卡里复习。`;
+            }
+
             function getNoteById(noteId) {
-                return NOTE_FLASHCARDS.find(note => note.id === noteId) || NOTE_FLASHCARDS[0];
+                return getAllFlashcards().find(note => note.id === noteId) || getAllFlashcards()[0];
             }
 
             function isFlashcardMastered(noteId) {
@@ -3901,7 +4058,7 @@
                 });
                 if (flashcardEntryDesc) {
                     const masteredCount = flashcardState.masteredIds.length;
-                    flashcardEntryDesc.textContent = `当前卡组：${note.title} · 已掌握 ${masteredCount}/${NOTE_FLASHCARDS.length}`;
+                    flashcardEntryDesc.textContent = `当前卡组：${note.title} · 已掌握 ${masteredCount}/${getAllFlashcards().length}`;
                 }
                 if (options.scrollIntoView) {
                     const targetCard = noteCards.find(card => card.dataset.noteId === note.id);
@@ -3912,8 +4069,9 @@
             }
 
             function renderFlashcardDots(activeIndex) {
+                const cards = getAllFlashcards();
                 flashcardDots.innerHTML = '';
-                NOTE_FLASHCARDS.forEach((note, index) => {
+                cards.forEach((note, index) => {
                     const dot = document.createElement('button');
                     dot.type = 'button';
                     dot.className = `flashcard-dot ${index === activeIndex ? 'active' : ''}`;
@@ -3927,10 +4085,12 @@
             }
 
             function renderFlashcard() {
-                const note = NOTE_FLASHCARDS[flashcardIndex];
+                const cards = getAllFlashcards();
+                const note = cards[flashcardIndex] || cards[0];
+                if (!note) return;
                 const mastered = isFlashcardMastered(note.id);
                 flashcardCard.classList.toggle('is-flipped', flashcardFlipped);
-                flashcardCounter.textContent = `CARD ${flashcardIndex + 1} / ${NOTE_FLASHCARDS.length}`;
+                flashcardCounter.textContent = `CARD ${flashcardIndex + 1} / ${cards.length}`;
                 flashcardStatus.textContent = mastered ? '已掌握' : '未掌握';
                 flashcardStatus.classList.toggle('is-mastered', mastered);
                 flashcardMarkBtn.textContent = mastered ? '取消掌握' : '标记掌握';
@@ -3945,15 +4105,16 @@
                 flashcardSideTip.textContent = note.tip;
                 flashcardTags.innerHTML = note.tags.map(tag => `<span class="flashcard-tag">${escapeHtml(tag)}</span>`).join('');
                 flashcardPrevBtn.disabled = flashcardIndex === 0;
-                flashcardNextBtn.disabled = flashcardIndex === NOTE_FLASHCARDS.length - 1;
+                flashcardNextBtn.disabled = flashcardIndex === cards.length - 1;
                 flashcardPrevBtn.classList.toggle('opacity-60', flashcardIndex === 0);
-                flashcardNextBtn.classList.toggle('opacity-60', flashcardIndex === NOTE_FLASHCARDS.length - 1);
+                flashcardNextBtn.classList.toggle('opacity-60', flashcardIndex === cards.length - 1);
                 renderFlashcardDots(flashcardIndex);
                 setSelectedNote(note.id);
             }
 
             function openFlashcardModal(noteId = selectedNoteId) {
-                const nextIndex = NOTE_FLASHCARDS.findIndex(note => note.id === noteId);
+                const cards = getAllFlashcards();
+                const nextIndex = cards.findIndex(note => note.id === noteId);
                 flashcardIndex = nextIndex >= 0 ? nextIndex : 0;
                 flashcardFlipped = false;
                 renderFlashcard();
@@ -3979,8 +4140,9 @@
             }
 
             function navigateFlashcardToIndex(nextIndex) {
+                const cards = getAllFlashcards();
                 if (flashcardAnimating || nextIndex === flashcardIndex) return;
-                if (nextIndex < 0 || nextIndex >= NOTE_FLASHCARDS.length) return;
+                if (nextIndex < 0 || nextIndex >= cards.length) return;
                 const direction = nextIndex > flashcardIndex ? 'next' : 'prev';
                 flashcardAnimating = true;
                 flashcardStack.classList.remove('is-entering-next', 'is-entering-prev');
@@ -4020,7 +4182,7 @@
             }
 
             function toggleFlashcardMastered() {
-                const note = NOTE_FLASHCARDS[flashcardIndex];
+                const note = getAllFlashcards()[flashcardIndex];
                 const masteredIds = new Set(flashcardState.masteredIds);
                 if (masteredIds.has(note.id)) {
                     masteredIds.delete(note.id);
@@ -4035,7 +4197,7 @@
             }
 
             function sendFlashcardToChat() {
-                const note = NOTE_FLASHCARDS[flashcardIndex];
+                const note = getAllFlashcards()[flashcardIndex];
                 chatInput.value = buildNotePrompt(note);
                 chatInput.dispatchEvent(new Event('input'));
                 chatInput.focus();
@@ -4044,8 +4206,12 @@
             }
 
             function jumpToFlashcardNote() {
-                const note = NOTE_FLASHCARDS[flashcardIndex];
+                const note = getAllFlashcards()[flashcardIndex];
                 closeFlashcardModal();
+                if (note.generated) {
+                    showToast(`这张学习卡来自最近对话：${note.title}`);
+                    return;
+                }
                 if (window.innerWidth < 1024) {
                     showMobilePanel('left');
                 }
@@ -4274,6 +4440,41 @@
                     showToast('用户消息保存失败');
                 }
                 setSendingState(true);
+                const shouldSaveToFlashcard = !pendingImage && isFlashcardSaveRequest(text);
+                if (shouldSaveToFlashcard) {
+                    try {
+                        const chat = currentChatId ? await getChatById(currentChatId) : null;
+                        const latestContext = getLatestStructuredReplyContext(chat && Array.isArray(chat.messages) ? chat.messages : []);
+                        let replyText = '当前这段对话里还没有可存入闪卡的讲题内容。你可以先让我讲一道题，再让我帮你存到闪卡。';
+
+                        if (latestContext && latestContext.aiMessage && latestContext.aiMessage.content) {
+                            const generatedCard = upsertGeneratedFlashcardFromStructuredReply(
+                                latestContext.aiMessage.content,
+                                latestContext.sourceQuestion || ''
+                            );
+                            if (generatedCard) {
+                                setSelectedNote(generatedCard.id);
+                                replyText = buildFlashcardSaveAck(generatedCard);
+                                showToast('已存入闪卡');
+                            } else {
+                                replyText = '这次回复里还没有整理出适合放进闪卡的内容。你可以先让我把题目讲完整一点。';
+                            }
+                        }
+
+                        const aiMessage = appendMessage(replyText, 'ai', {
+                            animateTyping: true
+                        });
+                        try {
+                            await syncCurrentChat(aiMessage);
+                        } catch (error) {
+                            showToast('AI 回复保存失败');
+                        }
+                    } finally {
+                        setSendingState(false);
+                        chatInput.focus();
+                    }
+                    return;
+                }
                 const thinkingIndicator = appendThinkingIndicator();
                 const thinkingStartedAt = Date.now();
                 try {
@@ -4281,6 +4482,10 @@
                     clearPendingImage();
                     const replyText = await requestAssistantReply(text, currentImage);
                     await ensureMinimumThinkingTime(thinkingStartedAt);
+                    const generatedCard = upsertGeneratedFlashcardFromStructuredReply(replyText, text || (currentImage && currentImage.name) || '');
+                    if (generatedCard) {
+                        setSelectedNote(generatedCard.id);
+                    }
                     const aiMessage = appendMessage(replyText, 'ai', {
                         replaceElement: thinkingIndicator,
                         animateTyping: true
