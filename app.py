@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 import logging
 import os
+import re
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
@@ -155,6 +157,232 @@ def build_demo_reply(message: str, history: list[ChatMessage], latest_image: Ima
     )
 
 
+def build_structured_reply_json(
+    *,
+    supported: bool,
+    question_type: str,
+    subtype: str,
+    answer: str,
+    confidence: str,
+    need_more_context: bool,
+    unsupported_reason: str,
+    stem_understanding: str,
+    reasoning_steps: list[dict[str, object]],
+    distractor_analysis: dict[str, str] | None = None,
+    knowledge_cards: list[str] | None = None,
+    follow_up: str = "",
+) -> str:
+    payload = {
+        "supported": supported,
+        "question_type": question_type,
+        "subtype": subtype,
+        "answer": answer,
+        "confidence": confidence,
+        "need_more_context": need_more_context,
+        "unsupported_reason": unsupported_reason,
+        "stem_understanding": stem_understanding,
+        "reasoning_steps": reasoning_steps,
+        "distractor_analysis": distractor_analysis or {"A": "", "B": "", "C": "", "D": ""},
+        "knowledge_cards": knowledge_cards or [],
+        "follow_up": follow_up,
+    }
+    return json.dumps(payload, ensure_ascii=False)
+
+
+def has_multiple_question_targets(*segments: str | None) -> bool:
+    combined = "\n".join(segment for segment in segments if segment).strip()
+    if not combined:
+        return False
+
+    explicit_refs = re.findall(r"第\s*\d+\s*[空题]", combined)
+    if len(set(explicit_refs)) >= 2:
+        return True
+
+    if re.search(r"第\s*\d+\s*[空题]\s*(和|及|与|、|,|，|/)\s*第?\s*\d+\s*[空题]?", combined):
+        return True
+
+    if re.search(r"(两道题|两题|两个空|两空|多道题|多个空|都讲|一起讲|分别讲|挨个讲)", combined):
+        if explicit_refs or re.search(r"\d+\s*(和|及|与|、|,|，|/)\s*\d+", combined):
+            return True
+
+    if re.search(r"(第\s*\d+\s*[空题].*第\s*\d+\s*[空题])", combined):
+        return True
+
+    return False
+
+
+def build_multi_question_focus_reply() -> str:
+    return build_structured_reply_json(
+        supported=True,
+        question_type="综合",
+        subtype="多题待选择",
+        answer="需要确认",
+        confidence="high",
+        need_more_context=True,
+        unsupported_reason="",
+        stem_understanding="当前消息里同时出现了多个题目、多个空格或多个待分析点。为避免一次讲得过长过杂，需要先确定优先讲解对象。",
+        reasoning_steps=[
+            {
+                "step": 1,
+                "focus": "判断输入范围",
+                "basis": "当前内容里包含两个及以上题号、空格或待分析对象，已经超出单次聚焦讲解的范围。",
+                "conclusion": "先不同时展开全部讲解。"
+            },
+            {
+                "step": 2,
+                "focus": "确定下一步",
+                "basis": "讲题需要先锁定一道题或一个空格，才能保证讲解有重点且不混淆。",
+                "conclusion": "请用户先指定优先讲解的题号、空格号、截图位置或段落。"
+            },
+        ],
+        knowledge_cards=["先聚焦一题", "避免多题混讲", "明确题号或空格号"],
+        follow_up="请先告诉我你要先讲哪一道，例如“先讲第12空”或“先讲图片里第二题”。",
+    )
+
+
+def extract_json_object(text: str) -> str:
+    start = -1
+    depth = 0
+    for index, char in enumerate(text):
+        if char == "{":
+            if depth == 0:
+                start = index
+            depth += 1
+        elif char == "}":
+            if depth > 0:
+                depth -= 1
+                if depth == 0 and start != -1:
+                    candidate = text[start : index + 1].strip()
+                    if candidate.startswith("{") and candidate.endswith("}"):
+                        return candidate
+                    start = -1
+    return ""
+
+
+def repair_json_candidate(candidate: str) -> str:
+    repaired = candidate
+    repaired = re.sub(r'(:\s*\d+)"(?=\s*[,}])', r"\1", repaired)
+    repaired = re.sub(r'(:\s*true|:\s*false)"(?=\s*[,}])', r"\1", repaired, flags=re.IGNORECASE)
+    return repaired
+
+
+def parse_structured_reply(reply: str) -> dict[str, object] | None:
+    candidates = [reply.strip()]
+    extracted = extract_json_object(reply)
+    if extracted and extracted not in candidates:
+        candidates.append(extracted)
+
+    for candidate in candidates:
+        if not candidate:
+            continue
+        for attempt in [candidate, repair_json_candidate(candidate)]:
+            try:
+                payload = json.loads(attempt)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(payload, dict) and "supported" in payload:
+                return payload
+    return None
+
+
+def has_explicit_options(*segments: str | None) -> bool:
+    combined = "\n".join(segment for segment in segments if segment).strip()
+    if not combined:
+        return False
+
+    option_markers = [
+        r"\bA[\.\)．、:：]\s*",
+        r"\bB[\.\)．、:：]\s*",
+        r"\bC[\.\)．、:：]\s*",
+        r"\bD[\.\)．、:：]\s*",
+    ]
+    return all(re.search(marker, combined) for marker in option_markers)
+
+
+def looks_like_grammar_fill(*segments: str | None) -> bool:
+    combined = "\n".join(segment for segment in segments if segment).strip()
+    if not combined:
+        return False
+    return bool(re.search(r"_{2,}|\([A-Za-z][A-Za-z\s\-']*\)|（[A-Za-z][A-Za-z\s\-']*）", combined))
+
+
+def extract_candidate_challenge(message: str) -> str:
+    patterns = [
+        r"为什么不能填\s*[\"“'`]?([^，。；！？\s\"”'`]+)",
+        r"为什么不是\s*[\"“'`]?([^，。；！？\s\"”'`]+)",
+        r"为什么不选\s*[\"“'`]?([^，。；！？\s\"”'`]+)",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, message, flags=re.IGNORECASE)
+        if match:
+            return match.group(1).strip()
+    return ""
+
+
+def extract_candidate_explanation(reasoning_steps: object, candidate: str) -> str:
+    if not isinstance(reasoning_steps, list):
+        return ""
+
+    prioritized_signals = [candidate.lower()] if candidate else []
+    fallback_signals = ["不能填", "不成立", "不符合", "缺少", "句子不完整", "非谓语", "不能单独作谓语"]
+
+    for step in reasoning_steps:
+        if not isinstance(step, dict):
+            continue
+        basis = str(step.get("basis", "")).strip()
+        conclusion = str(step.get("conclusion", "")).strip()
+        focus = str(step.get("focus", "")).strip()
+        combined = " ".join(part for part in [focus, basis, conclusion] if part).strip()
+        lowered = combined.lower()
+        if prioritized_signals and any(signal in lowered for signal in prioritized_signals):
+            return conclusion or basis or combined
+
+    for step in reasoning_steps:
+        if not isinstance(step, dict):
+            continue
+        basis = str(step.get("basis", "")).strip()
+        conclusion = str(step.get("conclusion", "")).strip()
+        focus = str(step.get("focus", "")).strip()
+        combined = " ".join(part for part in [focus, basis, conclusion] if part).strip()
+        if any(signal in combined for signal in fallback_signals):
+            return conclusion or basis or combined
+    return ""
+
+
+def normalize_structured_reply(
+    reply: str,
+    *,
+    message: str,
+    image_context: str | None = None,
+) -> str:
+    payload = parse_structured_reply(reply)
+    if payload is None:
+        return reply
+
+    question_type = str(payload.get("question_type", "")).strip()
+    challenge_candidate = extract_candidate_challenge(message)
+    optionless_grammar_fill = (
+        question_type == "语法"
+        and looks_like_grammar_fill(message, image_context)
+        and not has_explicit_options(message, image_context)
+    )
+
+    if optionless_grammar_fill:
+        payload["distractor_analysis"] = {"A": "", "B": "", "C": "", "D": ""}
+
+    if challenge_candidate:
+        explanation = extract_candidate_explanation(payload.get("reasoning_steps"), challenge_candidate)
+        if not explanation:
+            answer = str(payload.get("answer", "")).strip()
+            if answer and answer != "需要确认":
+                explanation = f"这道题正确答案是 {answer}，因此 {challenge_candidate} 不成立。"
+        if explanation:
+            prefix = "为什么不能填" if "不能填" in message else "为什么不是" if "为什么不是" in message else "为什么不选"
+            payload["follow_up"] = f"{prefix} {challenge_candidate}：{explanation}"
+
+    return json.dumps(payload, ensure_ascii=False)
+
+
 def build_text_messages(message: str, history: list[ChatMessage]) -> list[dict]:
     messages: list[dict] = [
         {
@@ -276,6 +504,16 @@ def run_model_pipeline(request: ChatRequest) -> ChatResponse:
             if request.use_ocr_first:
                 route = "ocr_plus_vision"
                 ocr_text = extract_ocr_text(client, request.latest_image, ocr_model)
+            if has_multiple_question_targets(request.message):
+                return ChatResponse(
+                    reply=build_multi_question_focus_reply(),
+                    meta=ModelMeta(
+                        route=route,
+                        provider=settings.provider_name,
+                        vision_model=vision_model,
+                        ocr_model=ocr_model if route == "ocr_plus_vision" else None,
+                    ),
+                )
             reply = generate_vision_reply(
                 client,
                 request.message,
@@ -284,6 +522,7 @@ def run_model_pipeline(request: ChatRequest) -> ChatResponse:
                 vision_model,
                 ocr_text=ocr_text,
             )
+            reply = normalize_structured_reply(reply, message=request.message, image_context=ocr_text)
             return ChatResponse(
                 reply=reply,
                 meta=ModelMeta(
@@ -294,7 +533,18 @@ def run_model_pipeline(request: ChatRequest) -> ChatResponse:
                 ),
             )
 
+        if has_multiple_question_targets(request.message):
+            return ChatResponse(
+                reply=build_multi_question_focus_reply(),
+                meta=ModelMeta(
+                    route="text",
+                    provider=settings.provider_name,
+                    text_model=text_model,
+                ),
+            )
+
         reply = generate_text_reply(client, request.message, request.history, text_model)
+        reply = normalize_structured_reply(reply, message=request.message)
         return ChatResponse(
             reply=reply,
             meta=ModelMeta(

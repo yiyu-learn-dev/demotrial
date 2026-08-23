@@ -1634,6 +1634,24 @@
             font-size: 0.76em;
             font-weight: 700;
         }
+        .chat-typing-cursor {
+            display: inline-block;
+            width: 0.58em;
+            height: 1.05em;
+            margin-left: 2px;
+            border-radius: 999px;
+            background: rgba(112, 129, 160, 0.55);
+            vertical-align: -0.12em;
+            animation: chatTypingCursorBlink 0.9s ease-in-out infinite;
+        }
+        @keyframes chatTypingCursorBlink {
+            0%, 45% {
+                opacity: 1;
+            }
+            55%, 100% {
+                opacity: 0.18;
+            }
+        }
         .chat-thinking-bubble {
             display: inline-flex;
             align-items: center;
@@ -2517,11 +2535,15 @@
                 if (!data.supported) {
                     return data.unsupportedReason || '该题型暂不支持';
                 }
-                if (data.answer) {
-                    return `答案：${data.answer}`;
-                }
                 if (data.stemUnderstanding) {
                     return data.stemUnderstanding;
+                }
+                const explanationLines = getStructuredExplanationLines(data, 1);
+                if (explanationLines.length) {
+                    return explanationLines[0];
+                }
+                if (data.answer) {
+                    return `答案：${data.answer}`;
                 }
                 if (data.subtype) {
                     return `${data.questionType || '语法'} · ${data.subtype}`;
@@ -2529,12 +2551,60 @@
                 return '已生成讲题结果';
             }
 
+            function isMetaReasoningFocus(focus) {
+                return /^(判断题型|调用方法体系|调用语法方法论|调用阅读方法论|调用完型方法论|判断信息是否完整|判断现有信息是否足够|给出当前可判断的方向|判断请求性质|判断输入范围|确定优先讲解对象|判断空格类型)$/.test(String(focus || '').trim());
+            }
+
+            function joinReasoningSentence(step) {
+                if (!step) return '';
+                const focus = String(step.focus || '').trim();
+                const basis = String(step.basis || '').trim();
+                const conclusion = String(step.conclusion || '').trim();
+                const pieces = [];
+
+                if (focus && !isMetaReasoningFocus(focus)) {
+                    pieces.push(`${focus}：`);
+                }
+                if (basis) {
+                    pieces.push(basis.endsWith('。') ? basis : `${basis}。`);
+                }
+                if (conclusion && conclusion !== basis) {
+                    pieces.push(conclusion.endsWith('。') ? conclusion : `${conclusion}。`);
+                }
+
+                return pieces.join(' ').trim();
+            }
+
+            function getStructuredExplanationLines(data, maxCount = 3) {
+                const steps = Array.isArray(data && data.reasoningSteps) ? data.reasoningSteps : [];
+                const lines = steps
+                    .map(joinReasoningSentence)
+                    .filter(Boolean)
+                    .slice(0, maxCount);
+
+                if (lines.length) return lines;
+
+                if (data && data.stemUnderstanding) {
+                    return [String(data.stemUnderstanding).trim()];
+                }
+
+                return [];
+            }
+
             function renderStructuredReply(data) {
                 const metaParts = [];
                 if (data.questionType) metaParts.push(data.questionType);
                 if (data.subtype) metaParts.push(data.subtype);
-                if (data.confidence) metaParts.push(`置信度 ${escapeHtml(data.confidence)}`);
                 if (data.needMoreContext) metaParts.push('需要补充题干');
+                const explanationLines = getStructuredExplanationLines(data);
+                const explanationHtml = explanationLines.length
+                    ? `
+                        <div class="chat-structured-card">
+                            <span class="chat-structured-label">具体讲解</span>
+                            <div class="chat-structured-text">${explanationLines.map(item => `<p>${renderPlainText(item)}</p>`).join('')}</div>
+                        </div>
+                    `
+                    : '';
 
                 const distractorEntries = Object.entries(data.distractorAnalysis).filter(([, value]) => value);
                 const distractorHtml = distractorEntries.length
@@ -2553,17 +2623,6 @@
                     `
                     : '';
 
-                const knowledgeHtml = data.knowledgeCards.length
-                    ? `
-                        <div class="chat-structured-section">
-                            <span class="chat-structured-label">知识卡片</span>
-                            <div class="chat-structured-tags">
-                                ${data.knowledgeCards.map(item => `<span class="chat-structured-tag">${escapeHtml(item)}</span>`).join('')}
-                            </div>
-                        </div>
-                    `
-                    : '';
-
                 const answerHtml = (data.answer || data.unsupportedReason)
                     ? `
                         <div class="chat-structured-answer">
@@ -2574,18 +2633,10 @@
                     `
                     : '';
 
-                const introHtml = data.stemUnderstanding
-                    ? `
-                        <div class="chat-structured-card">
-                            <span class="chat-structured-label">题意理解</span>
-                            <div class="chat-structured-text">${renderPlainText(data.stemUnderstanding)}</div>
-                        </div>
-                    `
-                    : '';
-
                 const followUpHtml = data.followUp
                     ? `
                         <div class="chat-structured-card">
+                            ${/^(为什么不能填|为什么不是|为什么不选)/.test(data.followUp) ? '<span class="chat-structured-label">补充说明</span>' : ''}
                             <div class="chat-structured-text">${renderPlainText(data.followUp)}</div>
                         </div>
                     `
@@ -2597,13 +2648,203 @@
                             <span class="chat-structured-badge ${data.supported ? 'is-ok' : 'is-muted'}">${data.supported ? '讲题结果' : '暂不支持'}</span>
                             ${metaParts.length ? `<span class="chat-structured-meta">${metaParts.map(item => escapeHtml(item)).join(' · ')}</span>` : ''}
                         </div>
-                        ${introHtml}
+                        ${explanationHtml}
                         ${answerHtml}
                         ${distractorHtml}
-                        ${knowledgeHtml}
                         ${followUpHtml}
                     </div>
                 `;
+            }
+
+            function getTypingStepSize(text, cursor = 0) {
+                const source = String(text || '');
+                const length = source.length;
+                const progress = length ? cursor / length : 0;
+
+                if (progress < 0.14) return length > 220 ? 4 : 2;
+                if (progress < 0.42) return length > 220 ? 3 : 2;
+                if (progress < 0.8) return 2;
+                return 1;
+            }
+
+            function getTypingDelay(text, cursor = 0) {
+                const source = String(text || '');
+                const length = source.length;
+                const progress = length ? cursor / length : 0;
+
+                if (progress < 0.14) return 72;
+                if (progress < 0.42) return 58;
+                if (progress < 0.8) return 48;
+                return 56;
+            }
+
+            function getTypingPause(chunk) {
+                const tail = String(chunk || '').slice(-2);
+                if (/[。！？!?]$/.test(tail)) return 360;
+                if (/[；;：:]$/.test(tail)) return 260;
+                if (/[，、,]$/.test(tail)) return 140;
+                return 0;
+            }
+
+            function sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            async function ensureMinimumThinkingTime(startedAt, minimumMs = 2200) {
+                const elapsed = Date.now() - startedAt;
+                if (elapsed >= minimumMs) return;
+                await sleep(minimumMs - elapsed);
+            }
+
+            function scrollChatToBottom() {
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }
+
+            function animateTextReveal(target, text, renderFn = renderPlainText) {
+                return new Promise(resolve => {
+                    const source = String(text || '');
+                    if (!target) {
+                        resolve();
+                        return;
+                    }
+                    if (!source) {
+                        target.innerHTML = '';
+                        resolve();
+                        return;
+                    }
+
+                    let cursor = 0;
+
+                    const tick = () => {
+                        const stepSize = getTypingStepSize(source, cursor);
+                        cursor = Math.min(source.length, cursor + stepSize);
+                        const visible = source.slice(0, cursor);
+                        target.innerHTML = `${renderFn(visible)}${cursor < source.length ? '<span class="chat-typing-cursor" aria-hidden="true"></span>' : ''}`;
+                        scrollChatToBottom();
+                        if (cursor < source.length) {
+                            const delay = getTypingDelay(source, cursor) + getTypingPause(visible);
+                            setTimeout(tick, delay);
+                        } else {
+                            target.innerHTML = renderFn(source);
+                            scrollChatToBottom();
+                            resolve();
+                        }
+                    };
+
+                    tick();
+                });
+            }
+
+            function createStructuredReplyElement(data) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'chat-structured';
+
+                const top = document.createElement('div');
+                top.className = 'chat-structured-top';
+                const badge = document.createElement('span');
+                badge.className = `chat-structured-badge ${data.supported ? 'is-ok' : 'is-muted'}`;
+                badge.textContent = data.supported ? '讲题结果' : '暂不支持';
+                top.appendChild(badge);
+
+                const metaParts = [];
+                if (data.questionType) metaParts.push(data.questionType);
+                if (data.subtype) metaParts.push(data.subtype);
+                if (data.needMoreContext) metaParts.push('需要补充题干');
+                if (metaParts.length) {
+                    const meta = document.createElement('span');
+                    meta.className = 'chat-structured-meta';
+                    meta.textContent = metaParts.join(' · ');
+                    top.appendChild(meta);
+                }
+                wrapper.appendChild(top);
+
+                const animatedFields = [];
+
+                const explanationLines = getStructuredExplanationLines(data);
+                if (explanationLines.length) {
+                    const card = document.createElement('div');
+                    card.className = 'chat-structured-card';
+                    card.innerHTML = '<span class="chat-structured-label">具体讲解</span><div class="chat-structured-text"></div>';
+                    wrapper.appendChild(card);
+                    animatedFields.push({
+                        element: card.querySelector('.chat-structured-text'),
+                        text: explanationLines.join('\n\n')
+                    });
+                }
+
+                if (data.answer || data.unsupportedReason) {
+                    const answer = document.createElement('div');
+                    answer.className = 'chat-structured-answer';
+                    answer.innerHTML = `
+                        <span class="chat-structured-label">${data.supported ? '答案' : '结果'}</span>
+                        <div class="chat-structured-answer-main"></div>
+                        ${data.needMoreContext ? '<div class="chat-structured-answer-note">当前信息还不够，建议补充完整题干、空格位置或选项。</div>' : ''}
+                    `;
+                    wrapper.appendChild(answer);
+                    animatedFields.push({
+                        element: answer.querySelector('.chat-structured-answer-main'),
+                        text: data.supported ? (data.answer || '需要确认') : (data.unsupportedReason || '当前暂不支持')
+                    });
+                }
+
+                const distractorEntries = Object.entries(data.distractorAnalysis || {}).filter(([, value]) => value);
+                if (distractorEntries.length) {
+                    const section = document.createElement('div');
+                    section.className = 'chat-structured-section';
+                    const label = document.createElement('span');
+                    label.className = 'chat-structured-label';
+                    label.textContent = '干扰项剖析';
+                    const grid = document.createElement('div');
+                    grid.className = 'chat-structured-grid';
+                    section.appendChild(label);
+                    section.appendChild(grid);
+                    distractorEntries.forEach(([key, value]) => {
+                        const row = document.createElement('div');
+                        row.className = 'chat-structured-choice';
+                        row.innerHTML = `<span class="chat-structured-choice-key">${escapeHtml(key)}</span><div class="chat-structured-text"></div>`;
+                        grid.appendChild(row);
+                        animatedFields.push({
+                            element: row.querySelector('.chat-structured-text'),
+                            text: value
+                        });
+                    });
+                    wrapper.appendChild(section);
+                }
+
+                if (data.followUp) {
+                    const card = document.createElement('div');
+                    card.className = 'chat-structured-card';
+                    card.innerHTML = `${/^(为什么不能填|为什么不是|为什么不选)/.test(data.followUp) ? '<span class="chat-structured-label">补充说明</span>' : ''}<div class="chat-structured-text"></div>`;
+                    wrapper.appendChild(card);
+                    animatedFields.push({
+                        element: card.querySelector('.chat-structured-text'),
+                        text: data.followUp
+                    });
+                }
+
+                return { wrapper, animatedFields };
+            }
+
+            async function animateStructuredReplyBubble(bubble, data) {
+                const built = createStructuredReplyElement(data);
+                bubble.innerHTML = '';
+                bubble.appendChild(built.wrapper);
+                for (const field of built.animatedFields) {
+                    await animateTextReveal(field.element, field.text, renderPlainText);
+                    await sleep(180);
+                }
+            }
+
+            async function animateAiBubbleContent(bubble, content) {
+                const structured = parseStructuredReply(content);
+                if (structured) {
+                    await animateStructuredReplyBubble(bubble, structured);
+                    return;
+                }
+
+                await animateTextReveal(bubble, content, renderPlainText);
+                bubble.innerHTML = renderMarkdown(content);
+                scrollChatToBottom();
             }
 
             function renderAiMessageContent(content) {
@@ -2631,11 +2872,102 @@
                 });
             }
 
+            function trimTitleLength(text, maxLength = 18) {
+                const normalized = String(text || '').trim();
+                if (!normalized) return '';
+                return normalized.length > maxLength ? `${normalized.slice(0, maxLength - 1)}…` : normalized;
+            }
+
+            function cleanTitleText(text) {
+                return String(text || '')
+                    .replace(/\[图片\]/g, ' ')
+                    .replace(/我上传了一张图片[:：]?\s*/g, ' ')
+                    .replace(/补充说明[:：]?\s*/g, ' ')
+                    .replace(/```[\s\S]*?```/g, ' ')
+                    .replace(/\s+/g, ' ')
+                    .replace(/^[\s，。！？、,:：；;“"'`]+|[\s，。！？、,:：；;“"'`]+$/g, '')
+                    .trim();
+            }
+
+            function summarizeFirstUserIntent(message) {
+                const raw = cleanTitleText(message && message.content || '');
+                if (!raw) return '';
+
+                const directMatch = raw.match(/(为什么不能填\s*[A-Za-z][A-Za-z-]*|为什么不是\s*[A-Za-z][A-Za-z-]*|为什么不选\s*[A-D])/i);
+                if (directMatch) {
+                    return trimTitleLength(directMatch[1].replace(/\s+/g, ''));
+                }
+
+                const blankMatch = raw.match(/第\s*\d+\s*[空题]/);
+                if (blankMatch) {
+                    const context = raw
+                        .replace(/^.*?(请|帮我|麻烦|想|需要|可以|能不能)?\s*(讲|讲解|分析|解释|看看|解答|解题|说明|翻译)?\s*/g, '')
+                        .replace(/^[这道这题该题题目一下一下子请先再]/g, '')
+                        .trim();
+                    return trimTitleLength(context ? `${blankMatch[0]} ${context}` : `${blankMatch[0]}讲解`);
+                }
+
+                const firstSentence = raw.split(/[\n。！？!?]/)[0].trim();
+                const normalized = firstSentence
+                    .replace(/^(请|帮我|麻烦|可以|能不能|想|需要|请你|老师|帮忙)?\s*/g, '')
+                    .replace(/^(讲|讲解|分析|解释|看看|看下|解答|解题|判断|总结|翻译|说明|批改|做一下|做个|讲一下|分析一下|解释一下)\s*/g, '')
+                    .replace(/^(这道题|这题|题目|这道英语题|这道语法题|这道阅读题|这个句子)\s*/g, '')
+                    .replace(/\s*(怎么做|什么意思|怎么理解|可以吗|行吗|对吗|谢谢)?$/g, '')
+                    .trim();
+
+                return trimTitleLength(normalized || firstSentence || raw);
+            }
+
+            function isGenericChatTitle(title) {
+                const normalized = cleanTitleText(title).toLowerCase();
+                if (!normalized) return true;
+                return /^(新对话|图片提问|题目|这道题|这题|英语题|讲题|讲解|分析|解释|看看|解答|题目讲解|帮我分析|帮我讲解)$/.test(normalized);
+            }
+
+            function getFirstRoundTheme(messages) {
+                const firstUserIndex = messages.findIndex(msg => msg.sender === 'user');
+                if (firstUserIndex === -1) return '';
+                const firstAi = messages.slice(firstUserIndex + 1).find(msg => msg.sender === 'ai' && msg.content);
+                if (!firstAi) return '';
+                const structured = parseStructuredReply(firstAi.content || '');
+                if (!structured) return '';
+                const parts = [];
+                if (structured.questionType) parts.push(structured.questionType);
+                if (structured.subtype) parts.push(structured.subtype);
+                return parts.join(' · ');
+            }
+
             function buildChatTitle(messages) {
                 const firstUserMessage = messages.find(msg => msg.sender === 'user' && (msg.content || msg.type === 'image'));
                 if (!firstUserMessage) return '新对话';
-                if (firstUserMessage.type === 'image' && !firstUserMessage.content) return '图片提问';
-                return firstUserMessage.content.replace(/\s+/g, ' ').slice(0, 18) || '新对话';
+                const userSummary = summarizeFirstUserIntent(firstUserMessage);
+                const firstRoundTheme = getFirstRoundTheme(messages);
+
+                if (userSummary && !isGenericChatTitle(userSummary)) {
+                    return userSummary;
+                }
+                if (firstRoundTheme) {
+                    return trimTitleLength(`${firstRoundTheme}讲解`);
+                }
+                if (firstUserMessage.type === 'image' && !firstUserMessage.content) {
+                    return '图片题讲解';
+                }
+                return trimTitleLength(userSummary || '新对话');
+            }
+
+            async function refreshStoredChatTitles() {
+                const chats = await getAllChats();
+                const updates = chats
+                    .map(chat => {
+                        const nextTitle = buildChatTitle(chat.messages || []);
+                        if (!nextTitle || nextTitle === chat.title) return null;
+                        return { ...chat, title: nextTitle };
+                    })
+                    .filter(Boolean);
+
+                for (const chat of updates) {
+                    await saveChat(chat);
+                }
             }
 
             function getDefaultMessages() {
@@ -3356,6 +3688,7 @@
             function appendMessage(content, sender, options = {}) {
                 const createdAt = options.createdAt || new Date().toISOString();
                 const type = options.type || 'text';
+                const animateTyping = Boolean(options.animateTyping && sender === 'ai' && type === 'text');
                 const div = document.createElement('div');
                 const time = new Date(createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 div.className = `message-animate flex flex-col ${sender === 'user' ? 'items-end' : 'items-start'}`;
@@ -3375,7 +3708,7 @@
                 } else {
                     const aiRender = sender === 'ai' ? renderAiMessageContent(content) : null;
                     const renderedContent = sender === 'ai'
-                        ? aiRender.html
+                        ? (animateTyping ? '' : aiRender.html)
                         : escapeHtml(content).replace(/\n/g, '<br>');
                     if (sender === 'user') {
                         div.innerHTML = `<span class="text-[11px] text-gray-400 mb-1 mr-1">我 · ${time}</span><div class="chat-bubble-user bg-white border border-gray-200 text-gray-800 px-4 py-3 rounded-2xl rounded-tr-sm max-w-[85%] shadow-sm chat-text">${renderedContent}</div>`;
@@ -3389,7 +3722,15 @@
                 } else {
                     chatWindow.appendChild(div);
                 }
-                chatWindow.scrollTop = chatWindow.scrollHeight;
+                scrollChatToBottom();
+                if (animateTyping) {
+                    const bubble = div.querySelector('.chat-bubble-ai');
+                    if (bubble) {
+                        requestAnimationFrame(() => {
+                            animateAiBubbleContent(bubble, content);
+                        });
+                    }
+                }
                 return {
                     id: crypto.randomUUID(),
                     sender,
@@ -3934,12 +4275,15 @@
                 }
                 setSendingState(true);
                 const thinkingIndicator = appendThinkingIndicator();
+                const thinkingStartedAt = Date.now();
                 try {
                     const currentImage = pendingImage;
                     clearPendingImage();
                     const replyText = await requestAssistantReply(text, currentImage);
+                    await ensureMinimumThinkingTime(thinkingStartedAt);
                     const aiMessage = appendMessage(replyText, 'ai', {
-                        replaceElement: thinkingIndicator
+                        replaceElement: thinkingIndicator,
+                        animateTyping: true
                     });
                     if (pendingAiIndicator === thinkingIndicator) {
                         pendingAiIndicator = null;
@@ -3951,6 +4295,7 @@
                     }
                 } catch (error) {
                     clearPendingImage();
+                    await ensureMinimumThinkingTime(thinkingStartedAt, 1500);
                     const errorMessage = getRequestErrorMessage(error);
                     appendMessage(errorMessage, 'ai', {
                         replaceElement: thinkingIndicator
@@ -4304,6 +4649,7 @@
 
             openDB()
                 .then(async () => {
+                    await refreshStoredChatTitles();
                     await Promise.all([ensureActiveChat(), loadUserProfile(), loadCalendarSettings()]);
                     setSelectedNote(selectedNoteId);
                 })
