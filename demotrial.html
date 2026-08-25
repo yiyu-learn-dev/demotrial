@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>陶然AI助教 · 高考英语</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -79,6 +79,17 @@
             transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease, margin 0.3s ease;
         }
         .mobile-collapse.open { max-height: 800px; opacity: 1; margin-bottom: 1rem; }
+        .mobile-drawer-close { display: none; }
+        #mobile-panel-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(28, 36, 48, 0.38);
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+            z-index: 61;
+        }
+        #mobile-panel-overlay.is-visible { display: block; }
 
         body {
             position: relative;
@@ -115,7 +126,6 @@
                 radial-gradient(circle at 74% 20%, rgba(214,223,234,0.34), transparent 20%);
             mix-blend-mode: multiply;
             transform-origin: 82% 18%;
-            animation: depthBreath 13s ease-in-out infinite;
             pointer-events: none;
             z-index: -1;
         }
@@ -255,8 +265,8 @@
         .extend-card:hover,
         .history-item:hover,
         #pending-upload:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-lift), var(--shadow-press);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-card);
             border-color: rgba(130, 147, 178, 0.28);
         }
 
@@ -317,8 +327,8 @@
         #upload-image-btn:hover,
         #pending-upload-remove:hover,
         #profile-close-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-lift), var(--shadow-press);
+            transform: none;
+            box-shadow: var(--shadow-card), var(--shadow-press);
         }
 
         .mobile-switch-btn.active {
@@ -1232,10 +1242,13 @@
         body.night-mode .border-gray-200,
         body.night-mode .border-gray-100 { border-color:#334155 !important; }
         body.night-mode header { background: rgba(16, 23, 38, 0.88) !important; }
+        body.night-mode #mobile-panel-overlay {
+            background: rgba(8, 12, 20, 0.55);
+        }
         body.night-mode .bg-brand { background:#5a7fae !important; }
         body.night-mode .hover\:bg-gray-100:hover { background:#1e293b !important; }
-        body.night-mode .chat-bubble-ai { background:#374151 !important; color:#e5e7eb; border-color:#4b5563; }
-        body.night-mode .chat-bubble-user { background:#1f2937 !important; color:#e5e7eb; border-color:#4b5563; }
+        body.night-mode .chat-bubble-ai { background: transparent !important; color:#e5e7eb; border-color: transparent !important; box-shadow: none !important; }
+        body.night-mode .chat-bubble-user { background: rgba(55, 72, 98, 0.72) !important; color:#e5e7eb; border-color: rgba(90, 110, 140, 0.28) !important; }
         body.night-mode .bg-\[\#f8fafc\] { background:#1f2937 !important; }
         body.night-mode input,
         body.night-mode textarea { color: #ecf2ff !important; }
@@ -1440,8 +1453,8 @@
             border-color: rgba(255,255,255,0.48) !important;
             box-shadow: 0 18px 32px rgba(112, 128, 150, 0.18), inset 0 1px 0 rgba(255,255,255,0.24) !important;
         }
-        body.warm-mode .chat-bubble-ai { background: #F5F0E5 !important; color: #3E3A39; border-color: #E0D8C8; }
-        body.warm-mode .chat-bubble-user { background: #FFFFFF !important; color: #3E3A39; border-color: #E0D8C8; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        body.warm-mode .chat-bubble-ai { background: transparent !important; color: #3E3A39; border-color: transparent !important; box-shadow: none !important; }
+        body.warm-mode .chat-bubble-user { background: rgba(255,255,255,0.78) !important; color: #3E3A39; border-color: rgba(224, 216, 200, 0.7) !important; box-shadow: none !important; }
         body.warm-mode .bg-\[\#f8fafc\] { background: #F5F0E5 !important; }
         body.warm-mode .history-item.active { background: linear-gradient(180deg, rgba(229,236,247,0.95) 0%, rgba(244,238,228,0.96) 100%) !important; border-color: rgba(125, 146, 178, 0.32) !important; }
 
@@ -1679,6 +1692,118 @@
         .chat-thinking-dots span:nth-child(2) { animation-delay: 0.16s; }
         .chat-thinking-dots span:nth-child(3) { animation-delay: 0.32s; }
 
+        .chat-thinking-panel {
+            width: min(100%, 36rem);
+            min-width: 12.5rem;
+        }
+        .chat-thinking-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 0;
+            border: 0;
+            background: transparent;
+            color: inherit;
+            cursor: pointer;
+            text-align: left;
+            font: inherit;
+        }
+        .chat-thinking-toggle:focus-visible {
+            outline: 2px solid rgba(125, 146, 178, 0.45);
+            outline-offset: 3px;
+            border-radius: 0.7rem;
+        }
+        .chat-thinking-icon {
+            width: 1.45rem;
+            height: 1.45rem;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background: rgba(226, 234, 243, 0.95);
+            color: #6a7e95;
+            font-size: 0.72rem;
+        }
+        .chat-thinking-panel.is-active .chat-thinking-icon {
+            animation: thinkingIconPulse 1.4s ease-in-out infinite;
+        }
+        @keyframes thinkingIconPulse {
+            0%, 100% { transform: scale(1); opacity: 0.86; }
+            50% { transform: scale(1.08); opacity: 1; }
+        }
+        .chat-thinking-toggle-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 0.08rem;
+            min-width: 0;
+            flex: 1;
+        }
+        .chat-thinking-toggle-label {
+            font-size: 0.92em;
+            font-weight: 700;
+            color: #5d7188;
+            line-height: 1.3;
+        }
+        .chat-thinking-toggle-meta {
+            font-size: 0.74em;
+            color: rgba(102, 113, 128, 0.82);
+        }
+        .chat-thinking-chevron {
+            margin-left: auto;
+            color: rgba(102, 113, 128, 0.72);
+            font-size: 0.72rem;
+            transition: transform 0.2s ease;
+        }
+        .chat-thinking-panel.is-collapsed .chat-thinking-chevron {
+            transform: rotate(-90deg);
+        }
+        .chat-thinking-body {
+            margin-top: 0.72rem;
+            padding-top: 0.72rem;
+            border-top: 1px solid rgba(203, 213, 225, 0.7);
+            max-height: 18rem;
+            overflow: auto;
+        }
+        .chat-thinking-panel.is-collapsed .chat-thinking-body {
+            display: none;
+        }
+        .chat-thinking-panel.is-finished .chat-thinking-dots,
+        .chat-thinking-panel.is-collapsed .chat-thinking-dots {
+            display: none;
+        }
+        .chat-thinking-steps {
+            display: none;
+        }
+        .chat-thinking-stream {
+            color: #7a8796;
+            font-size: 0.86em;
+            line-height: 1.85;
+            white-space: pre-wrap;
+            border-left: 2px solid rgba(148, 163, 184, 0.32);
+            padding-left: 0.85rem;
+        }
+        .chat-thinking-stream:empty {
+            display: none;
+        }
+        .chat-thinking-panel.is-active .chat-thinking-stream:not(:empty)::after {
+            content: '';
+            display: inline-block;
+            width: 0.42em;
+            height: 0.95em;
+            margin-left: 3px;
+            border-radius: 999px;
+            background: rgba(125, 146, 178, 0.5);
+            vertical-align: -0.12em;
+            animation: chatTypingCursorBlink 0.9s ease-in-out infinite;
+        }
+        .chat-bubble-ai .chat-thinking-panel + .chat-ai-reply-body {
+            margin-top: 0.82rem;
+            padding-top: 0.82rem;
+            border-top: 1px solid rgba(203, 213, 225, 0.7);
+        }
+
         .settings-panel { transform: translateX(100%); transition: transform 0.3s ease; }
         .settings-panel.open { transform: translateX(0); }
         .history-panel { transform: translateX(100%); transition: transform 0.3s ease; }
@@ -1731,20 +1856,386 @@
         }
         #toast.show { opacity: 1; pointer-events: auto; transform: translateX(-50%) scale(1); }
 
+        html, body {
+            height: 100%;
+            max-height: 100dvh;
+        }
+        body {
+            box-sizing: border-box;
+            padding-top: env(safe-area-inset-top);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+        }
+        #toast {
+            bottom: calc(1.25rem + env(safe-area-inset-bottom));
+        }
+
         @media (max-width: 1023px) {
-            #left-panel, #right-panel { position: relative !important; transform: none !important; left: auto !important; right: auto !important; width: 100% !important; min-width: 100% !important; }
+            body {
+                height: var(--app-height, 100dvh) !important;
+            }
+            main {
+                gap: 0.5rem !important;
+                padding: 0.5rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom)) !important;
+            }
+            #mobile-switch-bar {
+                flex-shrink: 0;
+                margin-bottom: 0.5rem !important;
+            }
+            #chat-stage {
+                flex: 1 1 auto;
+                min-height: 0 !important;
+                height: auto !important;
+                margin: 0 !important;
+                border-radius: 20px;
+            }
+            #left-panel.mobile-collapse,
+            #right-panel.mobile-collapse {
+                position: fixed !important;
+                top: 0;
+                bottom: 0;
+                width: min(420px, 88vw) !important;
+                min-width: 0 !important;
+                height: 100dvh !important;
+                max-height: none !important;
+                margin: 0 !important;
+                opacity: 1 !important;
+                overflow: hidden !important;
+                overscroll-behavior: contain;
+                z-index: 62;
+                border-radius: 0 24px 24px 0 !important;
+                transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            }
+            #right-panel.mobile-collapse {
+                border-radius: 24px 0 0 24px !important;
+            }
+            #left-panel.mobile-collapse {
+                left: 0;
+                right: auto;
+                transform: translateX(-105%) !important;
+                padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left)) !important;
+            }
+            #right-panel.mobile-collapse {
+                right: 0;
+                left: auto;
+                transform: translateX(105%) !important;
+                padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) 1rem !important;
+            }
+            #left-panel.mobile-collapse.open,
+            #right-panel.mobile-collapse.open {
+                transform: translateX(0) !important;
+            }
+            .mobile-drawer-close {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .chat-toolbar {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+            }
+            .chat-toolbar::-webkit-scrollbar { display: none; }
+            .chat-toolbar > button {
+                flex-shrink: 0;
+            }
+            #left-panel .sidebar-content,
+            #right-panel .sidebar-content {
+                min-height: 0;
+                -webkit-overflow-scrolling: touch;
+            }
+            .chat-thinking-panel {
+                min-width: 0;
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 767px) {
+            header {
+                padding-left: 0.85rem;
+                padding-right: 0.85rem;
+            }
+            header .font-bold.text-brand {
+                font-size: 1.05rem;
+            }
+            #left-panel.mobile-collapse,
+            #right-panel.mobile-collapse {
+                width: 100% !important;
+                max-width: 100%;
+                border-radius: 0 !important;
+            }
+            .max-w-\[85\%\] {
+                max-width: 92% !important;
+            }
+            .chat-thinking-body {
+                max-height: 12.5rem;
+            }
+            #settings-panel {
+                width: min(18rem, 100vw);
+            }
+            #flashcard-modal {
+                inset: max(0.6rem, env(safe-area-inset-top)) 0.6rem max(0.6rem, env(safe-area-inset-bottom));
+                top: auto;
+                transform: none;
+                max-height: calc(100dvh - 1.2rem);
+                overflow: auto;
+            }
+            .flashcard-stack,
+            .flashcard-motion-layer,
+            .flashcard-card {
+                min-height: 280px;
+            }
+            #timer-text {
+                max-width: 7.2rem;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            #left-panel.mobile-collapse,
+            #right-panel.mobile-collapse {
+                max-height: none;
+                opacity: 1;
+                overflow: visible;
+                margin-bottom: 0;
+                position: relative !important;
+                transform: none !important;
+                height: 100%;
+            }
+        }
+
+        body {
+            font-family: "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+            color: var(--ink);
+        }
+        body::before {
+            opacity: 0.28;
+        }
+        .glass-panel {
+            background: rgba(255,255,255,0.78);
+            border: 1px solid rgba(255,255,255,0.68);
+            box-shadow: 0 10px 28px rgba(118, 132, 153, 0.06);
+        }
+        .glass-panel::before,
+        .glass-panel::after {
+            display: none;
+        }
+        header.app-header {
+            height: 3.5rem;
+            background: rgba(249, 251, 253, 0.9);
+            border-bottom: 1px solid rgba(119, 133, 153, 0.1);
+            box-shadow: none;
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+        header.app-header::before,
+        header.app-header::after {
+            display: none;
+        }
+        .hero-glow {
+            box-shadow: 0 8px 16px rgba(106, 122, 145, 0.16), inset 0 1px 0 rgba(255,255,255,0.28);
+        }
+        .app-badge {
+            background: rgba(241, 245, 249, 0.92) !important;
+            border: 1px solid rgba(125, 146, 178, 0.16) !important;
+            box-shadow: none !important;
+            color: var(--heading-soft);
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+        #chat-stage {
+            background: rgba(255,255,255,0.62);
+            box-shadow: none;
+            margin: 0 !important;
+        }
+        .chat-toolbar {
+            background: rgba(255,255,255,0.42);
+            border-bottom-color: rgba(119, 133, 153, 0.1) !important;
+            padding-top: 0.7rem;
+            padding-bottom: 0.7rem;
+        }
+        .chat-session-head {
+            max-width: 46rem;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0.85rem 1.1rem 0.15rem;
+        }
+        .chat-session-head h1 {
+            font-size: 0.92rem !important;
+            font-weight: 650 !important;
+            letter-spacing: 0.01em;
+            line-height: 1.3;
+        }
+        .chat-session-head #chat-meta {
+            margin-top: 0.12rem;
+            font-size: 12px;
+        }
+        #chat-window {
+            display: flex;
+            flex-direction: column;
+            gap: 1.35rem;
+            padding: 0.6rem 1rem 1.1rem;
+        }
+        #chat-window > div {
+            width: 100%;
+            max-width: 46rem;
+            margin-inline: auto;
+        }
+        .chat-meta-line {
+            font-size: 11px;
+            color: rgba(102, 113, 128, 0.72) !important;
+            margin-bottom: 0.35rem;
+            letter-spacing: 0.01em;
+        }
+        #chat-window .chat-bubble-ai,
+        #chat-window .chat-bubble-ai.bg-gray-100 {
+            background: transparent !important;
+            border: 0 !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            max-width: 100%;
+            border-radius: 0;
+            color: #3f4d5e;
+        }
+        #chat-window .chat-bubble-ai::before,
+        #chat-window .chat-bubble-ai::after,
+        #chat-window .chat-bubble-user::before,
+        #chat-window .chat-bubble-user::after {
+            display: none !important;
+        }
+        #chat-window .chat-bubble-user,
+        #chat-window .chat-bubble-user.bg-white {
+            background: rgba(232, 238, 245, 0.92) !important;
+            border: 1px solid rgba(125, 146, 178, 0.12) !important;
+            box-shadow: none !important;
+            color: #425266;
+            border-radius: 1.15rem 1.15rem 0.35rem 1.15rem;
+        }
+        #chat-window .chat-image-bubble.chat-bubble-user {
+            padding: 0.4rem !important;
+        }
+        .chat-ai-reply-body {
+            line-height: 1.78;
+            letter-spacing: 0.005em;
+        }
+        .chat-thinking-toggle-label {
+            font-weight: 600;
+            font-size: 0.82em;
+        }
+        .chat-thinking-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            background: rgba(226, 234, 243, 0.7);
+        }
+        .chat-bubble-ai .chat-thinking-panel + .chat-ai-reply-body {
+            margin-top: 0.7rem;
+            padding-top: 0.75rem;
+            border-top-color: rgba(203, 213, 225, 0.55);
+        }
+        .chat-composer-wrap {
+            max-width: 50rem;
+            width: 100%;
+            margin: 0 auto;
+            background: transparent !important;
+            border-top: 0 !important;
+            padding-top: 0.35rem;
+        }
+        .composer-shell {
+            border-radius: 1.35rem !important;
+            border: 1px solid rgba(125, 146, 178, 0.16) !important;
+            background: rgba(255,255,255,0.94) !important;
+            box-shadow: 0 8px 24px rgba(118, 132, 153, 0.08) !important;
+            padding: 0.4rem 0.45rem 0.4rem 0.55rem !important;
+        }
+        .composer-shell::before,
+        .composer-shell::after {
+            display: none;
+        }
+        .composer-shell:focus-within {
+            border-color: rgba(125, 146, 178, 0.38) !important;
+            box-shadow: 0 0 0 3px rgba(125, 146, 178, 0.12), 0 10px 24px rgba(118, 132, 153, 0.08) !important;
+        }
+        #chat-input {
+            font-size: 15px;
+            line-height: 1.55;
+            padding: 0.55rem 0.45rem;
+        }
+        .soft-send-btn {
+            width: 2.15rem;
+            height: 2.15rem;
+            box-shadow: none;
+        }
+        .soft-send-btn:hover {
+            filter: brightness(1.04);
+        }
+        .message-animate {
+            animation: fadeInUp 0.22s ease-out;
+        }
+        .soft-pill-btn,
+        .soft-icon-btn,
+        .soft-secondary-btn {
+            box-shadow: none;
+        }
+        #left-panel,
+        #right-panel {
+            box-shadow: 0 10px 24px rgba(116, 129, 147, 0.06);
+        }
+        #left-panel .note-card,
+        #right-panel .extend-card {
+            box-shadow: none;
+        }
+        body.night-mode header.app-header {
+            background: rgba(16, 23, 38, 0.92);
+            border-bottom-color: rgba(90, 107, 132, 0.32);
+        }
+        body.night-mode #chat-meta,
+        body.night-mode .chat-meta-line {
+            color: rgba(185, 199, 222, 0.72) !important;
+        }
+        body.night-mode #chat-window .chat-bubble-ai,
+        body.night-mode #chat-window .chat-bubble-ai.bg-gray-100 {
+            background: transparent !important;
+            color: #dbe5f4;
+        }
+        body.night-mode #chat-window .chat-bubble-user,
+        body.night-mode #chat-window .chat-bubble-user.bg-white {
+            background: rgba(55, 72, 98, 0.72) !important;
+            border-color: rgba(90, 110, 140, 0.28) !important;
+            color: #e5e7eb;
+        }
+        body.night-mode .composer-shell {
+            background: rgba(22, 32, 51, 0.96) !important;
+            border-color: rgba(94, 114, 148, 0.34) !important;
+        }
+        body.warm-mode header.app-header {
+            background: rgba(245, 240, 229, 0.92);
+            border-bottom-color: rgba(203, 186, 160, 0.35);
+        }
+        body.warm-mode #chat-window .chat-bubble-ai,
+        body.warm-mode #chat-window .chat-bubble-ai.bg-gray-100 {
+            background: transparent !important;
+            color: #3E3A39;
+        }
+        body.warm-mode #chat-window .chat-bubble-user,
+        body.warm-mode #chat-window .chat-bubble-user.bg-white {
+            background: rgba(255,255,255,0.78) !important;
+            border-color: rgba(224, 216, 200, 0.7) !important;
+            color: #3E3A39;
         }
     </style>
 </head>
 <body class="bg-transparent min-h-screen font-sans antialiased flex flex-col h-screen overflow-hidden">
 
-    <header class="glass-panel sticky top-0 z-50 h-16 flex items-center justify-between px-4 lg:px-6 shrink-0 border-b border-white/60">
+    <header class="app-header sticky top-0 z-50 flex items-center justify-between px-4 lg:px-6 shrink-0">
         <div class="flex items-center gap-2 sm:gap-3">
             <a href="#" class="flex items-center gap-2">
                 <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center hero-glow bg-brand"><i class="fa-solid fa-graduation-cap text-white text-sm sm:text-base"></i></div>
-                <span class="text-lg sm:text-xl md:text-2xl font-bold text-brand tracking-tight whitespace-nowrap">陶然AI助教</span>
+                <span class="text-lg sm:text-xl font-bold text-brand tracking-tight whitespace-nowrap">陶然AI助教</span>
             </a>
-            <span class="hidden sm:inline text-xs text-brand px-2.5 py-1 rounded-full font-medium ml-1 border border-white/70 shadow-sm" style="background: linear-gradient(180deg, rgba(247,250,255,0.98) 0%, rgba(233,241,251,0.95) 100%);">高考英语</span>
+            <span class="app-badge hidden sm:inline text-xs px-2.5 py-1 rounded-full ml-1">高考英语</span>
         </div>
         <div class="flex items-center gap-2 sm:gap-4">
             <button id="share-btn" class="soft-icon-btn w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition text-gray-500 hover:text-brand" title="分享"><i class="fa-solid fa-share-from-square text-sm sm:text-base"></i></button>
@@ -1766,18 +2257,19 @@
     <div id="settings-overlay" class="fixed inset-0 bg-black bg-opacity-30 z-[55] hidden" onclick="toggleSettings()"></div>
 
     <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative gap-0 lg:gap-4 md:gap-5 p-3 sm:p-4 md:p-6">
-        <div class="lg:hidden flex gap-2 mb-3 flex-wrap">
-            <button id="mobile-toggle-left" class="mobile-switch-btn flex-1 min-w-[80px] rounded-2xl py-2.5 sm:py-3 text-sm font-semibold text-brand transition flex items-center justify-center gap-1.5"> <i class="fa-solid fa-book-open text-xs"></i> 错题笔记</button>
-            <button id="mobile-toggle-right" class="mobile-switch-btn flex-1 min-w-[80px] rounded-2xl py-2.5 sm:py-3 text-sm font-semibold text-brand transition flex items-center justify-center gap-1.5"> 拓展 <i class="fa-solid fa-puzzle-piece text-xs"></i></button>
+        <div id="mobile-switch-bar" class="lg:hidden flex gap-2 mb-3">
+            <button id="mobile-toggle-left" class="mobile-switch-btn flex-1 min-w-0 rounded-2xl py-2.5 sm:py-3 text-sm font-semibold text-brand transition flex items-center justify-center gap-1.5"> <i class="fa-solid fa-book-open text-xs"></i> 错题笔记</button>
+            <button id="mobile-toggle-right" class="mobile-switch-btn flex-1 min-w-0 rounded-2xl py-2.5 sm:py-3 text-sm font-semibold text-brand transition flex items-center justify-center gap-1.5"> 拓展 <i class="fa-solid fa-puzzle-piece text-xs"></i></button>
         </div>
 
         <!-- 左栏 -->
-        <aside id="left-panel" class="w-full lg:w-[20%] flex-shrink-0 order-2 lg:order-1 glass-panel rounded-[24px] shadow-md p-3 sm:p-4 md:p-5 h-full flex flex-col mobile-collapse open lg:max-h-none lg:opacity-100 lg:overflow-visible border border-white/60 transition-all duration-300">
+        <aside id="left-panel" class="w-full lg:w-[20%] flex-shrink-0 order-2 lg:order-1 glass-panel rounded-[24px] shadow-md p-3 sm:p-4 md:p-5 h-full flex flex-col mobile-collapse lg:max-h-none lg:opacity-100 lg:overflow-visible border border-white/60 transition-all duration-300">
             <div class="sidebar-content flex flex-col h-full">
                 <div class="flex items-center justify-between mb-3 sm:mb-4">
                     <h2 class="text-base sm:text-lg font-bold text-brand flex items-center gap-2"><i class="fa-solid fa-book-open text-sm"></i> 错题笔记</h2>
                     <div class="flex items-center gap-1.5 sm:gap-2">
                         <button id="note-search-toggle" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition text-gray-400 hover:text-brand" title="搜索错题"><i class="fa-solid fa-magnifying-glass text-xs sm:text-sm"></i></button>
+                        <button type="button" class="mobile-drawer-close w-7 h-7 sm:w-8 sm:h-8 rounded-full hover:bg-gray-100 items-center justify-center transition text-gray-400 hover:text-brand" aria-label="关闭错题笔记"><i class="fa-solid fa-xmark text-sm"></i></button>
                         <button class="sidebar-collapse-btn w-7 h-7 sm:w-8 sm:h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition text-gray-400 hover:text-brand hidden lg:flex" onclick="toggleLeftDesktop()"><i class="fa-solid fa-arrow-left text-xs sm:text-sm"></i></button>
                     </div>
                 </div>
@@ -1815,17 +2307,17 @@
         </aside>
 
         <!-- 中栏 -->
-        <section id="chat-stage" class="flex-1 flex flex-col h-full glass-panel lg:bg-transparent lg:rounded-[24px] lg:shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] lg:mt-2 lg:mx-2 border border-white/60 relative overflow-hidden order-1 lg:order-2 min-h-0">
-            <div class="px-4 py-3 flex items-center gap-2 sm:gap-3 border-b border-white/60 bg-white/55 backdrop-blur-sm z-10">
+        <section id="chat-stage" class="flex-1 flex flex-col h-full glass-panel lg:bg-transparent lg:rounded-[24px] border border-white/60 relative overflow-hidden order-1 lg:order-2 min-h-0">
+            <div class="chat-toolbar px-3 sm:px-4 py-3 flex items-center gap-2 sm:gap-3 border-b border-white/60 bg-white/55 backdrop-blur-sm z-10">
                 <button id="timer-btn" class="soft-pill-btn flex items-center gap-2 text-brand font-semibold px-3 sm:px-4 py-2 rounded-2xl text-xs sm:text-sm transition" onclick="toggleTimer()"><span class="w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-brand flex items-center justify-center flex-shrink-0 timer-ring" id="timer-icon"><i class="fa-solid fa-play text-[10px] sm:text-xs text-brand ml-0.5"></i></span><span id="timer-text" class="text-brand">开始学习计时</span></button>
-                <button id="history-btn" class="soft-pill-btn flex items-center gap-2 text-gray-600 font-semibold px-3 sm:px-4 py-2 rounded-2xl text-xs sm:text-sm transition"><i class="fa-solid fa-clock-rotate-left text-sm"></i>历史对话</button>
-                <button id="new-chat-btn" class="soft-primary-btn flex items-center gap-2 text-white font-semibold px-3 sm:px-4 py-2 rounded-2xl text-xs sm:text-sm transition ml-auto" onclick="createNewChat()"><i class="fa-solid fa-plus text-xs"></i>创建新对话</button>
+                <button id="history-btn" class="soft-pill-btn flex items-center gap-2 text-gray-600 font-semibold px-3 sm:px-4 py-2 rounded-2xl text-xs sm:text-sm transition"><i class="fa-solid fa-clock-rotate-left text-sm"></i><span class="hidden sm:inline">历史对话</span><span class="sm:hidden">历史</span></button>
+                <button id="new-chat-btn" class="soft-primary-btn flex items-center gap-2 text-white font-semibold px-3 sm:px-4 py-2 rounded-2xl text-xs sm:text-sm transition ml-auto" onclick="createNewChat()"><i class="fa-solid fa-plus text-xs"></i>新对话</button>
             </div>
-            <div class="px-4 sm:px-5 md:px-6 pt-3 sm:pt-4 pb-2 shrink-0"><h1 class="text-xl sm:text-2xl font-extrabold text-brand tracking-wide">对话</h1><p id="chat-meta" class="text-xs text-gray-400 mt-0.5">陶然AI助教 · 陪你冲刺高考英语</p></div>
-            <div id="chat-window" class="flex-1 overflow-y-auto custom-scrollbar px-3 sm:px-4 md:px-5 py-3 space-y-5" style="min-height:0;">
-                <div class="message-animate flex flex-col items-start"><span class="text-[11px] text-gray-400 mb-1 ml-1">陶然AI助教 · 刚刚</span><div class="bg-gray-100 border border-gray-200 text-gray-800 px-4 py-3 rounded-2xl rounded-tl-sm max-w-[85%] shadow-sm chat-text leading-relaxed">Hi！我是陶然AI助教 🎓 专攻高考英语，阅读、完形、语法都可以问我~</div></div>
+            <div class="chat-session-head shrink-0"><h1 class="text-brand tracking-wide">对话</h1><p id="chat-meta">陶然 · 高考英语</p></div>
+            <div id="chat-window" class="flex-1 overflow-y-auto custom-scrollbar" style="min-height:0;">
+                <div class="message-animate flex flex-col items-start"><span class="chat-meta-line ml-0.5">陶然 · 刚刚</span><div class="chat-bubble-ai chat-text leading-relaxed">你好，我是陶然。阅读、完形、语法填空都可以直接问。</div></div>
             </div>
-            <div class="p-3 lg:p-4 shrink-0 bg-white/30 border-t border-white/60">
+            <div class="chat-composer-wrap p-3 lg:p-4 shrink-0">
                 <div id="pending-upload" class="pending-upload hidden mb-3 bg-white/80 border border-gray-200 rounded-[18px] p-3">
                     <div class="flex items-start gap-3">
                         <img id="pending-upload-preview" src="" alt="待发送图片预览" class="w-20 h-20 rounded-[14px] object-cover border border-gray-200">
@@ -1837,21 +2329,24 @@
                         <button id="pending-upload-remove" class="w-8 h-8 rounded-full hover:bg-gray-100 text-gray-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark"></i></button>
                     </div>
                 </div>
-                <div id="composer-shell" class="composer-shell rounded-[18px] p-1.5 flex items-end border border-white/80 transition-all duration-300 shadow-[0_12px_28px_rgba(150,160,180,0.12)]" style="background: linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(242,247,253,0.97) 100%);">
+                <div id="composer-shell" class="composer-shell flex items-end">
                     <button id="upload-image-btn" class="soft-icon-btn p-2.5 text-brand rounded-xl transition mb-0.5 ml-0.5"><i class="fa-solid fa-paperclip text-lg"></i></button>
                     <input id="chat-image-input" type="file" accept="image/png,image/jpeg,image/webp" class="hidden">
-                    <textarea id="chat-input" class="flex-1 max-h-32 min-h-[40px] bg-transparent border-none focus:ring-0 resize-none p-2.5 text-[14px] text-gray-700 placeholder-gray-400 leading-relaxed outline-none" rows="1" placeholder="输入你想探讨的高考英语问题..." onkeydown="handleInputKey(event)"></textarea>
+                    <textarea id="chat-input" class="flex-1 max-h-32 min-h-[40px] bg-transparent border-none focus:ring-0 resize-none text-gray-700 placeholder-gray-400 outline-none" rows="1" placeholder="输入题目或问题..." onkeydown="handleInputKey(event)"></textarea>
                     <button id="send-btn" class="soft-send-btn m-1 w-9 h-9 rounded-full flex items-center justify-center transition shrink-0" onclick="sendMessage()"><i class="fa-solid fa-arrow-up text-sm"></i></button>
                 </div>
             </div>
         </section>
 
         <!-- 右栏 -->
-        <aside id="right-panel" class="w-full lg:w-[25%] flex-shrink-0 order-3 lg:order-3 glass-panel rounded-[24px] shadow-md p-3 sm:p-4 md:p-5 h-full flex flex-col mobile-collapse open lg:max-h-none lg:opacity-100 lg:overflow-visible border border-white/60 transition-all duration-300">
+        <aside id="right-panel" class="w-full lg:w-[25%] flex-shrink-0 order-3 lg:order-3 glass-panel rounded-[24px] shadow-md p-3 sm:p-4 md:p-5 h-full flex flex-col mobile-collapse lg:max-h-none lg:opacity-100 lg:overflow-visible border border-white/60 transition-all duration-300">
             <div class="sidebar-content flex flex-col h-full">
                 <div class="flex items-center justify-between mb-3 sm:mb-4">
                     <h2 class="text-base sm:text-lg font-bold text-brand flex items-center gap-2"><i class="fa-solid fa-puzzle-piece text-sm"></i> 拓 展</h2>
-                    <button class="sidebar-collapse-btn w-7 h-7 sm:w-8 sm:h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition text-gray-400 hover:text-brand hidden lg:flex" onclick="toggleRightDesktop()"><i class="fa-solid fa-arrow-right text-xs sm:text-sm"></i></button>
+                    <div class="flex items-center gap-1.5">
+                        <button type="button" class="mobile-drawer-close w-7 h-7 sm:w-8 sm:h-8 rounded-full hover:bg-gray-100 items-center justify-center transition text-gray-400 hover:text-brand" aria-label="关闭拓展"><i class="fa-solid fa-xmark text-sm"></i></button>
+                        <button class="sidebar-collapse-btn w-7 h-7 sm:w-8 sm:h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition text-gray-400 hover:text-brand hidden lg:flex" onclick="toggleRightDesktop()"><i class="fa-solid fa-arrow-right text-xs sm:text-sm"></i></button>
+                    </div>
                 </div>
                 <div class="flex-1 overflow-y-auto custom-scrollbar space-y-3 sm:space-y-4 pr-1">
                     <div id="flashcard-entry" class="extend-card rounded-[20px] shadow-sm p-4 relative overflow-hidden cursor-pointer" style="background: linear-gradient(135deg, #eef2f6 0%, #e0e7ee 100%);"><div class="absolute -right-4 -bottom-4 text-[#90a0b3] opacity-10 text-7xl"><i class="fa-solid fa-layer-group"></i></div><h3 class="font-bold text-[#607186] mb-1 text-[15px]">闪卡</h3><p id="flashcard-entry-desc" class="text-[13px] text-[#748396] font-medium">把错题笔记翻成卡片，随手复习</p></div>
@@ -1934,6 +2429,7 @@
             </div>
         </aside>
     </main>
+    <div id="mobile-panel-overlay"></div>
 
     <div id="toast" class="fixed bottom-6 left-1/2 z-[100] bg-gray-800 text-white px-5 py-3 rounded-2xl text-sm shadow-2xl opacity-0 pointer-events-none"><span id="toast-message"></span></div>
     <div id="history-overlay" class="fixed inset-0 bg-black bg-opacity-30 z-[65] hidden"></div>
@@ -2116,6 +2612,7 @@
             const rightPanel = document.getElementById('right-panel');
             const mobileToggleLeft = document.getElementById('mobile-toggle-left');
             const mobileToggleRight = document.getElementById('mobile-toggle-right');
+            const mobilePanelOverlay = document.getElementById('mobile-panel-overlay');
             const noteCards = Array.from(document.querySelectorAll('.note-card'));
             const flashcardEntry = document.getElementById('flashcard-entry');
             const flashcardEntryDesc = document.getElementById('flashcard-entry-desc');
@@ -2170,7 +2667,7 @@
             const calendarEventAddBtn = document.getElementById('calendar-event-add-btn');
             const calendarEventEmpty = document.getElementById('calendar-event-empty');
             const calendarEventList = document.getElementById('calendar-event-list');
-            const defaultGreeting = "Hi！我是陶然AI助教 🎓 专攻高考英语，阅读、完形、语法都可以问我~";
+            const defaultGreeting = "你好，我是陶然。阅读、完形、语法填空都可以直接问。";
             const DEFAULT_LOCAL_API_BASE = 'http://127.0.0.1:8000';
             const CHAT_API_URL = getChatApiUrl();
             const IMAGE_ACCEPT_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -2532,6 +3029,133 @@
                 };
             }
 
+            function extractPartialReasoningSteps(source) {
+                const match = String(source || '').match(/"reasoning_steps"\s*:\s*\[([\s\S]*)/);
+                if (!match) return [];
+                const body = match[1];
+                const steps = [];
+                const objectRegex = /\{[^{}]*\}/g;
+                let itemMatch;
+                while ((itemMatch = objectRegex.exec(body))) {
+                    try {
+                        const parsed = JSON.parse(itemMatch[0]);
+                        if (!parsed || typeof parsed !== 'object') continue;
+                        const focus = String(parsed.focus || '').trim();
+                        const basis = String(parsed.basis || '').trim();
+                        const conclusion = String(parsed.conclusion || '').trim();
+                        if (!focus && !basis && !conclusion) continue;
+                        steps.push({
+                            step: Number(parsed.step) || steps.length + 1,
+                            focus,
+                            basis,
+                            conclusion
+                        });
+                    } catch (error) {
+                        continue;
+                    }
+                }
+                return steps;
+            }
+
+            function extractPartialStructuredThinking(source) {
+                return {
+                    questionType: extractJsonLikeStringField(source, 'question_type'),
+                    subtype: extractJsonLikeStringField(source, 'subtype'),
+                    stemUnderstanding: extractJsonLikeStringField(source, 'stem_understanding'),
+                    steps: extractPartialReasoningSteps(source)
+                };
+            }
+
+            function formatThinkingStepTitle(step, index = 0) {
+                const focus = String(step && step.focus || '').trim();
+                if (focus) return focus;
+                return `第 ${Number(step && step.step) || index + 1} 步`;
+            }
+
+            function formatThinkingStepDetail(step) {
+                if (!step) return '';
+                const basis = String(step.basis || '').trim();
+                const conclusion = String(step.conclusion || '').trim();
+                const pieces = [];
+                if (basis) pieces.push(basis.endsWith('。') ? basis : `${basis}。`);
+                if (conclusion && conclusion !== basis) {
+                    pieces.push(conclusion.endsWith('。') ? conclusion : `${conclusion}。`);
+                }
+                return pieces.join(' ').trim();
+            }
+
+            function isJsonConstructionNoise(text) {
+                return /```|(?:构建|构造|组装|生成|填写|填充|输出)\s*(?:这个|最终|固定)?\s*(?:json|JSON)|reasoning_steps|stem_understanding|distractor_analysis|knowledge_cards|need_more_context|unsupported_reason|question_type|"supported"\s*:|固定\s*JSON|合法\s*JSON|字段名|按\s*schema|输出格式|JSON\s*对象|json\s*对象|键值对|根据(?:我的)?角色设定|回顾规则|根据规则|检查规则|对照规则|我需要输出|输出必须是|正式回答只输出|字段必须正确|现在，写JSON|确保不添加任何额外内容/i.test(String(text || ''));
+            }
+
+            function stripJsonPayloads(text) {
+                return String(text || '')
+                    .replace(/```(?:json)?[\s\S]*?```/gi, '\n')
+                    .replace(/\{[\s\S]*?"supported"\s*:[\s\S]*?\}\s*/g, '\n');
+            }
+
+            function sanitizeThinkingTranscript(text) {
+                let source = stripJsonPayloads(text);
+                const jsonStart = source.search(/```|\{\s*"(?:supported|question_type|reasoning_steps|stem_understanding)"/);
+                if (jsonStart >= 0) source = source.slice(0, jsonStart);
+                const blocks = source.split(/\n+/);
+                const cleaned = [];
+                blocks.forEach(block => {
+                    const sentences = String(block || '').split(/(?<=[。！？!?\n])/);
+                    const kept = sentences
+                        .map(item => item.trim())
+                        .filter(item => (
+                            item
+                            && !isJsonConstructionNoise(item)
+                            && !/^\s*[{[]/.test(item)
+                            && !/^"[a-z_]+"\s*:/.test(item)
+                        ));
+                    if (kept.length) cleaned.push(kept.join(''));
+                });
+                return cleaned.join('\n\n').replace(/\n{3,}/g, '\n\n').trim();
+            }
+
+            function inferLocalThinkingProse(messageText, hasImage = false) {
+                if (hasImage) {
+                    return ['先把图里的内容看清楚，再决定怎么讲。'];
+                }
+                return ['先看用户在说什么，再组织回答。'];
+            }
+
+            function structuredReplyToThinkingProse(data) {
+                if (!data) return '';
+                const parts = [];
+                const stem = String(data.stemUnderstanding || '')
+                    .replace(/^(用户在问|这是关于|这是一道|这道题是)\s*[:：]?\s*/g, '')
+                    .trim();
+                if (stem && !isJsonConstructionNoise(stem)) {
+                    parts.push(stem);
+                }
+                const steps = Array.isArray(data.reasoningSteps) ? data.reasoningSteps : [];
+                steps.forEach(step => {
+                    if (isMetaReasoningFocus(step && step.focus)) return;
+                    const sentence = joinReasoningSentence(step);
+                    if (!sentence || isJsonConstructionNoise(sentence)) return;
+                    parts.push(sentence);
+                });
+                return sanitizeThinkingTranscript(parts.join('\n\n'));
+            }
+
+            function snapshotToThinkingText(snapshot) {
+                const stream = sanitizeThinkingTranscript(snapshot && snapshot.streamText);
+                if (stream) return stream;
+                const steps = Array.isArray(snapshot && snapshot.steps) ? snapshot.steps : [];
+                if (!steps.length) return '';
+                return sanitizeThinkingTranscript(steps.map(step => {
+                    if (isMetaReasoningFocus(step && step.title)) return '';
+                    const title = String(step && step.title || '').trim();
+                    const detail = String(step && step.detail || '').trim();
+                    if (isJsonConstructionNoise(`${title} ${detail}`)) return '';
+                    if (detail) return detail;
+                    return title;
+                }).filter(Boolean).join('\n\n'));
+            }
+
             function getStructuredReplyPreview(data) {
                 if (!data) return '';
                 if (!data.supported) {
@@ -2614,6 +3238,32 @@
                     .split(/\n+/)
                     .map(item => item.trim())
                     .filter(Boolean);
+            }
+
+            function structuredToPlainBody(data) {
+                if (!data) return '';
+                const parts = [];
+                const explanation = getStructuredExplanationLines(data, 8);
+                if (explanation.length) parts.push(explanation.join('\n\n'));
+                if (data.supported && data.answer && data.subtype !== '问候') {
+                    parts.push(`答案：${data.answer}`);
+                } else if (!data.supported && data.unsupportedReason) {
+                    parts.push(data.unsupportedReason);
+                } else if (data.answer && !explanation.length) {
+                    parts.push(data.answer);
+                }
+                const distractorEntries = Object.entries(data.distractorAnalysis || {}).filter(([, value]) => value);
+                distractorEntries.forEach(([key, value]) => {
+                    parts.push(`${key}. ${value}`);
+                });
+                if (data.followUp) parts.push(data.followUp);
+                return parts.filter(Boolean).join('\n\n').trim();
+            }
+
+            function getReplyDisplayText(content) {
+                const structured = parseStructuredReply(content);
+                if (structured) return structuredToPlainBody(structured) || String(content || '').trim();
+                return String(content || '').trim();
             }
 
             function formatStructuredParagraphs(lines) {
@@ -2870,30 +3520,19 @@
             }
 
             async function animateAiBubbleContent(bubble, content) {
-                const structured = parseStructuredReply(content);
-                if (structured) {
-                    await animateStructuredReplyBubble(bubble, structured);
-                    return;
-                }
-
-                await animateTextReveal(bubble, content, renderPlainText);
-                bubble.innerHTML = renderMarkdown(content);
+                const target = bubble.querySelector('.chat-ai-reply-body') || bubble;
+                const body = getReplyDisplayText(content);
+                await animateTextReveal(target, body, renderPlainText);
+                target.innerHTML = renderMarkdown(body);
                 scrollChatToBottom();
             }
 
             function renderAiMessageContent(content) {
-                const structured = parseStructuredReply(content);
-                if (structured) {
-                    return {
-                        html: renderStructuredReply(structured),
-                        isStructured: true,
-                        preview: getStructuredReplyPreview(structured)
-                    };
-                }
+                const body = getReplyDisplayText(content);
                 return {
-                    html: renderMarkdown(content),
+                    html: renderMarkdown(body),
                     isStructured: false,
-                    preview: String(content || '')
+                    preview: body
                 };
             }
 
@@ -3040,7 +3679,7 @@
                 sendBtn.classList.toggle('cursor-not-allowed', sending);
                 uploadImageBtn.classList.toggle('opacity-60', sending);
                 uploadImageBtn.classList.toggle('cursor-not-allowed', sending);
-                chatInput.placeholder = '输入你想探讨的高考英语问题...';
+                chatInput.placeholder = '输入题目或问题...';
             }
 
             function formatFileSize(size) {
@@ -3697,30 +4336,235 @@
             }
 
             function clearThinkingIndicator() {
+                if (pendingAiIndicator && pendingAiIndicator._thinkingController) {
+                    pendingAiIndicator._thinkingController.destroy();
+                }
                 if (pendingAiIndicator && pendingAiIndicator.parentNode) {
                     pendingAiIndicator.parentNode.removeChild(pendingAiIndicator);
                 }
                 pendingAiIndicator = null;
             }
 
-            function appendThinkingIndicator() {
+            function formatThinkingDuration(durationMs) {
+                const seconds = Math.max(1, Math.round(Number(durationMs || 0) / 1000));
+                return `${seconds} 秒`;
+            }
+
+            function renderThinkingPanelHtml(snapshot, options = {}) {
+                const finished = options.finished !== false;
+                const collapsed = options.collapsed !== false;
+                const streamText = snapshotToThinkingText(snapshot);
+                if (!streamText) return '';
+
+                const durationLabel = snapshot && snapshot.durationMs
+                    ? `用时 ${formatThinkingDuration(snapshot.durationMs)}`
+                    : '已完成';
+
+                return `
+                    <div class="chat-thinking-panel ${finished ? 'is-finished' : 'is-active'} ${collapsed ? 'is-collapsed' : ''}">
+                        <button type="button" class="chat-thinking-toggle" aria-expanded="${collapsed ? 'false' : 'true'}">
+                            <span class="chat-thinking-icon" aria-hidden="true"><i class="fa-solid fa-lightbulb"></i></span>
+                            <span class="chat-thinking-toggle-copy">
+                                <span class="chat-thinking-toggle-label">已深度思考</span>
+                                <span class="chat-thinking-toggle-meta">${escapeHtml(durationLabel)}</span>
+                            </span>
+                            <span class="chat-thinking-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+                            <i class="fa-solid fa-chevron-down chat-thinking-chevron" aria-hidden="true"></i>
+                        </button>
+                        <div class="chat-thinking-body">
+                            <div class="chat-thinking-stream">${escapeHtml(streamText)}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            function bindThinkingPanel(root) {
+                const panel = root.querySelector('.chat-thinking-panel');
+                const labelEl = root.querySelector('.chat-thinking-toggle-label');
+                const metaEl = root.querySelector('.chat-thinking-toggle-meta');
+                const streamEl = root.querySelector('.chat-thinking-stream');
+                const startedAt = Date.now();
+                const localTimers = [];
+                let streamText = '';
+                let fallbackProse = '';
+                let hasNativeThinking = false;
+                let localPlaceholder = true;
+                let finished = false;
+                let durationTimer = null;
+                let statusText = '正在思考';
+
+                function durationMs() {
+                    return Date.now() - startedAt;
+                }
+
+                function setExpanded(expanded) {
+                    if (!panel) return;
+                    panel.classList.toggle('is-collapsed', !expanded);
+                    const toggle = root.querySelector('.chat-thinking-toggle');
+                    if (toggle) toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+                }
+
+                function updateHeader() {
+                    if (labelEl) {
+                        labelEl.textContent = finished ? '已深度思考' : '正在思考';
+                    }
+                    if (metaEl) {
+                        metaEl.textContent = finished
+                            ? `用时 ${formatThinkingDuration(durationMs())}`
+                            : statusText;
+                    }
+                    if (panel) {
+                        panel.classList.toggle('is-active', !finished);
+                        panel.classList.toggle('is-finished', finished);
+                    }
+                }
+
+                function visibleThinkingText() {
+                    const native = sanitizeThinkingTranscript(streamText);
+                    if (hasNativeThinking && native) return native;
+                    if (fallbackProse) return fallbackProse;
+                    return native;
+                }
+
+                function renderStream() {
+                    if (!streamEl) return;
+                    streamEl.textContent = visibleThinkingText();
+                    const body = root.querySelector('.chat-thinking-body');
+                    if (body) body.scrollTop = body.scrollHeight;
+                    scrollChatToBottom();
+                }
+
+                function startLocalStages(messageText, hasImage) {
+                    const sentences = inferLocalThinkingProse(messageText, hasImage);
+                    sentences.forEach((sentence, index) => {
+                        const apply = () => {
+                            if (finished || hasNativeThinking || fallbackProse) return;
+                            streamText = index === 0 ? sentence : `${streamText}\n\n${sentence}`;
+                            localPlaceholder = true;
+                            statusText = '正在想这道题';
+                            updateHeader();
+                            renderStream();
+                        };
+                        if (index === 0) {
+                            apply();
+                            return;
+                        }
+                        localTimers.push(setTimeout(apply, index * 1200));
+                    });
+                }
+
+                durationTimer = setInterval(updateHeader, 400);
+                updateHeader();
+                setExpanded(true);
+
+                return {
+                    handleEvent(event) {
+                        if (!event || typeof event !== 'object') return;
+                        if (event.type === 'status' && event.text) {
+                            statusText = String(event.text);
+                            updateHeader();
+                            return;
+                        }
+                        if (event.type === 'thinking' && event.text) {
+                            if (localPlaceholder) {
+                                streamText = '';
+                                localPlaceholder = false;
+                            }
+                            hasNativeThinking = true;
+                            streamText += event.text;
+                            statusText = '正在想这道题';
+                            updateHeader();
+                            renderStream();
+                        }
+                    },
+                    startLocalStages,
+                    ingestFinalReply(replyText) {
+                        const native = sanitizeThinkingTranscript(streamText);
+                        if (hasNativeThinking && native.length >= 18) {
+                            streamText = native;
+                            renderStream();
+                            return;
+                        }
+                        const structured = parseStructuredReply(replyText);
+                        const prose = structuredReplyToThinkingProse(structured);
+                        if (prose) {
+                            fallbackProse = prose;
+                            localPlaceholder = false;
+                        } else if (native) {
+                            streamText = native;
+                        }
+                        renderStream();
+                    },
+                    finish() {
+                        finished = true;
+                        localTimers.forEach(clearTimeout);
+                        if (durationTimer) {
+                            clearInterval(durationTimer);
+                            durationTimer = null;
+                        }
+                        streamText = sanitizeThinkingTranscript(streamText);
+                        updateHeader();
+                        renderStream();
+                        setExpanded(false);
+                    },
+                    snapshot() {
+                        return {
+                            durationMs: durationMs(),
+                            streamText: visibleThinkingText()
+                        };
+                    },
+                    destroy() {
+                        finished = true;
+                        localTimers.forEach(clearTimeout);
+                        if (durationTimer) {
+                            clearInterval(durationTimer);
+                            durationTimer = null;
+                        }
+                    }
+                };
+            }
+
+            function appendThinkingIndicator(options = {}) {
                 clearThinkingIndicator();
                 const div = document.createElement('div');
                 div.className = 'message-animate flex flex-col items-start';
                 div.innerHTML = `
-                    <span class="text-[11px] text-gray-400 mb-1 ml-1">陶然AI助教 · 正在思考</span>
-                    <div class="chat-bubble-ai bg-gray-100 border border-gray-200 text-gray-800 px-4 py-3 rounded-2xl rounded-tl-sm max-w-[85%] shadow-sm chat-text">
-                        <div class="chat-thinking-bubble" aria-live="polite" aria-label="AI 正在思考">
-                            <span class="chat-thinking-label">正在思考</span>
-                            <span class="chat-thinking-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+                    <span class="chat-meta-line ml-0.5">陶然 · 正在思考</span>
+                    <div class="chat-bubble-ai chat-text">
+                        <div class="chat-thinking-panel is-active">
+                            <button type="button" class="chat-thinking-toggle" aria-expanded="true" aria-label="展开或收起思考过程">
+                                <span class="chat-thinking-icon" aria-hidden="true"><i class="fa-solid fa-lightbulb"></i></span>
+                                <span class="chat-thinking-toggle-copy">
+                                    <span class="chat-thinking-toggle-label">正在思考</span>
+                                    <span class="chat-thinking-toggle-meta">正在思考</span>
+                                </span>
+                                <span class="chat-thinking-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+                                <i class="fa-solid fa-chevron-down chat-thinking-chevron" aria-hidden="true"></i>
+                            </button>
+                            <div class="chat-thinking-body" aria-live="polite">
+                                <div class="chat-thinking-stream"></div>
+                            </div>
                         </div>
                     </div>
                 `;
                 chatWindow.appendChild(div);
                 chatWindow.scrollTop = chatWindow.scrollHeight;
+                const controller = bindThinkingPanel(div);
+                controller.startLocalStages(options.messageText || '', Boolean(options.hasImage));
+                div._thinkingController = controller;
                 pendingAiIndicator = div;
                 return div;
             }
+
+            chatWindow.addEventListener('click', function(event) {
+                const toggle = event.target.closest('.chat-thinking-toggle');
+                if (!toggle || !chatWindow.contains(toggle)) return;
+                const panel = toggle.closest('.chat-thinking-panel');
+                if (!panel) return;
+                event.preventDefault();
+                const collapsed = panel.classList.toggle('is-collapsed');
+                toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+            });
 
             function appendMessage(content, sender, options = {}) {
                 const createdAt = options.createdAt || new Date().toISOString();
@@ -3733,11 +4577,11 @@
                     const safeCaption = content ? `<p class="mt-3 text-[14px] leading-relaxed chat-text">${escapeHtml(content).replace(/\n/g, '<br>')}</p>` : '';
                     const imageSrc = options.imageDataUrl || '';
                     const bubbleClass = sender === 'user'
-                        ? 'chat-bubble-user bg-white border border-gray-200 rounded-2xl rounded-tr-sm'
-                        : 'chat-bubble-ai bg-gray-100 border border-gray-200 rounded-2xl rounded-tl-sm';
+                        ? 'chat-bubble-user rounded-2xl'
+                        : 'chat-bubble-ai';
                     div.innerHTML = `
-                        <span class="text-[11px] text-gray-400 mb-1 ${sender === 'user' ? 'mr-1' : 'ml-1'}">${sender === 'user' ? '我' : '陶然AI助教'} · ${time}</span>
-                        <div class="chat-image-bubble ${bubbleClass} max-w-[85%] shadow-sm p-2">
+                        <span class="chat-meta-line ${sender === 'user' ? 'mr-0.5' : 'ml-0.5'}">${sender === 'user' ? '我' : '陶然'} · ${time}</span>
+                        <div class="chat-image-bubble ${bubbleClass} max-w-[85%] p-2">
                             <img src="${imageSrc}" alt="聊天上传图片" class="max-h-72 object-cover">
                             ${safeCaption}
                         </div>
@@ -3748,10 +4592,11 @@
                         ? (animateTyping ? '' : aiRender.html)
                         : escapeHtml(content).replace(/\n/g, '<br>');
                     if (sender === 'user') {
-                        div.innerHTML = `<span class="text-[11px] text-gray-400 mb-1 mr-1">我 · ${time}</span><div class="chat-bubble-user bg-white border border-gray-200 text-gray-800 px-4 py-3 rounded-2xl rounded-tr-sm max-w-[85%] shadow-sm chat-text">${renderedContent}</div>`;
+                        div.innerHTML = `<span class="chat-meta-line mr-0.5">我 · ${time}</span><div class="chat-bubble-user text-gray-800 px-4 py-2.5 max-w-[85%] chat-text">${renderedContent}</div>`;
                     } else {
                         const aiBubbleClass = aiRender && aiRender.isStructured ? 'chat-text' : 'chat-text chat-markdown';
-                        div.innerHTML = `<span class="text-[11px] text-gray-400 mb-1 ml-1">陶然AI助教 · ${time}</span><div class="chat-bubble-ai bg-gray-100 border border-gray-200 text-gray-800 px-4 py-3 rounded-2xl rounded-tl-sm max-w-[85%] shadow-sm ${aiBubbleClass}">${renderedContent}</div>`;
+                        const thinkingHtml = renderThinkingPanelHtml(options.thinkingSnapshot, { finished: true, collapsed: true });
+                        div.innerHTML = `<span class="chat-meta-line ml-0.5">陶然 · ${time}</span><div class="chat-bubble-ai">${thinkingHtml}<div class="chat-ai-reply-body ${aiBubbleClass}">${renderedContent}</div></div>`;
                     }
                 }
                 if (options.replaceElement && options.replaceElement.parentNode === chatWindow) {
@@ -3777,6 +4622,7 @@
                     mimeType: options.mimeType || '',
                     fileName: options.fileName || '',
                     fileSize: options.fileSize || 0,
+                    thinkingSnapshot: options.thinkingSnapshot || null,
                     createdAt
                 };
             }
@@ -3791,7 +4637,8 @@
                         imageDataUrl: message.imageDataUrl || '',
                         mimeType: message.mimeType || '',
                         fileName: message.fileName || '',
-                        fileSize: message.fileSize || 0
+                        fileSize: message.fileSize || 0,
+                        thinkingSnapshot: message.thinkingSnapshot || null
                     });
                 });
             }
@@ -3850,6 +4697,7 @@
                     showToast('当前浏览器无法使用历史记录');
                     return;
                 }
+                showMobilePanel('');
                 historyPanel.classList.add('open');
                 historyOverlay.classList.remove('hidden');
                 renderHistoryList().catch(() => showToast('历史对话加载失败'));
@@ -4120,6 +4968,7 @@
                 renderFlashcard();
                 flashcardStack.classList.remove('is-leaving-next', 'is-leaving-prev', 'is-entering-next', 'is-entering-prev');
                 flashcardSide.classList.remove('is-refreshing');
+                showMobilePanel('');
                 flashcardOverlay.classList.remove('hidden');
                 flashcardModal.classList.remove('hidden');
             }
@@ -4212,11 +5061,21 @@
                     showToast(`这张学习卡来自最近对话：${note.title}`);
                     return;
                 }
-                if (window.innerWidth < 1024) {
+                if (isCompactViewport()) {
                     showMobilePanel('left');
                 }
                 setSelectedNote(note.id, { scrollIntoView: true });
                 showToast(`已定位到：${note.title}`);
+            }
+
+            function setMobileDrawerOverlay(open) {
+                if (!mobilePanelOverlay) return;
+                mobilePanelOverlay.classList.toggle('is-visible', Boolean(open));
+                document.body.classList.toggle('drawer-open', Boolean(open));
+            }
+
+            function isCompactViewport() {
+                return window.innerWidth < 1024;
             }
 
             function setMobileToggleState(activePanel) {
@@ -4225,29 +5084,34 @@
             }
 
             function showMobilePanel(panel) {
-                if (window.innerWidth >= 1024) return;
+                if (!isCompactViewport()) return;
                 if (panel === 'left') {
                     if (leftPanel.classList.contains('open')) {
                         leftPanel.classList.remove('open');
                         setMobileToggleState('');
+                        setMobileDrawerOverlay(false);
                         return;
                     }
                     leftPanel.classList.add('open');
                     rightPanel.classList.remove('open');
                     setMobileToggleState('left');
+                    setMobileDrawerOverlay(true);
                 } else if (panel === 'right') {
                     if (rightPanel.classList.contains('open')) {
                         rightPanel.classList.remove('open');
                         setMobileToggleState('');
+                        setMobileDrawerOverlay(false);
                         return;
                     }
                     rightPanel.classList.add('open');
                     leftPanel.classList.remove('open');
                     setMobileToggleState('right');
+                    setMobileDrawerOverlay(true);
                 } else {
                     leftPanel.classList.remove('open');
                     rightPanel.classList.remove('open');
                     setMobileToggleState('');
+                    setMobileDrawerOverlay(false);
                 }
             }
 
@@ -4290,38 +5154,131 @@
             async function getCurrentChatHistoryForApi() {
                 if (!db || !currentChatId) return [];
                 const chat = await getChatById(currentChatId);
-                return chat ? chat.messages.map(message => ({
+                if (!chat) return [];
+                const mapped = chat.messages.map(message => ({
                     sender: message.sender,
                     content: message.type === 'image'
                         ? (message.content ? `[图片] ${message.content}` : '[图片]')
                         : message.content
-                })) : [];
+                }));
+                if (mapped.length && mapped[mapped.length - 1].sender === 'user') {
+                    return mapped.slice(0, -1);
+                }
+                return mapped;
             }
 
-            async function requestAssistantReply(messageText, imagePayload = null) {
-                const history = await getCurrentChatHistoryForApi();
-                const fallbackText = imagePayload ? `我上传了一张图片：${imagePayload.fileName}${messageText ? `。补充说明：${messageText}` : '。请先帮我确认收到并给出分析建议。'}` : messageText;
+            function getChatStreamApiUrl() {
+                return CHAT_API_URL.replace(/\/api\/chat\/?$/, '/api/chat/stream');
+            }
+
+            function buildChatRequestBody(messageText, imagePayload, history) {
+                const fallbackText = imagePayload
+                    ? `我上传了一张图片：${imagePayload.fileName}${messageText ? `。补充说明：${messageText}` : '。请先帮我确认收到并给出分析建议。'}`
+                    : messageText;
+                return {
+                    session_id: currentChatId,
+                    message: fallbackText,
+                    history,
+                    latest_image: imagePayload ? {
+                        file_name: imagePayload.name,
+                        mime_type: imagePayload.mimeType,
+                        data_url: imagePayload.dataUrl
+                    } : null
+                };
+            }
+
+            async function consumeSseResponse(response, onEvent) {
+                if (!response.body || typeof response.body.getReader !== 'function') {
+                    throw new Error('not a stream');
+                }
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+                let reply = '';
+                let contentText = '';
+
+                const consumeBlock = (part) => {
+                    const dataLine = part
+                        .split('\n')
+                        .filter(line => line.startsWith('data:'))
+                        .map(line => line.slice(5).trim())
+                        .join('');
+                    if (!dataLine) return;
+                    let payload;
+                    try {
+                        payload = JSON.parse(dataLine);
+                    } catch (error) {
+                        return;
+                    }
+                    if (payload.type === 'content' && payload.text) {
+                        contentText += payload.text;
+                        payload = { ...payload, fullText: contentText };
+                    }
+                    if (payload.type === 'done' && payload.reply) {
+                        reply = payload.reply;
+                    }
+                    if (payload.type === 'error' && payload.message) {
+                        throw new Error(payload.message);
+                    }
+                    if (typeof onEvent === 'function') onEvent(payload);
+                };
+
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    buffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, '\n');
+                    const parts = buffer.split('\n\n');
+                    buffer = parts.pop() || '';
+                    parts.forEach(consumeBlock);
+                }
+                if (buffer.trim()) consumeBlock(buffer.trim());
+                if (reply) return reply;
+                if (contentText) return contentText;
+                throw new Error('empty stream');
+            }
+
+            async function requestAssistantReplyJson(messageText, imagePayload, history) {
                 const response = await fetch(CHAT_API_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        session_id: currentChatId,
-                        message: fallbackText,
-                        history,
-                        latest_image: imagePayload ? {
-                            file_name: imagePayload.name,
-                            mime_type: imagePayload.mimeType,
-                            data_url: imagePayload.dataUrl
-                        } : null
-                    })
+                    body: JSON.stringify(buildChatRequestBody(messageText, imagePayload, history))
                 });
                 if (!response.ok) {
                     throw new Error(`request failed: ${response.status}`);
                 }
                 const data = await response.json();
                 return data.reply;
+            }
+
+            async function requestAssistantReply(messageText, imagePayload = null, onEvent = null) {
+                const history = await getCurrentChatHistoryForApi();
+                try {
+                    const response = await fetch(getChatStreamApiUrl(), {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'text/event-stream'
+                        },
+                        body: JSON.stringify(buildChatRequestBody(messageText, imagePayload, history))
+                    });
+                    if (!response.ok) {
+                        throw new Error(`request failed: ${response.status}`);
+                    }
+                    const contentType = String(response.headers.get('content-type') || '');
+                    if (contentType.includes('application/json') && !contentType.includes('text/event-stream')) {
+                        const data = await response.json();
+                        return data.reply;
+                    }
+                    return await consumeSseResponse(response, onEvent);
+                } catch (error) {
+                    const message = String(error && error.message || '');
+                    if (!/request failed: (404|405)|not a stream|empty stream/.test(message)) {
+                        throw error;
+                    }
+                    return await requestAssistantReplyJson(messageText, imagePayload, history);
+                }
             }
 
             function getRequestErrorMessage(error) {
@@ -4475,23 +5432,40 @@
                     }
                     return;
                 }
-                const thinkingIndicator = appendThinkingIndicator();
+                const thinkingIndicator = appendThinkingIndicator({
+                    messageText: text,
+                    hasImage: Boolean(pendingImage)
+                });
                 const thinkingStartedAt = Date.now();
                 try {
                     const currentImage = pendingImage;
                     clearPendingImage();
-                    const replyText = await requestAssistantReply(text, currentImage);
-                    await ensureMinimumThinkingTime(thinkingStartedAt);
+                    const replyText = await requestAssistantReply(text, currentImage, (event) => {
+                        if (thinkingIndicator._thinkingController) {
+                            thinkingIndicator._thinkingController.handleEvent(event);
+                        }
+                    });
+                    const controller = thinkingIndicator._thinkingController;
+                    if (controller) {
+                        controller.ingestFinalReply(replyText);
+                        controller.finish();
+                    }
+                    const thinkingSnapshot = controller ? controller.snapshot() : null;
+                    await ensureMinimumThinkingTime(thinkingStartedAt, 600);
                     const generatedCard = upsertGeneratedFlashcardFromStructuredReply(replyText, text || (currentImage && currentImage.name) || '');
                     if (generatedCard) {
                         setSelectedNote(generatedCard.id);
                     }
                     const aiMessage = appendMessage(replyText, 'ai', {
                         replaceElement: thinkingIndicator,
-                        animateTyping: true
+                        animateTyping: true,
+                        thinkingSnapshot
                     });
                     if (pendingAiIndicator === thinkingIndicator) {
                         pendingAiIndicator = null;
+                    }
+                    if (controller) {
+                        controller.destroy();
                     }
                     try {
                         await syncCurrentChat(aiMessage);
@@ -4500,7 +5474,10 @@
                     }
                 } catch (error) {
                     clearPendingImage();
-                    await ensureMinimumThinkingTime(thinkingStartedAt, 1500);
+                    if (thinkingIndicator._thinkingController) {
+                        thinkingIndicator._thinkingController.destroy();
+                    }
+                    await ensureMinimumThinkingTime(thinkingStartedAt, 800);
                     const errorMessage = getRequestErrorMessage(error);
                     appendMessage(errorMessage, 'ai', {
                         replaceElement: thinkingIndicator
@@ -4521,13 +5498,13 @@
                     chatWindow.innerHTML = '';
                     appendMessage(defaultGreeting, 'ai');
                     chatMeta.textContent = '临时对话 · 当前未启用历史记录';
-                    showToast('✨ 已创建临时对话');
+                showToast('已创建临时对话');
                     return;
                 }
                 const newChat = await createChatRecord();
                 await saveChat(newChat);
                 await loadChat(newChat.id);
-                showToast('✨ 已创建新对话');
+                showToast('已创建新对话');
             };
 
             window.toggleLeftDesktop = function() {
@@ -4539,7 +5516,7 @@
             };
 
             function initMobile(force = false) {
-                const nextViewportMode = window.innerWidth < 1024 ? 'mobile' : 'desktop';
+                const nextViewportMode = isCompactViewport() ? 'mobile' : 'desktop';
                 if (!force && nextViewportMode === currentViewportMode) {
                     return;
                 }
@@ -4547,15 +5524,17 @@
                 if (nextViewportMode === 'mobile') {
                     leftPanel.classList.add('mobile-collapse');
                     rightPanel.classList.add('mobile-collapse');
-                    leftPanel.classList.remove('open');
-                    rightPanel.classList.remove('open');
+                    leftPanel.classList.remove('open', 'sidebar-collapsed-desktop');
+                    rightPanel.classList.remove('open', 'sidebar-collapsed-desktop');
                     setMobileToggleState('');
+                    setMobileDrawerOverlay(false);
                 } else {
-                    leftPanel.classList.remove('mobile-collapse');
-                    rightPanel.classList.remove('mobile-collapse');
+                    leftPanel.classList.remove('mobile-collapse', 'open');
+                    rightPanel.classList.remove('mobile-collapse', 'open');
                     leftPanel.classList.add('open');
                     rightPanel.classList.add('open');
                     setMobileToggleState('');
+                    setMobileDrawerOverlay(false);
                 }
             }
 
@@ -4568,15 +5547,31 @@
                 clearTimeout(window._rt);
                 window._rt = setTimeout(initMobile, 200);
             });
+            if (window.visualViewport) {
+                const syncAppHeight = () => {
+                    document.documentElement.style.setProperty('--app-height', `${window.visualViewport.height}px`);
+                };
+                window.visualViewport.addEventListener('resize', syncAppHeight);
+                syncAppHeight();
+            }
             mobileToggleLeft.addEventListener('click', () => {
-                if (window.innerWidth < 1024) showMobilePanel('left');
+                if (isCompactViewport()) showMobilePanel('left');
             });
             mobileToggleRight.addEventListener('click', () => {
-                if (window.innerWidth < 1024) showMobilePanel('right');
+                if (isCompactViewport()) showMobilePanel('right');
+            });
+            if (mobilePanelOverlay) {
+                mobilePanelOverlay.addEventListener('click', () => showMobilePanel(''));
+            }
+            document.querySelectorAll('.mobile-drawer-close').forEach(button => {
+                button.addEventListener('click', () => showMobilePanel(''));
             });
 
             window.toggleSettings = function() {
-                document.getElementById('settings-panel').classList.toggle('open');
+                const panel = document.getElementById('settings-panel');
+                const willOpen = !panel.classList.contains('open');
+                if (willOpen) showMobilePanel('');
+                panel.classList.toggle('open');
                 document.getElementById('settings-overlay').classList.toggle('hidden');
             };
 
@@ -4846,7 +5841,7 @@
                     else if (historyPanel.classList.contains('open')) closeHistoryPanel();
                     else if (calendarEditor.classList.contains('open')) setCalendarEditorOpen(false);
                     else if (noteSearchPanel.classList.contains('open')) closeNoteSearch();
-                    else if (window.innerWidth < 1024) {
+                    else if (isCompactViewport()) {
                         showMobilePanel('');
                     }
                 }

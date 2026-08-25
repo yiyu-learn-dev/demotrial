@@ -11,7 +11,7 @@ from typing import Literal
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from openai import OpenAI
 from pydantic import BaseModel, Field
 
@@ -103,20 +103,15 @@ def get_openai_client() -> OpenAI | None:
     return OpenAI(api_key=settings.api_key, base_url=settings.base_url)
 
 
-@lru_cache(maxsize=1)
 def get_teaching_prompt() -> str:
     if PROMPT_FILE.exists():
         return PROMPT_FILE.read_text(encoding="utf-8").strip()
     logger.warning("Teaching prompt file not found: %s", PROMPT_FILE)
-    return (
-        "你是陶然 AI 助教，专注高考英语辅导。"
-        "回答要清晰、温和、结构化，优先帮助用户定位题干信息、分析答案依据，并给出下一步学习建议。"
-    )
+    return "你是陶然，高考英语老师。讲题、答疑、陪学生练英语。听懂用户在说什么，再自然作答。"
 
 
 def build_demo_reply(message: str, history: list[ChatMessage], latest_image: ImagePayload | None = None) -> str:
     text = message.strip()
-    lowered = text.lower()
     history_size = len(history)
 
     if not text:
@@ -146,9 +141,6 @@ def build_demo_reply(message: str, history: list[ChatMessage], latest_image: Ima
             "写作题最稳的做法是先保结构，再升级表达。"
             "你这句可以先确保意思清楚，然后把普通表达替换成更自然的高分句式，我可以直接帮你润色成高考风格。"
         )
-
-    if "hello" in lowered or "hi" in lowered or "你好" in text:
-        return "你好呀，我已经通过 FastAPI 接口接上前端了。你现在发来的内容，已经是在走真实请求链路。"
 
     return (
         f"我收到你的问题了：{text}。"
@@ -220,23 +212,17 @@ def build_multi_question_focus_reply() -> str:
         confidence="high",
         need_more_context=True,
         unsupported_reason="",
-        stem_understanding="当前消息里同时出现了多个题目、多个空格或多个待分析点。为避免一次讲得过长过杂，需要先确定优先讲解对象。",
+        stem_understanding="这条消息里有不止一道待讲的题。为了讲清楚，需要先确定先看哪一道。",
         reasoning_steps=[
             {
                 "step": 1,
-                "focus": "判断输入范围",
-                "basis": "当前内容里包含两个及以上题号、空格或待分析对象，已经超出单次聚焦讲解的范围。",
-                "conclusion": "先不同时展开全部讲解。"
-            },
-            {
-                "step": 2,
-                "focus": "确定下一步",
-                "basis": "讲题需要先锁定一道题或一个空格，才能保证讲解有重点且不混淆。",
-                "conclusion": "请用户先指定优先讲解的题号、空格号、截图位置或段落。"
+                "focus": "先选定一题",
+                "basis": "同时展开几道独立的题，容易把题号、空格和依据混在一起。",
+                "conclusion": "请先指定要讲的题号、空格、截图位置或段落。"
             },
         ],
-        knowledge_cards=["先聚焦一题", "避免多题混讲", "明确题号或空格号"],
-        follow_up="请先告诉我你要先讲哪一道，例如“先讲第12空”或“先讲图片里第二题”。",
+        knowledge_cards=[],
+        follow_up="你说一下先讲哪一题就行，比如“先讲第12空”或“先看图片里第二题”。",
     )
 
 
@@ -355,32 +341,15 @@ def normalize_structured_reply(
     message: str,
     image_context: str | None = None,
 ) -> str:
-    payload = parse_structured_reply(reply)
-    if payload is None:
-        return reply
+    del message, image_context
+    return reply
 
-    question_type = str(payload.get("question_type", "")).strip()
-    challenge_candidate = extract_candidate_challenge(message)
-    optionless_grammar_fill = (
-        question_type == "语法"
-        and looks_like_grammar_fill(message, image_context)
-        and not has_explicit_options(message, image_context)
-    )
 
-    if optionless_grammar_fill:
-        payload["distractor_analysis"] = {"A": "", "B": "", "C": "", "D": ""}
-
-    if challenge_candidate:
-        explanation = extract_candidate_explanation(payload.get("reasoning_steps"), challenge_candidate)
-        if not explanation:
-            answer = str(payload.get("answer", "")).strip()
-            if answer and answer != "需要确认":
-                explanation = f"这道题正确答案是 {answer}，因此 {challenge_candidate} 不成立。"
-        if explanation:
-            prefix = "为什么不能填" if "不能填" in message else "为什么不是" if "为什么不是" in message else "为什么不选"
-            payload["follow_up"] = f"{prefix} {challenge_candidate}：{explanation}"
-
-    return json.dumps(payload, ensure_ascii=False)
+def prior_chat_history(history: list[ChatMessage], message: str, *, limit: int) -> list[ChatMessage]:
+    prior = list(history)
+    if prior and prior[-1].sender == "user" and prior[-1].content.strip() == message.strip():
+        prior = prior[:-1]
+    return prior[-limit:]
 
 
 def build_text_messages(message: str, history: list[ChatMessage]) -> list[dict]:
@@ -390,7 +359,7 @@ def build_text_messages(message: str, history: list[ChatMessage]) -> list[dict]:
             "content": get_teaching_prompt(),
         }
     ]
-    for item in history[-10:]:
+    for item in prior_chat_history(history, message, limit=10):
         role = "assistant" if item.sender == "ai" else "user"
         messages.append({"role": role, "content": item.content})
     messages.append({"role": "user", "content": message})
@@ -408,12 +377,11 @@ def build_vision_messages(
             "role": "system",
             "content": (
                 f"{get_teaching_prompt()}\n\n"
-                "当前用户上传了题目图片。请结合图片内容、用户问题和已有上下文，"
-                "严格按上面的教学体系输出适合学生阅读的分析。"
+                "当前用户上传了题目图片。结合图片、用户问题和已有上下文作答即可。"
             ),
         }
     ]
-    for item in history[-6:]:
+    for item in prior_chat_history(history, message, limit=6):
         role = "assistant" if item.sender == "ai" else "user"
         messages.append({"role": role, "content": item.content})
 
@@ -454,7 +422,7 @@ def extract_ocr_text(client: OpenAI, image: ImagePayload, model: str) -> str:
 def generate_text_reply(client: OpenAI, message: str, history: list[ChatMessage], model: str) -> str:
     completion = client.chat.completions.create(
         model=model,
-        temperature=0.4,
+        temperature=0.85,
         messages=build_text_messages(message, history),
     )
     return completion.choices[0].message.content or ""
@@ -470,10 +438,187 @@ def generate_vision_reply(
 ) -> str:
     completion = client.chat.completions.create(
         model=model,
-        temperature=0.3,
+        temperature=0.7,
         messages=build_vision_messages(message, history, image, ocr_text=ocr_text),
     )
     return completion.choices[0].message.content or ""
+
+
+def sse_event(payload: dict[str, object]) -> str:
+    return f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
+
+
+def model_supports_thinking(model: str) -> bool:
+    name = (model or "").lower()
+    return any(token in name for token in ("qwen3", "qwen-plus", "qwen-flash", "qwen-turbo", "qwq"))
+
+
+def extract_stream_delta_text(delta: object) -> tuple[str, str]:
+    content = getattr(delta, "content", None) or ""
+    reasoning = getattr(delta, "reasoning_content", None) or ""
+    if not reasoning:
+        extra = getattr(delta, "model_extra", None)
+        if isinstance(extra, dict):
+            reasoning = extra.get("reasoning_content") or extra.get("reasoning") or ""
+    if not isinstance(content, str):
+        content = ""
+    if not isinstance(reasoning, str):
+        reasoning = ""
+    return reasoning, content
+
+
+def iter_completion_deltas(
+    client: OpenAI,
+    *,
+    model: str,
+    messages: list[dict],
+    temperature: float,
+    enable_thinking: bool = False,
+):
+    kwargs: dict[str, object] = {
+        "model": model,
+        "temperature": temperature,
+        "messages": messages,
+        "stream": True,
+    }
+    if enable_thinking:
+        kwargs["extra_body"] = {"enable_thinking": True}
+
+    try:
+        stream = client.chat.completions.create(**kwargs)
+    except Exception:
+        if not enable_thinking:
+            raise
+        kwargs.pop("extra_body", None)
+        stream = client.chat.completions.create(**kwargs)
+
+    for chunk in stream:
+        choices = getattr(chunk, "choices", None) or []
+        if not choices:
+            continue
+        delta = getattr(choices[0], "delta", None)
+        if delta is None:
+            continue
+        reasoning, content = extract_stream_delta_text(delta)
+        if reasoning or content:
+            yield reasoning, content
+
+
+def iter_streamed_reply_events(
+    client: OpenAI,
+    *,
+    model: str,
+    messages: list[dict],
+    temperature: float,
+    enable_thinking: bool,
+    meta: ModelMeta,
+    non_stream_fallback,
+):
+    content_parts: list[str] = []
+    for reasoning, content in iter_completion_deltas(
+        client,
+        model=model,
+        messages=messages,
+        temperature=temperature,
+        enable_thinking=enable_thinking,
+    ):
+        if reasoning:
+            yield sse_event({"type": "thinking", "text": reasoning})
+        if content:
+            content_parts.append(content)
+            yield sse_event({"type": "content", "text": content})
+
+    reply = "".join(content_parts)
+    if not reply.strip():
+        logger.warning("Streamed completion was empty, retrying without stream")
+        reply = non_stream_fallback()
+        if reply:
+            yield sse_event({"type": "content", "text": reply})
+
+    yield sse_event({"type": "done", "reply": reply, "meta": meta.model_dump()})
+
+
+def iter_chat_sse(request: ChatRequest):
+    settings = get_model_settings()
+    client = get_openai_client()
+    text_model = request.preferred_text_model or settings.text_model
+    vision_model = request.preferred_vision_model or settings.vision_model
+    ocr_model = request.preferred_ocr_model or settings.ocr_model
+
+    def demo_done() -> str:
+        meta = ModelMeta(
+            route="ocr_plus_vision" if request.latest_image and request.use_ocr_first else "vision" if request.latest_image else "demo",
+            provider=settings.provider_name,
+            text_model=text_model,
+            vision_model=vision_model,
+            ocr_model=ocr_model,
+            used_demo_fallback=True,
+        )
+        reply = build_demo_reply(request.message, request.history, request.latest_image)
+        return sse_event({"type": "done", "reply": reply, "meta": meta.model_dump()})
+
+    if client is None:
+        yield sse_event({"type": "status", "stage": "analyze", "text": "正在思考"})
+        yield demo_done()
+        return
+
+    try:
+        if request.latest_image is not None:
+            ocr_text = None
+            route: Literal["vision", "ocr_plus_vision"] = "vision"
+            if request.use_ocr_first:
+                route = "ocr_plus_vision"
+                yield sse_event({"type": "status", "stage": "ocr", "text": "先把图片里的字认出来"})
+                ocr_text = extract_ocr_text(client, request.latest_image, ocr_model)
+            yield sse_event({"type": "status", "stage": "analyze", "text": "先把图里的题目看清楚"})
+            meta = ModelMeta(
+                route=route,
+                provider=settings.provider_name,
+                vision_model=vision_model,
+                ocr_model=ocr_model if route == "ocr_plus_vision" else None,
+            )
+            yield from iter_streamed_reply_events(
+                client,
+                model=vision_model,
+                messages=build_vision_messages(
+                    request.message,
+                    request.history,
+                    request.latest_image,
+                    ocr_text=ocr_text,
+                ),
+                temperature=0.7,
+                enable_thinking=False,
+                meta=meta,
+                non_stream_fallback=lambda: generate_vision_reply(
+                    client,
+                    request.message,
+                    request.history,
+                    request.latest_image,
+                    vision_model,
+                    ocr_text=ocr_text,
+                ),
+            )
+            return
+
+        yield sse_event({"type": "status", "stage": "analyze", "text": "正在思考"})
+        meta = ModelMeta(
+            route="text",
+            provider=settings.provider_name,
+            text_model=text_model,
+        )
+        yield from iter_streamed_reply_events(
+            client,
+            model=text_model,
+            messages=build_text_messages(request.message, request.history),
+            temperature=0.85,
+            enable_thinking=model_supports_thinking(text_model),
+            meta=meta,
+            non_stream_fallback=lambda: generate_text_reply(client, request.message, request.history, text_model),
+        )
+    except Exception:  # noqa: BLE001
+        logger.exception("Streaming model pipeline failed, fallback to demo reply")
+        yield sse_event({"type": "status", "stage": "fallback", "text": "换个方式继续想这道题"})
+        yield demo_done()
 
 
 def run_model_pipeline(request: ChatRequest) -> ChatResponse:
@@ -504,16 +649,6 @@ def run_model_pipeline(request: ChatRequest) -> ChatResponse:
             if request.use_ocr_first:
                 route = "ocr_plus_vision"
                 ocr_text = extract_ocr_text(client, request.latest_image, ocr_model)
-            if has_multiple_question_targets(request.message):
-                return ChatResponse(
-                    reply=build_multi_question_focus_reply(),
-                    meta=ModelMeta(
-                        route=route,
-                        provider=settings.provider_name,
-                        vision_model=vision_model,
-                        ocr_model=ocr_model if route == "ocr_plus_vision" else None,
-                    ),
-                )
             reply = generate_vision_reply(
                 client,
                 request.message,
@@ -522,7 +657,6 @@ def run_model_pipeline(request: ChatRequest) -> ChatResponse:
                 vision_model,
                 ocr_text=ocr_text,
             )
-            reply = normalize_structured_reply(reply, message=request.message, image_context=ocr_text)
             return ChatResponse(
                 reply=reply,
                 meta=ModelMeta(
@@ -533,18 +667,7 @@ def run_model_pipeline(request: ChatRequest) -> ChatResponse:
                 ),
             )
 
-        if has_multiple_question_targets(request.message):
-            return ChatResponse(
-                reply=build_multi_question_focus_reply(),
-                meta=ModelMeta(
-                    route="text",
-                    provider=settings.provider_name,
-                    text_model=text_model,
-                ),
-            )
-
         reply = generate_text_reply(client, request.message, request.history, text_model)
-        reply = normalize_structured_reply(reply, message=request.message)
         return ChatResponse(
             reply=reply,
             meta=ModelMeta(
@@ -601,6 +724,21 @@ async def chat(request: ChatRequest) -> ChatResponse:
     if not request.message.strip():
         raise HTTPException(status_code=400, detail="message 不能为空")
     return run_model_pipeline(request)
+
+
+@app.post("/api/chat/stream")
+async def chat_stream(request: ChatRequest):
+    if not request.message.strip():
+        raise HTTPException(status_code=400, detail="message 不能为空")
+    return StreamingResponse(
+        iter_chat_sse(request),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache, no-transform",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 
 @app.get("/")
