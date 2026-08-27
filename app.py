@@ -35,7 +35,7 @@ app.add_middleware(
 
 class ChatMessage(BaseModel):
     sender: Literal["user", "ai"]
-    content: str = Field(..., min_length=1, max_length=4000)
+    content: str = Field(..., min_length=1, max_length=12000)
 
 
 class ImagePayload(BaseModel):
@@ -46,7 +46,7 @@ class ImagePayload(BaseModel):
 
 class ChatRequest(BaseModel):
     session_id: str | None = None
-    message: str = Field(..., min_length=1, max_length=2000)
+    message: str = Field(..., min_length=1, max_length=12000)
     history: list[ChatMessage] = Field(default_factory=list)
     latest_image: ImagePayload | None = None
     preferred_text_model: str | None = None
@@ -107,7 +107,10 @@ def get_teaching_prompt() -> str:
     if PROMPT_FILE.exists():
         return PROMPT_FILE.read_text(encoding="utf-8").strip()
     logger.warning("Teaching prompt file not found: %s", PROMPT_FILE)
-    return "你是陶然，高考英语老师。讲题、答疑、陪学生练英语。听懂用户在说什么，再自然作答。"
+    return (
+        "你是陶然，高考英语老师。讲题、答疑、陪学生练英语。听懂用户在说什么，再自然作答。"
+        "阅读、完形、语法、七选五都直接讲。有材料就给答案和依据；材料不够就说明还缺什么。不要说“不支持这种题”。"
+    )
 
 
 def build_demo_reply(message: str, history: list[ChatMessage], latest_image: ImagePayload | None = None) -> str:
@@ -118,34 +121,15 @@ def build_demo_reply(message: str, history: list[ChatMessage], latest_image: Ima
         raise HTTPException(status_code=400, detail="message 不能为空")
 
     if latest_image is not None:
-        suffix = "你可以继续补一句你最想让我看哪一部分，比如题干、选项、还是整段文章。"
-        if any(keyword in text for keyword in ["阅读", "图片", "截图", "题目", "分析"]):
-            return f"我已经收到你上传的图片 `{latest_image.file_name}` 了。当前后端还没接真正的 OCR/视觉模型，不过链路已经打通。{suffix}"
-        return f"图片我已经收到了，文件名是 `{latest_image.file_name}`。当前演示版会先把图片作为附件收下，下一步就可以接 OCR 或多模态模型做识别。{suffix}"
-
-    if any(keyword in text for keyword in ["阅读", "细节题", "主旨", "七选五"]):
         return (
-            "这道题我们可以按“题干定位 -> 原文同义替换 -> 排除干扰项”来拆。"
-            f"你刚才这轮问题里最值得先抓的是关键词定位。先把题干里的核心词圈出来，"
-            "再回原文找对应句，我也可以继续陪你逐句分析。"
+            f"图片 `{latest_image.file_name}` 已收到，但当前没连上模型，所以还不能讲这道题。"
+            "请检查接口密钥后再发一次。"
         )
 
-    if any(keyword in text for keyword in ["语法", "非谓语", "时态", "从句"]):
-        return (
-            "这类语法题先不要急着选答案，先判断句子主干，再看空格在句中充当什么成分。"
-            "如果你愿意，我们下一步可以把这句拆成“主谓宾 / 从句 / 非谓语”三个层次来讲。"
-        )
-
-    if any(keyword in text for keyword in ["作文", "写作", "续写", "表达"]):
-        return (
-            "写作题最稳的做法是先保结构，再升级表达。"
-            "你这句可以先确保意思清楚，然后把普通表达替换成更自然的高分句式，我可以直接帮你润色成高考风格。"
-        )
-
+    preview = text if len(text) <= 80 else f"{text[:80]}…"
     return (
-        f"我收到你的问题了：{text}。"
-        f" 这是第 {max(history_size // 2, 0) + 1} 轮练习，我们可以先从关键信息定位入手，"
-        "再把答案依据和易错点讲清楚。你也可以继续补充题干或截图内容。"
+        f"我收到了：{preview} 当前没连上模型，所以还不能具体讲题。"
+        f"这是第 {max(history_size // 2, 0) + 1} 轮，连上之后把原文和题目一起发过来即可。"
     )
 
 

@@ -3159,7 +3159,7 @@
             function getStructuredReplyPreview(data) {
                 if (!data) return '';
                 if (!data.supported) {
-                    return data.unsupportedReason || '该题型暂不支持';
+                    return data.unsupportedReason || data.stemUnderstanding || data.answer || '';
                 }
                 if (data.stemUnderstanding) {
                     return data.stemUnderstanding;
@@ -3245,12 +3245,10 @@
                 const parts = [];
                 const explanation = getStructuredExplanationLines(data, 8);
                 if (explanation.length) parts.push(explanation.join('\n\n'));
-                if (data.supported && data.answer && data.subtype !== '问候') {
-                    parts.push(`答案：${data.answer}`);
-                } else if (!data.supported && data.unsupportedReason) {
+                if (data.answer && data.subtype !== '问候') {
+                    parts.push(data.answer.startsWith('答案') ? data.answer : `答案：${data.answer}`);
+                } else if (data.unsupportedReason) {
                     parts.push(data.unsupportedReason);
-                } else if (data.answer && !explanation.length) {
-                    parts.push(data.answer);
                 }
                 const distractorEntries = Object.entries(data.distractorAnalysis || {}).filter(([, value]) => value);
                 distractorEntries.forEach(([key, value]) => {
@@ -3271,7 +3269,7 @@
             }
 
             function getStructuredAnswerLines(data) {
-                const text = data.supported ? (data.answer || '需要确认') : (data.unsupportedReason || '当前暂不支持');
+                const text = data.answer || data.unsupportedReason || data.stemUnderstanding || '';
                 return splitStructuredDisplayLines(String(text).replace(/\s*[；;]\s*/g, '\n'));
             }
 
