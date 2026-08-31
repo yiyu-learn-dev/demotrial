@@ -20,6 +20,7 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent
 HTML_FILE = BASE_DIR / "demotrial.html"
+NOTES_DATA_FILE = BASE_DIR / "notes-data.js"
 PROMPT_FILE = BASE_DIR / "prompt_1.md"
 logger = logging.getLogger("taoran.demo")
 
@@ -731,3 +732,10 @@ async def index() -> FileResponse:
     if not HTML_FILE.exists():
         raise HTTPException(status_code=404, detail="demotrial.html 不存在")
     return FileResponse(HTML_FILE)
+
+
+@app.get("/notes-data.js")
+async def notes_data() -> FileResponse:
+    if not NOTES_DATA_FILE.exists():
+        raise HTTPException(status_code=404, detail="notes-data.js 不存在")
+    return FileResponse(NOTES_DATA_FILE, media_type="application/javascript")

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>陶然AI助教 · 高考英语</title>
+    <script src="/notes-data.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -2225,6 +2226,227 @@
             border-color: rgba(224, 216, 200, 0.7) !important;
             color: #3E3A39;
         }
+
+        #left-panel {
+            position: relative;
+        }
+        .memo-shell {
+            display: flex;
+            gap: 0.55rem;
+            min-height: 0;
+            flex: 1;
+        }
+        .memo-tag-rail {
+            width: 3.35rem;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            padding: 0.2rem 0.1rem 0.4rem;
+            overflow-y: auto;
+        }
+        .memo-tag-btn {
+            width: 100%;
+            min-height: 3.35rem;
+            border-radius: 14px;
+            border: 1px solid rgba(125, 146, 178, 0.14);
+            background: rgba(255,255,255,0.72);
+            color: #6a7c91;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.2rem;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+        .memo-tag-btn i { font-size: 0.85rem; }
+        .memo-tag-btn:hover {
+            border-color: rgba(125, 146, 178, 0.28);
+            color: #54687f;
+        }
+        .memo-tag-btn.is-active {
+            background: linear-gradient(180deg, #8d9fb7 0%, #6f839d 100%);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 10px 18px rgba(112, 128, 150, 0.18);
+        }
+        .memo-main {
+            flex: 1;
+            min-width: 0;
+            overflow-y: auto;
+            padding-right: 0.15rem;
+        }
+        .memo-section-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 0.15rem 0 0.55rem;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            color: #7a8aa0;
+            text-transform: none;
+        }
+        .memo-section-label span.count {
+            font-weight: 600;
+            letter-spacing: 0;
+            color: #9aa8b8;
+        }
+        .memo-card {
+            position: relative;
+            border-radius: 16px;
+            border: 1px solid rgba(125, 146, 178, 0.14);
+            background: linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(244,247,251,0.94) 100%);
+            padding: 0.85rem 0.9rem;
+            margin-bottom: 0.55rem;
+            cursor: pointer;
+            transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+        }
+        .memo-card:hover {
+            transform: translateY(-1px);
+            border-color: rgba(125, 146, 178, 0.28);
+            box-shadow: 0 10px 20px rgba(118, 132, 153, 0.08);
+        }
+        .memo-card-kicker {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            color: #7d92b2;
+            margin-bottom: 0.28rem;
+        }
+        .memo-card-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #4d5f74;
+            line-height: 1.35;
+            margin-bottom: 0.28rem;
+        }
+        .memo-card-summary {
+            font-size: 11px;
+            line-height: 1.45;
+            color: #8a97a8;
+        }
+        .memo-wrong-card .memo-card-thumb {
+            height: 2.6rem;
+            border-radius: 10px;
+            margin-bottom: 0.45rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #edf1f5 0%, #dde5ec 100%);
+            color: #74879f;
+            font-size: 0.85rem;
+        }
+        .memo-empty {
+            border: 1px dashed rgba(125, 146, 178, 0.28);
+            border-radius: 16px;
+            padding: 1rem 0.85rem;
+            text-align: center;
+            color: #93a0b0;
+            font-size: 12px;
+            background: rgba(255,255,255,0.45);
+        }
+        .memo-reader {
+            position: absolute;
+            inset: 0;
+            z-index: 5;
+            display: none;
+            flex-direction: column;
+            background: linear-gradient(180deg, rgba(252,253,255,0.98) 0%, rgba(244,247,251,0.98) 100%);
+            border-radius: inherit;
+            padding: 0.9rem 0.95rem 1rem;
+        }
+        .memo-reader.is-open { display: flex; }
+        .memo-reader-head {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.65rem;
+            margin-bottom: 0.75rem;
+        }
+        .memo-reader-back {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 999px;
+            border: 1px solid rgba(125, 146, 178, 0.18);
+            background: rgba(255,255,255,0.9);
+            color: #6a7c91;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .memo-reader-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: #45586d;
+            line-height: 1.35;
+        }
+        .memo-reader-summary {
+            margin-top: 0.2rem;
+            font-size: 12px;
+            color: #8594a6;
+            line-height: 1.45;
+        }
+        .memo-reader-body {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding-right: 0.15rem;
+        }
+        .memo-reader-section + .memo-reader-section { margin-top: 0.9rem; }
+        .memo-reader-section h4 {
+            font-size: 12px;
+            font-weight: 800;
+            color: #607489;
+            margin-bottom: 0.4rem;
+        }
+        .memo-reader-section ul {
+            list-style: none;
+            display: grid;
+            gap: 0.35rem;
+        }
+        .memo-reader-section li {
+            position: relative;
+            padding: 0.55rem 0.7rem 0.55rem 1.15rem;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.78);
+            border: 1px solid rgba(125, 146, 178, 0.12);
+            font-size: 12px;
+            line-height: 1.55;
+            color: #536579;
+        }
+        .memo-reader-section li::before {
+            content: "";
+            position: absolute;
+            left: 0.55rem;
+            top: 0.85rem;
+            width: 0.28rem;
+            height: 0.28rem;
+            border-radius: 999px;
+            background: #8aa0b8;
+        }
+        body.night-mode .memo-tag-btn,
+        body.night-mode .memo-card,
+        body.night-mode .memo-reader,
+        body.night-mode .memo-reader-section li,
+        body.night-mode .memo-reader-back {
+            background: rgba(22, 32, 51, 0.92) !important;
+            color: #dbe5f4 !important;
+            border-color: rgba(94, 114, 148, 0.34) !important;
+        }
+        body.night-mode .memo-tag-btn.is-active {
+            background: linear-gradient(135deg, #6f89b0 0%, #587298 100%) !important;
+            color: #fff !important;
+        }
+        body.night-mode .memo-card-title,
+        body.night-mode .memo-reader-title,
+        body.night-mode .memo-reader-section h4 { color: #edf3ff !important; }
+        body.night-mode .memo-card-summary,
+        body.night-mode .memo-reader-summary,
+        body.night-mode .memo-section-label { color: #b9c7de !important; }
     </style>
 </head>
 <body class="bg-transparent min-h-screen font-sans antialiased flex flex-col h-screen overflow-hidden">
@@ -2258,50 +2480,59 @@
 
     <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative gap-0 lg:gap-4 md:gap-5 p-3 sm:p-4 md:p-6">
         <div id="mobile-switch-bar" class="lg:hidden flex gap-2 mb-3">
-            <button id="mobile-toggle-left" class="mobile-switch-btn flex-1 min-w-0 rounded-2xl py-2.5 sm:py-3 text-sm font-semibold text-brand transition flex items-center justify-center gap-1.5"> <i class="fa-solid fa-book-open text-xs"></i> 错题笔记</button>
+            <button id="mobile-toggle-left" class="mobile-switch-btn flex-1 min-w-0 rounded-2xl py-2.5 sm:py-3 text-sm font-semibold text-brand transition flex items-center justify-center gap-1.5"> <i class="fa-regular fa-sticky-note text-xs"></i> 笔记</button>
             <button id="mobile-toggle-right" class="mobile-switch-btn flex-1 min-w-0 rounded-2xl py-2.5 sm:py-3 text-sm font-semibold text-brand transition flex items-center justify-center gap-1.5"> 拓展 <i class="fa-solid fa-puzzle-piece text-xs"></i></button>
         </div>
 
         <!-- 左栏 -->
-        <aside id="left-panel" class="w-full lg:w-[20%] flex-shrink-0 order-2 lg:order-1 glass-panel rounded-[24px] shadow-md p-3 sm:p-4 md:p-5 h-full flex flex-col mobile-collapse lg:max-h-none lg:opacity-100 lg:overflow-visible border border-white/60 transition-all duration-300">
-            <div class="sidebar-content flex flex-col h-full">
-                <div class="flex items-center justify-between mb-3 sm:mb-4">
-                    <h2 class="text-base sm:text-lg font-bold text-brand flex items-center gap-2"><i class="fa-solid fa-book-open text-sm"></i> 错题笔记</h2>
+        <aside id="left-panel" class="w-full lg:w-[28%] flex-shrink-0 order-2 lg:order-1 glass-panel rounded-[24px] shadow-md p-3 sm:p-4 h-full flex flex-col mobile-collapse lg:max-h-none lg:opacity-100 lg:overflow-visible border border-white/60 transition-all duration-300">
+            <div class="sidebar-content flex flex-col h-full min-h-0 relative">
+                <div class="flex items-center justify-between mb-3 shrink-0">
+                    <h2 class="text-base sm:text-lg font-bold text-brand flex items-center gap-2"><i class="fa-regular fa-sticky-note text-sm"></i> 笔记</h2>
                     <div class="flex items-center gap-1.5 sm:gap-2">
-                        <button id="note-search-toggle" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition text-gray-400 hover:text-brand" title="搜索错题"><i class="fa-solid fa-magnifying-glass text-xs sm:text-sm"></i></button>
-                        <button type="button" class="mobile-drawer-close w-7 h-7 sm:w-8 sm:h-8 rounded-full hover:bg-gray-100 items-center justify-center transition text-gray-400 hover:text-brand" aria-label="关闭错题笔记"><i class="fa-solid fa-xmark text-sm"></i></button>
+                        <button id="note-search-toggle" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition text-gray-400 hover:text-brand" title="搜索笔记"><i class="fa-solid fa-magnifying-glass text-xs sm:text-sm"></i></button>
+                        <button type="button" class="mobile-drawer-close w-7 h-7 sm:w-8 sm:h-8 rounded-full hover:bg-gray-100 items-center justify-center transition text-gray-400 hover:text-brand" aria-label="关闭笔记"><i class="fa-solid fa-xmark text-sm"></i></button>
                         <button class="sidebar-collapse-btn w-7 h-7 sm:w-8 sm:h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition text-gray-400 hover:text-brand hidden lg:flex" onclick="toggleLeftDesktop()"><i class="fa-solid fa-arrow-left text-xs sm:text-sm"></i></button>
                     </div>
                 </div>
-                <div id="note-search-panel" class="note-search-panel">
+                <div id="note-search-panel" class="note-search-panel shrink-0">
                     <div class="bg-white/85 border border-gray-200 rounded-2xl px-3 py-2.5">
                         <div class="flex items-center gap-2">
                             <i class="fa-solid fa-magnifying-glass text-xs text-gray-400"></i>
-                            <input id="note-search-input" type="text" class="flex-1 bg-transparent outline-none text-sm text-gray-700 placeholder-gray-400" placeholder="搜索题型、知识点、年份">
+                            <input id="note-search-input" type="text" class="flex-1 bg-transparent outline-none text-sm text-gray-700 placeholder-gray-400" placeholder="搜索题型、知识点">
                             <button id="note-search-clear" class="hidden text-xs text-gray-400 hover:text-brand transition">清空</button>
                         </div>
-                        <p id="note-search-meta" class="text-[11px] text-gray-400 mt-2">当前是演示数据，后续接真实错题库后可以直接复用这套搜索交互。</p>
+                        <p id="note-search-meta" class="text-[11px] text-gray-400 mt-2">上方是精选方法笔记，下方是你的错题。</p>
                     </div>
                 </div>
-                <div class="flex-1 overflow-y-auto custom-scrollbar space-y-2.5 sm:space-y-3 mb-3 sm:mb-4 pr-1">
-                    <div id="note-list">
-                        <div class="note-card bg-white border border-gray-200 rounded-[18px] p-2.5 sm:p-3 shadow-sm cursor-pointer mb-2.5 sm:mb-3" data-note-id="reading-detail" data-note-title="阅读理解细节题 · 2025真题" data-note-keywords="阅读 细节题 真题 定位 同义替换 2025"><div class="h-10 sm:h-12 md:h-14 rounded-[14px] mb-2 flex items-center justify-center text-[#74879f]" style="background: linear-gradient(135deg, #edf1f5 0%, #dde5ec 100%);"><i class="fa-regular fa-image"></i></div><p class="text-xs text-gray-500 truncate">阅读理解细节题 · 2025真题</p></div>
-                        <div class="note-card bg-white border border-gray-200 rounded-[18px] p-2.5 sm:p-3 shadow-sm cursor-pointer mb-2.5 sm:mb-3" data-note-id="cloze-logic" data-note-title="完形填空逻辑题 · 模拟卷" data-note-keywords="完形 逻辑题 模拟卷 上下文 词义辨析"><div class="h-10 sm:h-12 md:h-14 rounded-[14px] mb-2 flex items-center justify-center text-[#7f8898]" style="background: linear-gradient(135deg, #f2f3f5 0%, #e2e6ea 100%);"><i class="fa-regular fa-image"></i></div><p class="text-xs text-gray-500 truncate">完形填空逻辑题 · 模拟卷</p></div>
-                        <div class="note-card bg-white border border-gray-200 rounded-[18px] p-2.5 sm:p-3 shadow-sm cursor-pointer mb-2.5 sm:mb-3" data-note-id="grammar-nonfinite" data-note-title="语法填空易错点 · 非谓语" data-note-keywords="语法填空 易错点 非谓语 to do doing done"><div class="h-10 sm:h-12 md:h-14 rounded-[14px] mb-2 flex items-center justify-center text-[#748f98]" style="background: linear-gradient(135deg, #eef2f2 0%, #dfe6e8 100%);"><i class="fa-regular fa-image"></i></div><p class="text-xs text-gray-500 truncate">语法填空易错点 · 非谓语</p></div>
-                        <div class="note-card bg-white border border-gray-200 rounded-[18px] p-2.5 sm:p-3 shadow-sm cursor-pointer" data-note-id="seven-cloze-structure" data-note-title="七选五篇章结构 · 核心词" data-note-keywords="七选五 篇章结构 核心词 衔接词 指代"><div class="h-10 sm:h-12 md:h-14 rounded-[14px] mb-2 flex items-center justify-center text-[#7a8595]" style="background: linear-gradient(135deg, #f3f0eb 0%, #e1e5ea 100%);"><i class="fa-regular fa-image"></i></div><p class="text-xs text-gray-500 truncate">七选五篇章结构 · 核心词</p></div>
-                    </div>
-                    <div id="note-search-empty" class="hidden bg-white border border-dashed border-gray-200 rounded-2xl px-4 py-6 text-center">
-                        <p class="text-sm font-medium text-gray-600">没有找到匹配的错题</p>
-                        <p class="text-xs text-gray-400 mt-1">试试搜索“阅读 / 完形 / 非谓语 / 七选五”</p>
+                <div class="memo-shell">
+                    <nav id="memo-tag-rail" class="memo-tag-rail custom-scrollbar" aria-label="笔记标签"></nav>
+                    <div class="memo-main custom-scrollbar">
+                        <div class="memo-section-label">精选笔记 <span id="curated-count" class="count"></span></div>
+                        <div id="curated-note-list"></div>
+                        <div class="memo-section-label mt-3">我的错题 <span id="wrong-count" class="count"></span></div>
+                        <div id="note-list"></div>
+                        <div id="note-search-empty" class="hidden memo-empty mt-2">没有找到匹配内容，试试「语法 / 完形 / 阅读」。</div>
                     </div>
                 </div>
-                <div class="flex gap-2 sm:gap-3 shrink-0">
-                    <button id="add-note-btn" class="soft-primary-btn flex-1 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-1.5"><i class="fa-solid fa-plus text-xs"></i> 添加</button>
-                    <button id="category-btn" class="soft-secondary-btn flex-1 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-semibold text-brand transition flex items-center justify-center gap-1.5"><i class="fa-solid fa-folder-tree text-xs"></i> 分类</button>
+                <div class="flex gap-2 sm:gap-3 shrink-0 mt-3">
+                    <button id="add-note-btn" class="soft-primary-btn flex-1 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-1.5"><i class="fa-solid fa-plus text-xs"></i> 添加错题</button>
+                    <button id="category-btn" class="soft-secondary-btn flex-1 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-semibold text-brand transition flex items-center justify-center gap-1.5"><i class="fa-solid fa-tags text-xs"></i> 标签</button>
+                </div>
+                <div id="memo-reader" class="memo-reader" aria-hidden="true">
+                    <div class="memo-reader-head">
+                        <button type="button" id="memo-reader-back" class="memo-reader-back" aria-label="返回笔记列表"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+                        <div class="min-w-0">
+                            <div id="memo-reader-kicker" class="memo-card-kicker"></div>
+                            <h3 id="memo-reader-title" class="memo-reader-title"></h3>
+                            <p id="memo-reader-summary" class="memo-reader-summary"></p>
+                        </div>
+                    </div>
+                    <div id="memo-reader-body" class="memo-reader-body custom-scrollbar"></div>
                 </div>
             </div>
             <div class="sidebar-expand-inner hidden flex-col items-center justify-center cursor-pointer" onclick="toggleLeftDesktop()">
-                <span class="vertical-text text-brand font-bold text-sm mb-3">错题</span>
+                <span class="vertical-text text-brand font-bold text-sm mb-3">笔记</span>
                 <i class="fa-solid fa-chevron-right text-brand"></i>
             </div>
         </aside>
@@ -2419,7 +2650,6 @@
                         </div>
                         </div>
                     </div>
-                    <div id="knowledge-notes-card" class="extend-card rounded-[20px] shadow-sm p-4 relative overflow-hidden cursor-pointer" style="background: linear-gradient(135deg, #efedf1 0%, #e2e1e7 100%);"><div class="absolute -right-3 -bottom-3 text-[#9e9aac] opacity-10 text-7xl"><i class="fa-solid fa-book-open"></i></div><h3 class="font-bold text-[#6f6b82] mb-1 text-[15px]">知识笔记</h3><p class="text-[13px] text-[#817d92] font-medium">语法体系与写作模板</p></div>
                     <div id="store-card" class="extend-card rounded-[20px] shadow-sm p-4 relative overflow-hidden cursor-pointer" style="background: linear-gradient(135deg, #edf1f2 0%, #dfe5e8 100%);"><div class="absolute -right-2 -bottom-2 text-[#90a0ac] opacity-10 text-7xl"><i class="fa-solid fa-store"></i></div><h3 class="font-bold text-[#647482] mb-1 text-[15px]">商城</h3><p class="text-[13px] text-[#788796] font-medium">高考冲刺专区</p></div>
                 </div>
             </div>
@@ -2613,11 +2843,24 @@
             const mobileToggleLeft = document.getElementById('mobile-toggle-left');
             const mobileToggleRight = document.getElementById('mobile-toggle-right');
             const mobilePanelOverlay = document.getElementById('mobile-panel-overlay');
-            const noteCards = Array.from(document.querySelectorAll('.note-card'));
+            let noteCards = [];
+            const curatedNoteList = document.getElementById('curated-note-list');
+            const memoTagRail = document.getElementById('memo-tag-rail');
+            const curatedCountEl = document.getElementById('curated-count');
+            const wrongCountEl = document.getElementById('wrong-count');
+            const memoReader = document.getElementById('memo-reader');
+            const memoReaderBack = document.getElementById('memo-reader-back');
+            const memoReaderKicker = document.getElementById('memo-reader-kicker');
+            const memoReaderTitle = document.getElementById('memo-reader-title');
+            const memoReaderSummary = document.getElementById('memo-reader-summary');
+            const memoReaderBody = document.getElementById('memo-reader-body');
             const flashcardEntry = document.getElementById('flashcard-entry');
             const flashcardEntryDesc = document.getElementById('flashcard-entry-desc');
-            const knowledgeNotesCard = document.getElementById('knowledge-notes-card');
             const storeCard = document.getElementById('store-card');
+            const noteListEl = document.getElementById('note-list');
+            const MEMO = window.TAORAN_MEMO || { tags: [], curated: [], wrongQuestionTags: {} };
+            let activeMemoTag = 'all';
+            const TAG_LABELS = { all: '全部', grammar: '语法', cloze: '完形', reading: '阅读' };
             const flashcardOverlay = document.getElementById('flashcard-overlay');
             const flashcardModal = document.getElementById('flashcard-modal');
             const flashcardCloseBtn = document.getElementById('flashcard-close-btn');
@@ -4118,22 +4361,121 @@
                 showToast('日程已添加');
             }
 
-            function updateNoteSearchState(keyword = '') {
+            function getCuratedByTag(tagId) {
+                const items = Array.isArray(MEMO.curated) ? MEMO.curated : [];
+                if (tagId === 'all') return items;
+                return items.filter(item => item.tag === tagId);
+            }
+
+            function getWrongNotesByTag(tagId) {
+                if (tagId === 'all') return NOTE_FLASHCARDS;
+                return NOTE_FLASHCARDS.filter(note => (MEMO.wrongQuestionTags || {})[note.id] === tagId);
+            }
+
+            function renderMemoTags() {
+                if (!memoTagRail) return;
+                memoTagRail.innerHTML = (MEMO.tags || []).map(tag => `
+                    <button type="button" class="memo-tag-btn ${tag.id === activeMemoTag ? 'is-active' : ''}" data-memo-tag="${tag.id}" title="${tag.label}">
+                        <i class="fa-solid ${tag.icon || 'fa-tag'}"></i>
+                        <span>${tag.label}</span>
+                    </button>
+                `).join('');
+            }
+
+            function openMemoReader(note) {
+                if (!memoReader || !note) return;
+                memoReaderKicker.textContent = TAG_LABELS[note.tag] || '精选笔记';
+                memoReaderTitle.textContent = note.title || '';
+                memoReaderSummary.textContent = note.summary || '';
+                memoReaderBody.innerHTML = (note.sections || []).map(section => `
+                    <section class="memo-reader-section">
+                        <h4>${escapeHtml(section.heading || '')}</h4>
+                        <ul>${(section.bullets || []).map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>
+                    </section>
+                `).join('');
+                memoReader.classList.add('is-open');
+                memoReader.setAttribute('aria-hidden', 'false');
+            }
+
+            function closeMemoReader() {
+                if (!memoReader) return;
+                memoReader.classList.remove('is-open');
+                memoReader.setAttribute('aria-hidden', 'true');
+            }
+
+            function renderMemoPanel(keyword = '') {
                 const normalized = keyword.trim().toLowerCase();
-                let visibleCount = 0;
-                noteCards.forEach(card => {
-                    const haystack = `${card.dataset.noteTitle || ''} ${card.dataset.noteKeywords || ''}`.toLowerCase();
-                    const matched = !normalized || haystack.includes(normalized);
-                    card.classList.toggle('hidden-by-search', !matched);
-                    if (matched) visibleCount += 1;
+                const curated = getCuratedByTag(activeMemoTag).filter(item => {
+                    if (!normalized) return true;
+                    const haystack = `${item.title || ''} ${item.summary || ''} ${(item.sections || []).map(section => `${section.heading || ''} ${(section.bullets || []).join(' ')}`).join(' ')}`.toLowerCase();
+                    return haystack.includes(normalized);
                 });
-                noteSearchEmpty.classList.toggle('hidden', visibleCount !== 0);
+                const wrongNotes = getWrongNotesByTag(activeMemoTag).filter(note => {
+                    if (!normalized) return true;
+                    const haystack = `${note.title || ''} ${(note.tags || []).join(' ')} ${note.category || ''}`.toLowerCase();
+                    return haystack.includes(normalized);
+                });
+
+                if (curatedCountEl) curatedCountEl.textContent = `${curated.length} 篇`;
+                if (wrongCountEl) wrongCountEl.textContent = `${wrongNotes.length} 条`;
+
+                if (curatedNoteList) {
+                    curatedNoteList.innerHTML = curated.length
+                        ? curated.map(item => `
+                            <article class="memo-card" data-curated-id="${item.id}">
+                                <div class="memo-card-kicker">${TAG_LABELS[item.tag] || '笔记'}</div>
+                                <div class="memo-card-title">${escapeHtml(item.title || '')}</div>
+                                <div class="memo-card-summary">${escapeHtml(item.summary || '')}</div>
+                            </article>
+                        `).join('')
+                        : '<div class="memo-empty">这个标签下暂时没有精选笔记。</div>';
+                }
+
+                if (noteListEl) {
+                    noteListEl.innerHTML = wrongNotes.length
+                        ? wrongNotes.map(note => `
+                            <div class="memo-card memo-wrong-card note-card" data-note-id="${note.id}" data-note-title="${escapeHtml(note.title)}" data-note-keywords="${escapeHtml((note.tags || []).join(' '))}">
+                                <div class="memo-card-thumb"><i class="fa-regular fa-image"></i></div>
+                                <div class="memo-card-kicker">我的错题</div>
+                                <div class="memo-card-title">${escapeHtml(note.title)}</div>
+                                <div class="memo-card-summary">${escapeHtml(note.summary || note.category || '')}</div>
+                            </div>
+                        `).join('')
+                        : '<div class="memo-empty">这个标签下还没有错题，聊完题后可以存进来。</div>';
+                }
+
+                noteCards = Array.from(document.querySelectorAll('#note-list .note-card'));
+                noteCards.forEach(card => {
+                    card.addEventListener('click', () => {
+                        const note = getNoteById(card.dataset.noteId);
+                        if (!note) return;
+                        setSelectedNote(note.id);
+                        chatInput.value = buildNotePrompt(note);
+                        chatInput.dispatchEvent(new Event('input'));
+                        chatInput.focus();
+                        showToast(`已带入：${note.title}`);
+                    });
+                });
+
+                const totalVisible = curated.length + wrongNotes.length;
+                noteSearchEmpty.classList.toggle('hidden', totalVisible !== 0 || !normalized);
                 noteSearchClear.classList.toggle('hidden', !normalized);
                 if (!normalized) {
-                    noteSearchMeta.textContent = `当前共 ${noteCards.length} 条演示错题，后续接真实错题库后可以直接复用这套搜索交互。`;
+                    noteSearchMeta.textContent = `当前标签：${TAG_LABELS[activeMemoTag] || '全部'} · 精选 ${curated.length} · 错题 ${wrongNotes.length}`;
                 } else {
-                    noteSearchMeta.textContent = `搜索“${keyword.trim()}”找到 ${visibleCount} 条结果`;
+                    noteSearchMeta.textContent = `搜索“${keyword.trim()}”找到 ${totalVisible} 条结果`;
                 }
+            }
+
+            function setActiveMemoTag(tagId) {
+                activeMemoTag = tagId || 'all';
+                closeMemoReader();
+                renderMemoTags();
+                renderMemoPanel(noteSearchInput ? noteSearchInput.value : '');
+            }
+
+            function updateNoteSearchState(keyword = '') {
+                renderMemoPanel(keyword);
             }
 
             function openNoteSearch() {
@@ -5691,9 +6033,28 @@
             });
             flashcardModal.addEventListener('wheel', handleFlashcardWheel, { passive: false });
             addNoteBtn.addEventListener('click', showComingSoonToast);
-            categoryBtn.addEventListener('click', showComingSoonToast);
-            knowledgeNotesCard.addEventListener('click', showComingSoonToast);
+            categoryBtn.addEventListener('click', () => {
+                showToast('左侧小栏就是标签，点语法 / 完形 / 阅读即可筛选');
+            });
             storeCard.addEventListener('click', showComingSoonToast);
+            if (memoTagRail) {
+                memoTagRail.addEventListener('click', event => {
+                    const btn = event.target.closest('[data-memo-tag]');
+                    if (!btn) return;
+                    setActiveMemoTag(btn.dataset.memoTag);
+                });
+            }
+            if (curatedNoteList) {
+                curatedNoteList.addEventListener('click', event => {
+                    const card = event.target.closest('[data-curated-id]');
+                    if (!card) return;
+                    const note = (MEMO.curated || []).find(item => item.id === card.dataset.curatedId);
+                    if (note) openMemoReader(note);
+                });
+            }
+            if (memoReaderBack) {
+                memoReaderBack.addEventListener('click', closeMemoReader);
+            }
             noteSearchToggle.addEventListener('click', () => {
                 if (noteSearchPanel.classList.contains('open')) {
                     closeNoteSearch();
@@ -5707,16 +6068,7 @@
                 updateNoteSearchState('');
                 noteSearchInput.focus();
             });
-            noteCards.forEach(card => {
-                card.addEventListener('click', () => {
-                    const note = getNoteById(card.dataset.noteId);
-                    setSelectedNote(note.id);
-                    chatInput.value = buildNotePrompt(note);
-                    chatInput.dispatchEvent(new Event('input'));
-                    chatInput.focus();
-                    showToast(`已带入：${note.title}`);
-                });
-            });
+            setActiveMemoTag('all');
             uploadImageBtn.addEventListener('click', () => chatImageInput.click());
             pendingUploadRemove.addEventListener('click', clearPendingImage);
             chatImageInput.addEventListener('change', () => {

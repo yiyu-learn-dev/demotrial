@@ -12,6 +12,10 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 
+node_modules/
+_notes_extract/
+cloudflare/
+
 dist/
 build/
 *.log
