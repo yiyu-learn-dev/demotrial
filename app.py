@@ -146,6 +146,7 @@ def build_structured_reply_json(
     stem_understanding: str,
     reasoning_steps: list[dict[str, object]],
     distractor_analysis: dict[str, str] | None = None,
+    knowledge_methodology: list[str] | None = None,
     knowledge_cards: list[str] | None = None,
     follow_up: str = "",
 ) -> str:
@@ -160,6 +161,7 @@ def build_structured_reply_json(
         "stem_understanding": stem_understanding,
         "reasoning_steps": reasoning_steps,
         "distractor_analysis": distractor_analysis or {"A": "", "B": "", "C": "", "D": ""},
+        "knowledge_methodology": knowledge_methodology or [],
         "knowledge_cards": knowledge_cards or [],
         "follow_up": follow_up,
     }

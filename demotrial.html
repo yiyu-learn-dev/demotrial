@@ -1571,6 +1571,107 @@
             font-size: 0.8em;
             color: rgba(102, 113, 128, 0.88);
         }
+        .chat-reply-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.45rem;
+            margin-top: 0.55rem;
+        }
+        .chat-save-note-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            border: 1px solid rgba(125, 146, 178, 0.22);
+            background: rgba(255, 255, 255, 0.72);
+            color: #607486;
+            border-radius: 999px;
+            padding: 0.28rem 0.72rem;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            cursor: pointer;
+            transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease, transform 0.16s ease;
+        }
+        .chat-save-note-btn:hover {
+            background: rgba(232, 239, 247, 0.95);
+            border-color: rgba(125, 146, 178, 0.38);
+            color: #4d627a;
+            transform: translateY(-1px);
+        }
+        .chat-save-note-btn.is-saved {
+            color: #4f7a5d;
+            border-color: rgba(110, 160, 126, 0.35);
+            background: rgba(232, 244, 236, 0.9);
+        }
+        .chat-save-note-hint {
+            font-size: 10px;
+            color: #9aa8b8;
+        }
+        body.night-mode .chat-save-note-btn {
+            background: rgba(28, 40, 62, 0.92) !important;
+            color: #c9d7ec !important;
+            border-color: rgba(94, 114, 148, 0.4) !important;
+        }
+        body.night-mode .chat-save-note-btn.is-saved {
+            color: #9ed4ad !important;
+            background: rgba(40, 70, 52, 0.88) !important;
+        }
+        .chat-knowledge-section {
+            border-radius: 1rem;
+            border: 1px solid rgba(125, 146, 178, 0.22);
+            background: linear-gradient(180deg, rgba(244, 248, 252, 0.96) 0%, rgba(236, 242, 249, 0.92) 100%);
+            padding: 0.8rem 0.85rem;
+        }
+        .chat-knowledge-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-bottom: 0.55rem;
+        }
+        .chat-knowledge-list {
+            display: grid;
+            gap: 0.45rem;
+        }
+        .chat-knowledge-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.45rem;
+            border-radius: 0.85rem;
+            border: 1px solid rgba(125, 146, 178, 0.16);
+            background: rgba(255, 255, 255, 0.78);
+            padding: 0.55rem 0.6rem;
+        }
+        .chat-knowledge-text {
+            flex: 1;
+            min-width: 0;
+            font-size: 0.86em;
+            line-height: 1.62;
+            color: #536579;
+        }
+        .chat-knowledge-save-btn {
+            flex-shrink: 0;
+            border: 1px solid rgba(125, 146, 178, 0.22);
+            background: rgba(255, 255, 255, 0.92);
+            color: #607486;
+            border-radius: 999px;
+            padding: 0.18rem 0.55rem;
+            font-size: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+        }
+        .chat-knowledge-save-btn:hover {
+            background: rgba(232, 239, 247, 0.95);
+            border-color: rgba(125, 146, 178, 0.38);
+            color: #4d627a;
+        }
+        .chat-knowledge-save-btn.is-saved {
+            color: #4f7a5d;
+            border-color: rgba(110, 160, 126, 0.35);
+            background: rgba(232, 244, 236, 0.9);
+        }
         .chat-structured-steps {
             display: grid;
             gap: 0.66rem;
@@ -2502,7 +2603,7 @@
                             <input id="note-search-input" type="text" class="flex-1 bg-transparent outline-none text-sm text-gray-700 placeholder-gray-400" placeholder="搜索题型、知识点">
                             <button id="note-search-clear" class="hidden text-xs text-gray-400 hover:text-brand transition">清空</button>
                         </div>
-                        <p id="note-search-meta" class="text-[11px] text-gray-400 mt-2">上方是精选方法笔记，下方是你的错题。</p>
+                        <p id="note-search-meta" class="text-[11px] text-gray-400 mt-2">上方是精选方法笔记，下方可一键存入对话内容。</p>
                     </div>
                 </div>
                 <div class="memo-shell">
@@ -2510,13 +2611,13 @@
                     <div class="memo-main custom-scrollbar">
                         <div class="memo-section-label">精选笔记 <span id="curated-count" class="count"></span></div>
                         <div id="curated-note-list"></div>
-                        <div class="memo-section-label mt-3">我的错题 <span id="wrong-count" class="count"></span></div>
+                        <div class="memo-section-label mt-3">我的笔记 <span id="wrong-count" class="count"></span></div>
                         <div id="note-list"></div>
                         <div id="note-search-empty" class="hidden memo-empty mt-2">没有找到匹配内容，试试「语法 / 完形 / 阅读」。</div>
                     </div>
                 </div>
                 <div class="flex gap-2 sm:gap-3 shrink-0 mt-3">
-                    <button id="add-note-btn" class="soft-primary-btn flex-1 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-1.5"><i class="fa-solid fa-plus text-xs"></i> 添加错题</button>
+                    <button id="add-note-btn" class="soft-primary-btn flex-1 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-1.5"><i class="fa-solid fa-plus text-xs"></i> 存入知识点</button>
                     <button id="category-btn" class="soft-secondary-btn flex-1 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-semibold text-brand transition flex items-center justify-center gap-1.5"><i class="fa-solid fa-tags text-xs"></i> 标签</button>
                 </div>
                 <div id="memo-reader" class="memo-reader" aria-hidden="true">
@@ -2924,6 +3025,7 @@
             const CALENDAR_SETTINGS_KEY = 'calendar_settings';
             const FLASHCARD_STATE_KEY = 'taoran-flashcard-state';
             const GENERATED_FLASHCARDS_KEY = 'taoran-generated-flashcards';
+            const SAVED_NOTES_KEY = 'taoran-saved-notes';
             const NOTE_FLASHCARDS = [
                 {
                     id: 'reading-detail',
@@ -2994,6 +3096,7 @@
             let flashcardFlipped = false;
             let flashcardState = loadFlashcardState();
             let generatedFlashcards = loadGeneratedFlashcards();
+            let savedNotes = loadSavedNotes();
             let flashcardAnimating = false;
             let flashcardWheelLocked = false;
             let composerDragDepth = 0;
@@ -3212,6 +3315,9 @@
                         knowledgeCards: Array.isArray(parsed.knowledge_cards)
                             ? parsed.knowledge_cards.map(item => String(item || '').trim()).filter(Boolean)
                             : [],
+                        knowledgeMethodology: Array.isArray(parsed.knowledge_methodology)
+                            ? parsed.knowledge_methodology.map(item => String(item || '').trim()).filter(Boolean)
+                            : [],
                         followUp: String(parsed.follow_up || '').trim()
                     };
                 } catch (error) {
@@ -3250,6 +3356,10 @@
                 const knowledgeCards = cardsBlockMatch
                     ? Array.from(cardsBlockMatch[1].matchAll(/"([\s\S]*?)"/g)).map(match => decodeJsonLikeString(match[1])).filter(Boolean)
                     : [];
+                const methodologyBlockMatch = source.match(/"knowledge_methodology"\s*:\s*\[([\s\S]*?)\]\s*(?:,|$)/);
+                const knowledgeMethodology = methodologyBlockMatch
+                    ? Array.from(methodologyBlockMatch[1].matchAll(/"([\s\S]*?)"/g)).map(match => decodeJsonLikeString(match[1])).filter(Boolean)
+                    : [];
 
                 return {
                     supported: supportedMatch[1].toLowerCase() === 'true',
@@ -3268,6 +3378,7 @@
                         D: parseDistractorValue('D')
                     },
                     knowledgeCards,
+                    knowledgeMethodology,
                     followUp: extractJsonLikeStringField(source, 'follow_up')
                 };
             }
@@ -3516,6 +3627,44 @@
                 return splitStructuredDisplayLines(String(text).replace(/\s*[；;]\s*/g, '\n'));
             }
 
+            function getKnowledgeMethodologyLines(data) {
+                if (!data) return [];
+                const primary = Array.isArray(data.knowledgeMethodology) ? data.knowledgeMethodology : [];
+                const cleanedPrimary = primary.map(item => String(item || '').trim()).filter(Boolean);
+                if (cleanedPrimary.length) return cleanedPrimary;
+
+                const cards = Array.isArray(data.knowledgeCards) ? data.knowledgeCards : [];
+                return cards
+                    .map(item => String(item || '').trim())
+                    .filter(item => item && (item.length >= 12 || /[，。；：、]/.test(item)));
+            }
+
+            function renderKnowledgeMethodologySection(data, options = {}) {
+                const items = getKnowledgeMethodologyLines(data);
+                if (!items.length) return '';
+
+                const listHtml = items.map((item, index) => `
+                    <div class="chat-knowledge-item" data-knowledge-index="${index}">
+                        <div class="chat-knowledge-text">${renderPlainText(item)}</div>
+                        <button type="button" class="chat-knowledge-save-btn" data-save-knowledge-item data-knowledge-index="${index}" title="把这条知识点或方法论原文存入笔记">存入</button>
+                    </div>
+                `).join('');
+
+                const bulkBtn = options.includeBulkSave === false
+                    ? ''
+                    : `<button type="button" class="chat-save-note-btn" data-save-note-btn title="把所有知识点与方法论原文存入笔记"><i class="fa-regular fa-bookmark"></i><span>全部存入</span></button>`;
+
+                return `
+                    <div class="chat-knowledge-section" data-knowledge-section>
+                        <div class="chat-knowledge-head">
+                            <span class="chat-structured-label">知识点与方法论</span>
+                            ${bulkBtn}
+                        </div>
+                        <div class="chat-knowledge-list">${listHtml}</div>
+                    </div>
+                `;
+            }
+
             function renderStructuredReply(data) {
                 const metaParts = [];
                 if (data.questionType) metaParts.push(sanitizeStructuredMeta(data.questionType));
@@ -3566,6 +3715,7 @@
                         </div>
                     `
                     : '';
+                const knowledgeHtml = renderKnowledgeMethodologySection(data);
 
                 return `
                     <div class="chat-structured">
@@ -3573,6 +3723,7 @@
                             <span class="chat-structured-badge ${data.supported ? 'is-ok' : 'is-muted'}">${data.supported ? '讲题结果' : '暂不支持'}</span>
                             ${metaParts.length ? `<span class="chat-structured-meta">${metaParts.map(item => escapeHtml(item)).join(' · ')}</span>` : ''}
                         </div>
+                        ${knowledgeHtml}
                         ${explanationHtml}
                         ${answerHtml}
                         ${distractorHtml}
@@ -3684,6 +3835,37 @@
                 wrapper.appendChild(top);
 
                 const animatedFields = [];
+                const knowledgeItems = getKnowledgeMethodologyLines(data);
+                if (knowledgeItems.length) {
+                    const section = document.createElement('div');
+                    section.className = 'chat-knowledge-section';
+                    section.dataset.knowledgeSection = '1';
+                    section.innerHTML = `
+                        <div class="chat-knowledge-head">
+                            <span class="chat-structured-label">知识点与方法论</span>
+                            <button type="button" class="chat-save-note-btn" data-save-note-btn title="把所有知识点与方法论原文存入笔记">
+                                <i class="fa-regular fa-bookmark"></i><span>全部存入</span>
+                            </button>
+                        </div>
+                        <div class="chat-knowledge-list"></div>
+                    `;
+                    const list = section.querySelector('.chat-knowledge-list');
+                    knowledgeItems.forEach((item, index) => {
+                        const row = document.createElement('div');
+                        row.className = 'chat-knowledge-item';
+                        row.dataset.knowledgeIndex = String(index);
+                        row.innerHTML = `
+                            <div class="chat-knowledge-text"></div>
+                            <button type="button" class="chat-knowledge-save-btn" data-save-knowledge-item data-knowledge-index="${index}" title="把这条知识点或方法论原文存入笔记">存入</button>
+                        `;
+                        list.appendChild(row);
+                        animatedFields.push({
+                            element: row.querySelector('.chat-knowledge-text'),
+                            text: item
+                        });
+                    });
+                    wrapper.appendChild(section);
+                }
 
                 const explanationLines = getStructuredExplanationLines(data);
                 if (explanationLines.length) {
@@ -3762,6 +3944,12 @@
 
             async function animateAiBubbleContent(bubble, content) {
                 const target = bubble.querySelector('.chat-ai-reply-body') || bubble;
+                const structured = parseStructuredReply(content);
+                if (structured && structured.supported) {
+                    await animateStructuredReplyBubble(target, structured);
+                    scrollChatToBottom();
+                    return;
+                }
                 const body = getReplyDisplayText(content);
                 await animateTextReveal(target, body, renderPlainText);
                 target.innerHTML = renderMarkdown(body);
@@ -3769,11 +3957,21 @@
             }
 
             function renderAiMessageContent(content) {
+                const structured = parseStructuredReply(content);
+                if (structured && structured.supported) {
+                    return {
+                        html: renderStructuredReply(structured),
+                        isStructured: true,
+                        preview: getStructuredReplyPreview(structured),
+                        structured
+                    };
+                }
                 const body = getReplyDisplayText(content);
                 return {
                     html: renderMarkdown(body),
                     isStructured: false,
-                    preview: body
+                    preview: body,
+                    structured: null
                 };
             }
 
@@ -4384,15 +4582,20 @@
 
             function openMemoReader(note) {
                 if (!memoReader || !note) return;
-                memoReaderKicker.textContent = TAG_LABELS[note.tag] || '精选笔记';
+                memoReaderKicker.textContent = note.saved
+                    ? '对话存入'
+                    : (TAG_LABELS[note.tag] || (note.category ? '示例错题' : '精选笔记'));
                 memoReaderTitle.textContent = note.title || '';
                 memoReaderSummary.textContent = note.summary || '';
-                memoReaderBody.innerHTML = (note.sections || []).map(section => `
-                    <section class="memo-reader-section">
-                        <h4>${escapeHtml(section.heading || '')}</h4>
-                        <ul>${(section.bullets || []).map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>
-                    </section>
-                `).join('');
+                const sections = Array.isArray(note.sections) ? note.sections : [];
+                memoReaderBody.innerHTML = sections.length
+                    ? sections.map(section => `
+                        <section class="memo-reader-section">
+                            <h4>${escapeHtml(section.heading || '')}</h4>
+                            <ul>${(section.bullets || []).map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>
+                        </section>
+                    `).join('')
+                    : `<section class="memo-reader-section"><h4>笔记内容</h4><ul><li>${escapeHtml(note.rawContent || note.summary || '暂无内容')}</li></ul></section>`;
                 memoReader.classList.add('is-open');
                 memoReader.setAttribute('aria-hidden', 'false');
             }
@@ -4410,14 +4613,14 @@
                     const haystack = `${item.title || ''} ${item.summary || ''} ${(item.sections || []).map(section => `${section.heading || ''} ${(section.bullets || []).join(' ')}`).join(' ')}`.toLowerCase();
                     return haystack.includes(normalized);
                 });
-                const wrongNotes = getWrongNotesByTag(activeMemoTag).filter(note => {
+                const myNotes = getMyNotesByTag(activeMemoTag).filter(note => {
                     if (!normalized) return true;
-                    const haystack = `${note.title || ''} ${(note.tags || []).join(' ')} ${note.category || ''}`.toLowerCase();
+                    const haystack = `${note.title || ''} ${note.summary || ''} ${(note.tags || []).join(' ')} ${note.category || ''} ${(note.sections || []).map(section => `${section.heading || ''} ${(section.bullets || []).join(' ')}`).join(' ')} ${note.rawContent || ''}`.toLowerCase();
                     return haystack.includes(normalized);
                 });
 
                 if (curatedCountEl) curatedCountEl.textContent = `${curated.length} 篇`;
-                if (wrongCountEl) wrongCountEl.textContent = `${wrongNotes.length} 条`;
+                if (wrongCountEl) wrongCountEl.textContent = `${myNotes.length} 条`;
 
                 if (curatedNoteList) {
                     curatedNoteList.innerHTML = curated.length
@@ -4432,36 +4635,56 @@
                 }
 
                 if (noteListEl) {
-                    noteListEl.innerHTML = wrongNotes.length
-                        ? wrongNotes.map(note => `
-                            <div class="memo-card memo-wrong-card note-card" data-note-id="${note.id}" data-note-title="${escapeHtml(note.title)}" data-note-keywords="${escapeHtml((note.tags || []).join(' '))}">
-                                <div class="memo-card-thumb"><i class="fa-regular fa-image"></i></div>
-                                <div class="memo-card-kicker">我的错题</div>
+                    noteListEl.innerHTML = myNotes.length
+                        ? myNotes.map(note => `
+                            <div class="memo-card memo-wrong-card note-card" data-note-id="${escapeHtml(note.id)}" data-note-saved="${note.saved ? '1' : '0'}" data-note-title="${escapeHtml(note.title)}" data-note-keywords="${escapeHtml((note.tags || []).join(' ') || note.summary || '')}">
+                                <div class="memo-card-thumb"><i class="fa-solid ${note.saved ? 'fa-bookmark' : 'fa-regular fa-image'}"></i></div>
+                                <div class="memo-card-kicker">${note.saved ? '对话存入' : '示例错题'}</div>
                                 <div class="memo-card-title">${escapeHtml(note.title)}</div>
                                 <div class="memo-card-summary">${escapeHtml(note.summary || note.category || '')}</div>
                             </div>
                         `).join('')
-                        : '<div class="memo-empty">这个标签下还没有错题，聊完题后可以存进来。</div>';
+                        : '<div class="memo-empty">这个标签下还没有笔记。讲题后点「存入」即可保存知识点与方法论原文。</div>';
                 }
 
                 noteCards = Array.from(document.querySelectorAll('#note-list .note-card'));
                 noteCards.forEach(card => {
                     card.addEventListener('click', () => {
-                        const note = getNoteById(card.dataset.noteId);
+                        const noteId = card.dataset.noteId;
+                        if (card.dataset.noteSaved === '1') {
+                            const saved = getSavedNoteById(noteId);
+                            if (saved) {
+                                openMemoReader(saved);
+                                showToast(`已打开：${saved.title}`);
+                            }
+                            return;
+                        }
+                        const note = getNoteById(noteId);
                         if (!note) return;
                         setSelectedNote(note.id);
+                        openMemoReader({
+                            tag: (MEMO.wrongQuestionTags || {})[note.id] || inferMemoTagFromText(note.category, note.title),
+                            title: note.title,
+                            summary: note.summary || note.category || '',
+                            sections: [{
+                                heading: '复习要点',
+                                bullets: note.bullets || []
+                            }, {
+                                heading: '答案拆解',
+                                bullets: note.answer ? [note.answer] : []
+                            }].filter(section => section.bullets.length)
+                        });
                         chatInput.value = buildNotePrompt(note);
                         chatInput.dispatchEvent(new Event('input'));
-                        chatInput.focus();
                         showToast(`已带入：${note.title}`);
                     });
                 });
 
-                const totalVisible = curated.length + wrongNotes.length;
+                const totalVisible = curated.length + myNotes.length;
                 noteSearchEmpty.classList.toggle('hidden', totalVisible !== 0 || !normalized);
                 noteSearchClear.classList.toggle('hidden', !normalized);
                 if (!normalized) {
-                    noteSearchMeta.textContent = `当前标签：${TAG_LABELS[activeMemoTag] || '全部'} · 精选 ${curated.length} · 错题 ${wrongNotes.length}`;
+                    noteSearchMeta.textContent = `当前标签：${TAG_LABELS[activeMemoTag] || '全部'} · 精选 ${curated.length} · 笔记 ${myNotes.length}`;
                 } else {
                     noteSearchMeta.textContent = `搜索“${keyword.trim()}”找到 ${totalVisible} 条结果`;
                 }
@@ -4897,6 +5120,38 @@
             }
 
             chatWindow.addEventListener('click', function(event) {
+                const knowledgeBtn = event.target.closest('[data-save-knowledge-item]');
+                if (knowledgeBtn && chatWindow.contains(knowledgeBtn)) {
+                    event.preventDefault();
+                    const messageEl = knowledgeBtn.closest('.message-animate');
+                    const content = (messageEl && messageEl.dataset.aiContent) || '';
+                    const structured = parseStructuredReply(content);
+                    const items = getKnowledgeMethodologyLines(structured);
+                    const itemIndex = Number(knowledgeBtn.dataset.knowledgeIndex);
+                    const itemText = Number.isFinite(itemIndex) ? (items[itemIndex] || '') : '';
+                    const note = saveKnowledgeMethodologyFromMessage(messageEl, {
+                        itemText,
+                        button: knowledgeBtn
+                    });
+                    if (note) {
+                        showToast(`已存入：${note.title}`);
+                    }
+                    return;
+                }
+
+                const saveBtn = event.target.closest('[data-save-note-btn]');
+                if (saveBtn && chatWindow.contains(saveBtn)) {
+                    event.preventDefault();
+                    const messageEl = saveBtn.closest('.message-animate');
+                    const note = saveKnowledgeMethodologyFromMessage(messageEl, {
+                        button: saveBtn
+                    });
+                    if (note) {
+                        showToast(`已存入笔记：${note.title}`);
+                    }
+                    return;
+                }
+
                 const toggle = event.target.closest('.chat-thinking-toggle');
                 if (!toggle || !chatWindow.contains(toggle)) return;
                 const panel = toggle.closest('.chat-thinking-panel');
@@ -4936,7 +5191,19 @@
                     } else {
                         const aiBubbleClass = aiRender && aiRender.isStructured ? 'chat-text' : 'chat-text chat-markdown';
                         const thinkingHtml = renderThinkingPanelHtml(options.thinkingSnapshot, { finished: true, collapsed: true });
-                        div.innerHTML = `<span class="chat-meta-line ml-0.5">陶然 · ${time}</span><div class="chat-bubble-ai">${thinkingHtml}<div class="chat-ai-reply-body ${aiBubbleClass}">${renderedContent}</div></div>`;
+                        const canSaveKnowledge = type === 'text'
+                            && aiRender
+                            && aiRender.structured
+                            && getKnowledgeMethodologyLines(aiRender.structured).length > 0;
+                        const actionsHtml = canSaveKnowledge
+                            ? ''
+                            : (type === 'text' && String(content || '').trim()
+                                ? `<div class="chat-reply-actions"><span class="chat-save-note-hint">讲题后会显示「知识点与方法论」，可一键存入笔记</span></div>`
+                                : '');
+                        div.innerHTML = `<span class="chat-meta-line ml-0.5">陶然 · ${time}</span><div class="chat-bubble-ai">${thinkingHtml}<div class="chat-ai-reply-body ${aiBubbleClass}">${renderedContent}</div>${actionsHtml}</div>`;
+                        if (type === 'text' && String(content || '').trim()) {
+                            div.dataset.aiContent = content;
+                        }
                     }
                 }
                 if (options.replaceElement && options.replaceElement.parentNode === chatWindow) {
@@ -5123,6 +5390,198 @@
                 }
             }
 
+            function loadSavedNotes() {
+                try {
+                    const parsed = JSON.parse(localStorage.getItem(SAVED_NOTES_KEY) || '[]');
+                    return Array.isArray(parsed)
+                        ? parsed.filter(item => item && item.id && item.title)
+                        : [];
+                } catch (error) {
+                    return [];
+                }
+            }
+
+            function persistSavedNotes() {
+                try {
+                    localStorage.setItem(SAVED_NOTES_KEY, JSON.stringify(savedNotes));
+                } catch (error) {
+                    // 忽略本地存储异常
+                }
+            }
+
+            function inferMemoTagFromText(...parts) {
+                const text = parts.map(item => String(item || '')).join(' ');
+                if (/完形|cloze/i.test(text)) return 'cloze';
+                if (/阅读|七选五|reading|细节题|主旨/i.test(text)) return 'reading';
+                if (/语法|非谓语|时态|从句|grammar/i.test(text)) return 'grammar';
+                return 'grammar';
+            }
+
+            function splitNoteBullets(text, maxCount = 8) {
+                return String(text || '')
+                    .split(/\n+|；|;|。/)
+                    .map(item => item.trim())
+                    .filter(Boolean)
+                    .slice(0, maxCount);
+            }
+
+            function buildSavedNoteFromContent(content, options = {}) {
+                const sourceQuestion = String(options.sourceQuestion || '').trim();
+                const structured = parseStructuredReply(content);
+                const cleanedQuestion = cleanTitleText(sourceQuestion).replace(/\s+/g, ' ').trim();
+                const explicitItems = Array.isArray(options.items)
+                    ? options.items.map(item => String(item || '').trim()).filter(Boolean)
+                    : [];
+                const singleItem = String(options.itemText || options.selectedText || '').trim();
+                let methodologyItems = [];
+
+                if (singleItem) {
+                    methodologyItems = [singleItem];
+                } else if (explicitItems.length) {
+                    methodologyItems = explicitItems;
+                } else if (structured) {
+                    methodologyItems = getKnowledgeMethodologyLines(structured);
+                }
+
+                if (!methodologyItems.length) return null;
+
+                const questionType = structured
+                    ? (sanitizeStructuredMeta(structured.questionType || '').trim() || '讲题')
+                    : inferMemoTagFromText(methodologyItems.join(' '), cleanedQuestion);
+                const subtype = structured ? sanitizeStructuredMeta(structured.subtype || '').trim() : '';
+                const firstLine = methodologyItems[0] || '知识点笔记';
+                const title = summarizeQuestionTitle(cleanedQuestion, structured, 22)
+                    || trimTitleLength(firstLine.split(/[，。；：]/)[0], 22)
+                    || `${questionType}${subtype ? ` · ${subtype}` : ''}`;
+                const summary = trimTitleLength(methodologyItems.join(' · '), 48) || '知识点与方法论原文';
+                const id = `note-${buildFlashcardHash(`${title}|${methodologyItems.join('|')}`)}`;
+
+                return {
+                    id,
+                    saved: true,
+                    tag: inferMemoTagFromText(questionType, subtype, methodologyItems.join(' '), cleanedQuestion),
+                    title,
+                    summary,
+                    sections: [{
+                        heading: methodologyItems.length > 1 ? '知识点与方法论' : '原文',
+                        bullets: methodologyItems
+                    }],
+                    sourceQuestion: cleanedQuestion,
+                    rawContent: methodologyItems.join('\n\n'),
+                    createdAt: new Date().toISOString()
+                };
+            }
+
+            function upsertSavedNote(note) {
+                if (!note || !note.id) return null;
+                const existingIndex = savedNotes.findIndex(item => item.id === note.id);
+                if (existingIndex >= 0) {
+                    savedNotes.splice(existingIndex, 1, { ...savedNotes[existingIndex], ...note });
+                } else {
+                    savedNotes.unshift(note);
+                }
+                savedNotes = savedNotes.slice(0, 40);
+                persistSavedNotes();
+                return note;
+            }
+
+            function getSavedNoteById(noteId) {
+                return savedNotes.find(item => item.id === noteId) || null;
+            }
+
+            function getMyNotesByTag(tagId) {
+                const demoNotes = getWrongNotesByTag(tagId).map(note => ({
+                    ...note,
+                    tag: (MEMO.wrongQuestionTags || {})[note.id] || inferMemoTagFromText(note.category, note.title),
+                    saved: false,
+                    summary: note.summary || note.category || '',
+                    sections: [{
+                        heading: '复习要点',
+                        bullets: note.bullets || []
+                    }]
+                }));
+                const userNotes = savedNotes.filter(note => tagId === 'all' || note.tag === tagId);
+                return [...userNotes, ...demoNotes];
+            }
+
+            function isNoteSaveRequest(text) {
+                const normalized = cleanTitleText(text).toLowerCase();
+                if (!normalized) return false;
+                return /(存到笔记|加入笔记|保存到笔记|放到笔记|收进笔记|记到笔记|存入笔记|存成笔记|加到笔记|另存到笔记|保存笔记)/.test(normalized);
+            }
+
+            function buildNoteSaveAck(note, single = false) {
+                const title = note && note.title ? `「${note.title}」` : '知识点与方法论';
+                return single
+                    ? `好的，已把这条知识点/方法论原文存进笔记：${title}。左侧「我的笔记」可直接查看。`
+                    : `好的，已把${title}相关的知识点与方法论原文存进笔记。左侧「我的笔记」可直接查看。`;
+            }
+
+            function getSelectedTextWithin(element) {
+                const selection = window.getSelection();
+                if (!selection || selection.isCollapsed || !selection.rangeCount || !element) return '';
+                const range = selection.getRangeAt(0);
+                const container = range.commonAncestorContainer;
+                const node = container.nodeType === Node.ELEMENT_NODE ? container : container.parentElement;
+                if (!node || !element.contains(node)) return '';
+                return String(selection.toString() || '').trim();
+            }
+
+            function findSourceQuestionNearMessage(messageEl) {
+                if (!messageEl) return '';
+                let previous = messageEl.previousElementSibling;
+                while (previous) {
+                    if (previous.classList.contains('items-end')) {
+                        const bubble = previous.querySelector('.chat-bubble-user, .chat-image-bubble');
+                        if (!bubble) return '';
+                        const caption = bubble.querySelector('p');
+                        return (caption ? caption.textContent : bubble.textContent || '').trim();
+                    }
+                    previous = previous.previousElementSibling;
+                }
+                return '';
+            }
+
+            function markSaveNoteButtonSaved(button) {
+                if (!button) return;
+                button.classList.add('is-saved');
+                button.innerHTML = button.classList.contains('chat-knowledge-save-btn')
+                    ? '已存'
+                    : '<i class="fa-solid fa-check"></i><span>已存入</span>';
+            }
+
+            function saveKnowledgeMethodologyFromMessage(messageEl, options = {}) {
+                const content = (messageEl && messageEl.dataset.aiContent) || '';
+                if (!content.trim()) {
+                    showToast('这条回复没有可保存的内容');
+                    return null;
+                }
+                const note = saveAiContentToNotes(content, {
+                    itemText: options.itemText || '',
+                    items: options.items || [],
+                    sourceQuestion: findSourceQuestionNearMessage(messageEl)
+                });
+                if (!note) {
+                    showToast('这次回复里还没有知识点或方法论原文，暂时无法存入笔记');
+                    return null;
+                }
+                if (options.button) {
+                    markSaveNoteButtonSaved(options.button);
+                }
+                return note;
+            }
+
+            function saveAiContentToNotes(content, options = {}) {
+                const note = buildSavedNoteFromContent(content, options);
+                if (!note) return null;
+                upsertSavedNote(note);
+                renderMemoPanel(noteSearchInput ? noteSearchInput.value : '');
+                if (isCompactViewport()) {
+                    showMobilePanel('left');
+                }
+                return note;
+            }
+
             function getAllFlashcards() {
                 return [...generatedFlashcards, ...NOTE_FLASHCARDS];
             }
@@ -5209,6 +5668,31 @@
                     for (let j = index - 1; j >= 0; j -= 1) {
                         const previous = messages[j];
                         if (!previous || previous.sender !== 'user') continue;
+                        sourceQuestion = previous.content || previous.fileName || '';
+                        break;
+                    }
+
+                    return {
+                        aiMessage: message,
+                        sourceQuestion
+                    };
+                }
+                return null;
+            }
+
+            function getLatestAiTextContext(messages) {
+                if (!Array.isArray(messages)) return null;
+                for (let index = messages.length - 1; index >= 0; index -= 1) {
+                    const message = messages[index];
+                    if (!message || message.sender !== 'ai' || message.type !== 'text' || !message.content) continue;
+                    if (isNoteSaveRequest(message.content) || isFlashcardSaveRequest(message.content)) continue;
+                    if (/^好的，已经帮你把/.test(message.content)) continue;
+
+                    let sourceQuestion = '';
+                    for (let j = index - 1; j >= 0; j -= 1) {
+                        const previous = messages[j];
+                        if (!previous || previous.sender !== 'user') continue;
+                        if (isNoteSaveRequest(previous.content) || isFlashcardSaveRequest(previous.content)) continue;
                         sourceQuestion = previous.content || previous.fileName || '';
                         break;
                     }
@@ -5738,23 +6222,41 @@
                 }
                 setSendingState(true);
                 const shouldSaveToFlashcard = !pendingImage && isFlashcardSaveRequest(text);
-                if (shouldSaveToFlashcard) {
+                const shouldSaveToNote = !pendingImage && isNoteSaveRequest(text);
+                if (shouldSaveToFlashcard || shouldSaveToNote) {
                     try {
                         const chat = currentChatId ? await getChatById(currentChatId) : null;
-                        const latestContext = getLatestStructuredReplyContext(chat && Array.isArray(chat.messages) ? chat.messages : []);
-                        let replyText = '当前这段对话里还没有可存入闪卡的讲题内容。你可以先让我讲一道题，再让我帮你存到闪卡。';
+                        const messageList = chat && Array.isArray(chat.messages) ? chat.messages : [];
+                        const latestContext = shouldSaveToNote
+                            ? (getLatestStructuredReplyContext(messageList) || getLatestAiTextContext(messageList))
+                            : getLatestStructuredReplyContext(messageList);
+                        let replyText = shouldSaveToNote
+                            ? '当前这段对话里还没有可存入笔记的知识点或方法论原文。你可以先让我讲一道题。'
+                            : '当前这段对话里还没有可存入闪卡的讲题内容。你可以先让我讲一道题，再让我帮你存到闪卡。';
 
                         if (latestContext && latestContext.aiMessage && latestContext.aiMessage.content) {
-                            const generatedCard = upsertGeneratedFlashcardFromStructuredReply(
-                                latestContext.aiMessage.content,
-                                latestContext.sourceQuestion || ''
-                            );
-                            if (generatedCard) {
-                                setSelectedNote(generatedCard.id);
-                                replyText = buildFlashcardSaveAck(generatedCard);
-                                showToast('已存入闪卡');
+                            if (shouldSaveToNote) {
+                                const savedNote = saveAiContentToNotes(latestContext.aiMessage.content, {
+                                    sourceQuestion: latestContext.sourceQuestion || ''
+                                });
+                                if (savedNote) {
+                                    replyText = buildNoteSaveAck(savedNote);
+                                    showToast('知识点已存入笔记');
+                                } else {
+                                    replyText = '这次回复里还没有整理出知识点或方法论原文。你可以先让我把题讲完整一点。';
+                                }
                             } else {
-                                replyText = '这次回复里还没有整理出适合放进闪卡的内容。你可以先让我把题目讲完整一点。';
+                                const generatedCard = upsertGeneratedFlashcardFromStructuredReply(
+                                    latestContext.aiMessage.content,
+                                    latestContext.sourceQuestion || ''
+                                );
+                                if (generatedCard) {
+                                    setSelectedNote(generatedCard.id);
+                                    replyText = buildFlashcardSaveAck(generatedCard);
+                                    showToast('已存入闪卡');
+                                } else {
+                                    replyText = '这次回复里还没有整理出适合放进闪卡的内容。你可以先让我把题目讲完整一点。';
+                                }
                             }
                         }
 
@@ -6032,7 +6534,44 @@
                 }
             });
             flashcardModal.addEventListener('wheel', handleFlashcardWheel, { passive: false });
-            addNoteBtn.addEventListener('click', showComingSoonToast);
+            addNoteBtn.addEventListener('click', async () => {
+                try {
+                    const chat = currentChatId ? await getChatById(currentChatId) : null;
+                    const messages = chat && Array.isArray(chat.messages) ? chat.messages : [];
+                    let latestAi = null;
+                    let sourceQuestion = '';
+                    for (let index = messages.length - 1; index >= 0; index -= 1) {
+                        const message = messages[index];
+                        if (!latestAi && message && message.sender === 'ai' && message.type === 'text' && message.content) {
+                            if (isNoteSaveRequest(message.content) || isFlashcardSaveRequest(message.content)) continue;
+                            if (/^好的，已把/.test(message.content)) continue;
+                            latestAi = message;
+                            for (let j = index - 1; j >= 0; j -= 1) {
+                                const previous = messages[j];
+                                if (previous && previous.sender === 'user') {
+                                    if (isNoteSaveRequest(previous.content) || isFlashcardSaveRequest(previous.content)) continue;
+                                    sourceQuestion = previous.content || previous.fileName || '';
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    if (!latestAi) {
+                        showToast('先聊一道题，再存入知识点');
+                        return;
+                    }
+                    const note = saveAiContentToNotes(latestAi.content, { sourceQuestion });
+                    if (!note) {
+                        showToast('最新回复里还没有知识点或方法论原文');
+                        return;
+                    }
+                    openMemoReader(note);
+                    showToast(`已存入：${note.title}`);
+                } catch (error) {
+                    showToast('存入笔记失败，请稍后再试');
+                }
+            });
             categoryBtn.addEventListener('click', () => {
                 showToast('左侧小栏就是标签，点语法 / 完形 / 阅读即可筛选');
             });
