@@ -2603,15 +2603,13 @@
                             <input id="note-search-input" type="text" class="flex-1 bg-transparent outline-none text-sm text-gray-700 placeholder-gray-400" placeholder="搜索题型、知识点">
                             <button id="note-search-clear" class="hidden text-xs text-gray-400 hover:text-brand transition">清空</button>
                         </div>
-                        <p id="note-search-meta" class="text-[11px] text-gray-400 mt-2">上方是精选方法笔记，下方可一键存入对话内容。</p>
+                        <p id="note-search-meta" class="text-[11px] text-gray-400 mt-2">这里只显示你自己存入的知识点与方法论。</p>
                     </div>
                 </div>
                 <div class="memo-shell">
                     <nav id="memo-tag-rail" class="memo-tag-rail custom-scrollbar" aria-label="笔记标签"></nav>
                     <div class="memo-main custom-scrollbar">
-                        <div class="memo-section-label">精选笔记 <span id="curated-count" class="count"></span></div>
-                        <div id="curated-note-list"></div>
-                        <div class="memo-section-label mt-3">我的笔记 <span id="wrong-count" class="count"></span></div>
+                        <div class="memo-section-label">我的笔记 <span id="wrong-count" class="count"></span></div>
                         <div id="note-list"></div>
                         <div id="note-search-empty" class="hidden memo-empty mt-2">没有找到匹配内容，试试「语法 / 完形 / 阅读」。</div>
                     </div>
@@ -2945,9 +2943,7 @@
             const mobileToggleRight = document.getElementById('mobile-toggle-right');
             const mobilePanelOverlay = document.getElementById('mobile-panel-overlay');
             let noteCards = [];
-            const curatedNoteList = document.getElementById('curated-note-list');
             const memoTagRail = document.getElementById('memo-tag-rail');
-            const curatedCountEl = document.getElementById('curated-count');
             const wrongCountEl = document.getElementById('wrong-count');
             const memoReader = document.getElementById('memo-reader');
             const memoReaderBack = document.getElementById('memo-reader-back');
@@ -4559,12 +4555,6 @@
                 showToast('日程已添加');
             }
 
-            function getCuratedByTag(tagId) {
-                const items = Array.isArray(MEMO.curated) ? MEMO.curated : [];
-                if (tagId === 'all') return items;
-                return items.filter(item => item.tag === tagId);
-            }
-
             function getWrongNotesByTag(tagId) {
                 if (tagId === 'all') return NOTE_FLASHCARDS;
                 return NOTE_FLASHCARDS.filter(note => (MEMO.wrongQuestionTags || {})[note.id] === tagId);
@@ -4582,9 +4572,7 @@
 
             function openMemoReader(note) {
                 if (!memoReader || !note) return;
-                memoReaderKicker.textContent = note.saved
-                    ? '对话存入'
-                    : (TAG_LABELS[note.tag] || (note.category ? '示例错题' : '精选笔记'));
+                memoReaderKicker.textContent = TAG_LABELS[note.tag] || '我的笔记';
                 memoReaderTitle.textContent = note.title || '';
                 memoReaderSummary.textContent = note.summary || '';
                 const sections = Array.isArray(note.sections) ? note.sections : [];
@@ -4595,7 +4583,7 @@
                             <ul>${(section.bullets || []).map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>
                         </section>
                     `).join('')
-                    : `<section class="memo-reader-section"><h4>笔记内容</h4><ul><li>${escapeHtml(note.rawContent || note.summary || '暂无内容')}</li></ul></section>`;
+                    : `<section class="memo-reader-section"><h4>原文</h4><ul><li>${escapeHtml(note.rawContent || note.summary || '暂无内容')}</li></ul></section>`;
                 memoReader.classList.add('is-open');
                 memoReader.setAttribute('aria-hidden', 'false');
             }
@@ -4608,85 +4596,44 @@
 
             function renderMemoPanel(keyword = '') {
                 const normalized = keyword.trim().toLowerCase();
-                const curated = getCuratedByTag(activeMemoTag).filter(item => {
-                    if (!normalized) return true;
-                    const haystack = `${item.title || ''} ${item.summary || ''} ${(item.sections || []).map(section => `${section.heading || ''} ${(section.bullets || []).join(' ')}`).join(' ')}`.toLowerCase();
-                    return haystack.includes(normalized);
-                });
                 const myNotes = getMyNotesByTag(activeMemoTag).filter(note => {
                     if (!normalized) return true;
-                    const haystack = `${note.title || ''} ${note.summary || ''} ${(note.tags || []).join(' ')} ${note.category || ''} ${(note.sections || []).map(section => `${section.heading || ''} ${(section.bullets || []).join(' ')}`).join(' ')} ${note.rawContent || ''}`.toLowerCase();
+                    const haystack = `${note.title || ''} ${note.summary || ''} ${(note.tags || []).join(' ')} ${(note.sections || []).map(section => `${section.heading || ''} ${(section.bullets || []).join(' ')}`).join(' ')} ${note.rawContent || ''}`.toLowerCase();
                     return haystack.includes(normalized);
                 });
 
-                if (curatedCountEl) curatedCountEl.textContent = `${curated.length} 篇`;
                 if (wrongCountEl) wrongCountEl.textContent = `${myNotes.length} 条`;
-
-                if (curatedNoteList) {
-                    curatedNoteList.innerHTML = curated.length
-                        ? curated.map(item => `
-                            <article class="memo-card" data-curated-id="${item.id}">
-                                <div class="memo-card-kicker">${TAG_LABELS[item.tag] || '笔记'}</div>
-                                <div class="memo-card-title">${escapeHtml(item.title || '')}</div>
-                                <div class="memo-card-summary">${escapeHtml(item.summary || '')}</div>
-                            </article>
-                        `).join('')
-                        : '<div class="memo-empty">这个标签下暂时没有精选笔记。</div>';
-                }
 
                 if (noteListEl) {
                     noteListEl.innerHTML = myNotes.length
                         ? myNotes.map(note => `
-                            <div class="memo-card memo-wrong-card note-card" data-note-id="${escapeHtml(note.id)}" data-note-saved="${note.saved ? '1' : '0'}" data-note-title="${escapeHtml(note.title)}" data-note-keywords="${escapeHtml((note.tags || []).join(' ') || note.summary || '')}">
-                                <div class="memo-card-thumb"><i class="fa-solid ${note.saved ? 'fa-bookmark' : 'fa-regular fa-image'}"></i></div>
-                                <div class="memo-card-kicker">${note.saved ? '对话存入' : '示例错题'}</div>
+                            <div class="memo-card memo-wrong-card note-card" data-note-id="${escapeHtml(note.id)}" data-note-saved="1" data-note-title="${escapeHtml(note.title)}" data-note-keywords="${escapeHtml(note.summary || '')}">
+                                <div class="memo-card-thumb"><i class="fa-solid fa-bookmark"></i></div>
+                                <div class="memo-card-kicker">${TAG_LABELS[note.tag] || '对话存入'}</div>
                                 <div class="memo-card-title">${escapeHtml(note.title)}</div>
-                                <div class="memo-card-summary">${escapeHtml(note.summary || note.category || '')}</div>
+                                <div class="memo-card-summary">${escapeHtml(note.summary || note.rawContent || '')}</div>
                             </div>
                         `).join('')
-                        : '<div class="memo-empty">这个标签下还没有笔记。讲题后点「存入」即可保存知识点与方法论原文。</div>';
+                        : '<div class="memo-empty">还没有笔记。讲题后点「存入」即可保存知识点与方法论原文。</div>';
                 }
 
                 noteCards = Array.from(document.querySelectorAll('#note-list .note-card'));
                 noteCards.forEach(card => {
                     card.addEventListener('click', () => {
-                        const noteId = card.dataset.noteId;
-                        if (card.dataset.noteSaved === '1') {
-                            const saved = getSavedNoteById(noteId);
-                            if (saved) {
-                                openMemoReader(saved);
-                                showToast(`已打开：${saved.title}`);
-                            }
-                            return;
+                        const saved = getSavedNoteById(card.dataset.noteId);
+                        if (saved) {
+                            openMemoReader(saved);
+                            showToast(`已打开：${saved.title}`);
                         }
-                        const note = getNoteById(noteId);
-                        if (!note) return;
-                        setSelectedNote(note.id);
-                        openMemoReader({
-                            tag: (MEMO.wrongQuestionTags || {})[note.id] || inferMemoTagFromText(note.category, note.title),
-                            title: note.title,
-                            summary: note.summary || note.category || '',
-                            sections: [{
-                                heading: '复习要点',
-                                bullets: note.bullets || []
-                            }, {
-                                heading: '答案拆解',
-                                bullets: note.answer ? [note.answer] : []
-                            }].filter(section => section.bullets.length)
-                        });
-                        chatInput.value = buildNotePrompt(note);
-                        chatInput.dispatchEvent(new Event('input'));
-                        showToast(`已带入：${note.title}`);
                     });
                 });
 
-                const totalVisible = curated.length + myNotes.length;
-                noteSearchEmpty.classList.toggle('hidden', totalVisible !== 0 || !normalized);
+                noteSearchEmpty.classList.toggle('hidden', myNotes.length !== 0 || !normalized);
                 noteSearchClear.classList.toggle('hidden', !normalized);
                 if (!normalized) {
-                    noteSearchMeta.textContent = `当前标签：${TAG_LABELS[activeMemoTag] || '全部'} · 精选 ${curated.length} · 笔记 ${myNotes.length}`;
+                    noteSearchMeta.textContent = `当前标签：${TAG_LABELS[activeMemoTag] || '全部'} · 已存 ${myNotes.length} 条`;
                 } else {
-                    noteSearchMeta.textContent = `搜索“${keyword.trim()}”找到 ${totalVisible} 条结果`;
+                    noteSearchMeta.textContent = `搜索“${keyword.trim()}”找到 ${myNotes.length} 条结果`;
                 }
             }
 
@@ -5134,7 +5081,11 @@
                         button: knowledgeBtn
                     });
                     if (note) {
-                        showToast(`已存入：${note.title}`);
+                        if (note.createdCount > 0) {
+                            showToast(`已存入：${note.note.title}`);
+                        } else {
+                            showToast('这条原文已在笔记中，未重复保存');
+                        }
                     }
                     return;
                 }
@@ -5143,11 +5094,17 @@
                 if (saveBtn && chatWindow.contains(saveBtn)) {
                     event.preventDefault();
                     const messageEl = saveBtn.closest('.message-animate');
-                    const note = saveKnowledgeMethodologyFromMessage(messageEl, {
+                    const result = saveKnowledgeMethodologyFromMessage(messageEl, {
                         button: saveBtn
                     });
-                    if (note) {
-                        showToast(`已存入笔记：${note.title}`);
+                    if (result) {
+                        if (result.createdCount > 0 && result.skippedCount > 0) {
+                            showToast(`新存入 ${result.createdCount} 条，跳过重复 ${result.skippedCount} 条`);
+                        } else if (result.createdCount > 0) {
+                            showToast(`已存入 ${result.createdCount} 条知识点`);
+                        } else {
+                            showToast('这些原文已在笔记中，未重复保存');
+                        }
                     }
                     return;
                 }
@@ -5394,7 +5351,7 @@
                 try {
                     const parsed = JSON.parse(localStorage.getItem(SAVED_NOTES_KEY) || '[]');
                     return Array.isArray(parsed)
-                        ? parsed.filter(item => item && item.id && item.title)
+                        ? parsed.filter(item => item && item.id)
                         : [];
                 } catch (error) {
                     return [];
@@ -5409,6 +5366,38 @@
                 }
             }
 
+            function normalizeLoadedSavedNotes(list) {
+                const deduped = [];
+                const seen = new Set();
+                (Array.isArray(list) ? list : []).forEach(item => {
+                    if (!item) return;
+                    const bullets = Array.isArray(item.sections)
+                        ? item.sections.flatMap(section => section.bullets || [])
+                        : [];
+                    const rawParts = bullets.length
+                        ? bullets
+                        : String(item.rawContent || '').split(/\n\n+/).filter(Boolean);
+                    const parts = rawParts.length ? rawParts : [item.rawContent || item.summary || item.title].filter(Boolean);
+                    parts.forEach(part => {
+                        const rawContent = normalizeNoteRawContent(part);
+                        if (!rawContent || seen.has(rawContent)) return;
+                        seen.add(rawContent);
+                        deduped.push({
+                            id: `note-${buildFlashcardHash(rawContent)}`,
+                            saved: true,
+                            tag: item.tag || inferMemoTagFromText(rawContent),
+                            title: trimTitleLength(rawContent.split(/[，。；：]/)[0], 22) || item.title || '知识点笔记',
+                            summary: trimTitleLength(rawContent, 48),
+                            sections: [{ heading: '原文', bullets: [rawContent] }],
+                            sourceQuestion: item.sourceQuestion || '',
+                            rawContent,
+                            createdAt: item.createdAt || new Date().toISOString()
+                        });
+                    });
+                });
+                return deduped.slice(0, 80);
+            }
+
             function inferMemoTagFromText(...parts) {
                 const text = parts.map(item => String(item || '')).join(' ');
                 if (/完形|cloze/i.test(text)) return 'cloze';
@@ -5417,22 +5406,45 @@
                 return 'grammar';
             }
 
-            function splitNoteBullets(text, maxCount = 8) {
-                return String(text || '')
-                    .split(/\n+|；|;|。/)
-                    .map(item => item.trim())
-                    .filter(Boolean)
-                    .slice(0, maxCount);
+            function normalizeNoteRawContent(text) {
+                return String(text || '').replace(/\s+/g, ' ').trim();
             }
 
-            function buildSavedNoteFromContent(content, options = {}) {
-                const sourceQuestion = String(options.sourceQuestion || '').trim();
+            function buildSavedNoteFromItem(itemText, meta = {}) {
+                const rawContent = normalizeNoteRawContent(itemText);
+                if (!rawContent) return null;
+
+                const questionType = sanitizeStructuredMeta(meta.questionType || '').trim() || '讲题';
+                const subtype = sanitizeStructuredMeta(meta.subtype || '').trim();
+                const cleanedQuestion = cleanTitleText(meta.sourceQuestion || '').replace(/\s+/g, ' ').trim();
+                const title = trimTitleLength(rawContent.split(/[，。；：]/)[0], 22)
+                    || summarizeQuestionTitle(cleanedQuestion, meta.structured || null, 22)
+                    || `${questionType}${subtype ? ` · ${subtype}` : ''}`
+                    || '知识点笔记';
+                const id = `note-${buildFlashcardHash(rawContent)}`;
+
+                return {
+                    id,
+                    saved: true,
+                    tag: inferMemoTagFromText(questionType, subtype, rawContent, cleanedQuestion),
+                    title,
+                    summary: trimTitleLength(rawContent, 48),
+                    sections: [{
+                        heading: '原文',
+                        bullets: [rawContent]
+                    }],
+                    sourceQuestion: cleanedQuestion,
+                    rawContent,
+                    createdAt: new Date().toISOString()
+                };
+            }
+
+            function collectMethodologyItems(content, options = {}) {
                 const structured = parseStructuredReply(content);
-                const cleanedQuestion = cleanTitleText(sourceQuestion).replace(/\s+/g, ' ').trim();
+                const singleItem = String(options.itemText || options.selectedText || '').trim();
                 const explicitItems = Array.isArray(options.items)
                     ? options.items.map(item => String(item || '').trim()).filter(Boolean)
                     : [];
-                const singleItem = String(options.itemText || options.selectedText || '').trim();
                 let methodologyItems = [];
 
                 if (singleItem) {
@@ -5443,46 +5455,61 @@
                     methodologyItems = getKnowledgeMethodologyLines(structured);
                 }
 
-                if (!methodologyItems.length) return null;
-
-                const questionType = structured
-                    ? (sanitizeStructuredMeta(structured.questionType || '').trim() || '讲题')
-                    : inferMemoTagFromText(methodologyItems.join(' '), cleanedQuestion);
-                const subtype = structured ? sanitizeStructuredMeta(structured.subtype || '').trim() : '';
-                const firstLine = methodologyItems[0] || '知识点笔记';
-                const title = summarizeQuestionTitle(cleanedQuestion, structured, 22)
-                    || trimTitleLength(firstLine.split(/[，。；：]/)[0], 22)
-                    || `${questionType}${subtype ? ` · ${subtype}` : ''}`;
-                const summary = trimTitleLength(methodologyItems.join(' · '), 48) || '知识点与方法论原文';
-                const id = `note-${buildFlashcardHash(`${title}|${methodologyItems.join('|')}`)}`;
+                const unique = [];
+                const seen = new Set();
+                methodologyItems.forEach(item => {
+                    const normalized = normalizeNoteRawContent(item);
+                    if (!normalized || seen.has(normalized)) return;
+                    seen.add(normalized);
+                    unique.push(normalized);
+                });
 
                 return {
-                    id,
-                    saved: true,
-                    tag: inferMemoTagFromText(questionType, subtype, methodologyItems.join(' '), cleanedQuestion),
-                    title,
-                    summary,
-                    sections: [{
-                        heading: methodologyItems.length > 1 ? '知识点与方法论' : '原文',
-                        bullets: methodologyItems
-                    }],
-                    sourceQuestion: cleanedQuestion,
-                    rawContent: methodologyItems.join('\n\n'),
-                    createdAt: new Date().toISOString()
+                    items: unique,
+                    structured,
+                    sourceQuestion: String(options.sourceQuestion || '').trim()
                 };
             }
 
+            function findSavedNoteByRawContent(rawContent) {
+                const normalized = normalizeNoteRawContent(rawContent);
+                if (!normalized) return null;
+                const targetId = `note-${buildFlashcardHash(normalized)}`;
+                return savedNotes.find(item => (
+                    item.id === targetId
+                    || normalizeNoteRawContent(item.rawContent) === normalized
+                    || (Array.isArray(item.sections)
+                        && item.sections.some(section => (section.bullets || []).some(bullet => normalizeNoteRawContent(bullet) === normalized)))
+                )) || null;
+            }
+
             function upsertSavedNote(note) {
-                if (!note || !note.id) return null;
-                const existingIndex = savedNotes.findIndex(item => item.id === note.id);
+                if (!note || !note.id) return { note: null, created: false };
+                const normalizedRaw = normalizeNoteRawContent(note.rawContent);
+                const existingIndex = savedNotes.findIndex(item => (
+                    item.id === note.id
+                    || normalizeNoteRawContent(item.rawContent) === normalizedRaw
+                ));
+
                 if (existingIndex >= 0) {
-                    savedNotes.splice(existingIndex, 1, { ...savedNotes[existingIndex], ...note });
-                } else {
-                    savedNotes.unshift(note);
+                    const previous = savedNotes[existingIndex];
+                    const merged = {
+                        ...previous,
+                        ...note,
+                        id: previous.id || note.id,
+                        createdAt: previous.createdAt || note.createdAt
+                    };
+                    savedNotes.splice(existingIndex, 1);
+                    savedNotes.unshift(merged);
+                    savedNotes = savedNotes.slice(0, 80);
+                    persistSavedNotes();
+                    return { note: merged, created: false };
                 }
-                savedNotes = savedNotes.slice(0, 40);
+
+                savedNotes.unshift(note);
+                savedNotes = savedNotes.slice(0, 80);
                 persistSavedNotes();
-                return note;
+                return { note, created: true };
             }
 
             function getSavedNoteById(noteId) {
@@ -5490,18 +5517,7 @@
             }
 
             function getMyNotesByTag(tagId) {
-                const demoNotes = getWrongNotesByTag(tagId).map(note => ({
-                    ...note,
-                    tag: (MEMO.wrongQuestionTags || {})[note.id] || inferMemoTagFromText(note.category, note.title),
-                    saved: false,
-                    summary: note.summary || note.category || '',
-                    sections: [{
-                        heading: '复习要点',
-                        bullets: note.bullets || []
-                    }]
-                }));
-                const userNotes = savedNotes.filter(note => tagId === 'all' || note.tag === tagId);
-                return [...userNotes, ...demoNotes];
+                return savedNotes.filter(note => tagId === 'all' || note.tag === tagId);
             }
 
             function isNoteSaveRequest(text) {
@@ -5510,21 +5526,16 @@
                 return /(存到笔记|加入笔记|保存到笔记|放到笔记|收进笔记|记到笔记|存入笔记|存成笔记|加到笔记|另存到笔记|保存笔记)/.test(normalized);
             }
 
-            function buildNoteSaveAck(note, single = false) {
-                const title = note && note.title ? `「${note.title}」` : '知识点与方法论';
-                return single
-                    ? `好的，已把这条知识点/方法论原文存进笔记：${title}。左侧「我的笔记」可直接查看。`
-                    : `好的，已把${title}相关的知识点与方法论原文存进笔记。左侧「我的笔记」可直接查看。`;
-            }
-
-            function getSelectedTextWithin(element) {
-                const selection = window.getSelection();
-                if (!selection || selection.isCollapsed || !selection.rangeCount || !element) return '';
-                const range = selection.getRangeAt(0);
-                const container = range.commonAncestorContainer;
-                const node = container.nodeType === Node.ELEMENT_NODE ? container : container.parentElement;
-                if (!node || !element.contains(node)) return '';
-                return String(selection.toString() || '').trim();
+            function buildNoteSaveAck(result) {
+                const count = result && result.createdCount ? result.createdCount : 0;
+                const skipped = result && result.skippedCount ? result.skippedCount : 0;
+                if (count > 0 && skipped > 0) {
+                    return `好的，已新存入 ${count} 条知识点/方法论原文，另有 ${skipped} 条之前已经存过，没有重复添加。左侧「我的笔记」可直接查看。`;
+                }
+                if (count > 0) {
+                    return `好的，已把 ${count} 条知识点/方法论原文存进笔记。左侧「我的笔记」可直接查看。`;
+                }
+                return '这些知识点/方法论原文之前已经存过了，没有重复添加。左侧「我的笔记」可直接查看。';
             }
 
             function findSourceQuestionNearMessage(messageEl) {
@@ -5550,36 +5561,88 @@
                     : '<i class="fa-solid fa-check"></i><span>已存入</span>';
             }
 
+            function markKnowledgeButtonsSaved(messageEl, items = []) {
+                if (!messageEl) return;
+                const normalizedItems = new Set(items.map(normalizeNoteRawContent).filter(Boolean));
+                messageEl.querySelectorAll('[data-save-knowledge-item]').forEach(button => {
+                    const content = (messageEl.dataset.aiContent || '');
+                    const structured = parseStructuredReply(content);
+                    const allItems = getKnowledgeMethodologyLines(structured);
+                    const index = Number(button.dataset.knowledgeIndex);
+                    const itemText = Number.isFinite(index) ? normalizeNoteRawContent(allItems[index] || '') : '';
+                    if (!normalizedItems.size || normalizedItems.has(itemText)) {
+                        markSaveNoteButtonSaved(button);
+                    }
+                });
+                const bulkBtn = messageEl.querySelector('[data-save-note-btn]');
+                if (bulkBtn && (!normalizedItems.size || Array.from(messageEl.querySelectorAll('[data-save-knowledge-item]')).every(btn => btn.classList.contains('is-saved')))) {
+                    markSaveNoteButtonSaved(bulkBtn);
+                }
+            }
+
+            function saveAiContentToNotes(content, options = {}) {
+                const collected = collectMethodologyItems(content, options);
+                if (!collected.items.length) return null;
+
+                const structured = collected.structured;
+                const meta = {
+                    questionType: structured ? structured.questionType : '',
+                    subtype: structured ? structured.subtype : '',
+                    sourceQuestion: collected.sourceQuestion,
+                    structured
+                };
+
+                const notes = [];
+                let createdCount = 0;
+                let skippedCount = 0;
+
+                collected.items.forEach(itemText => {
+                    const note = buildSavedNoteFromItem(itemText, meta);
+                    if (!note) return;
+                    const result = upsertSavedNote(note);
+                    if (!result.note) return;
+                    notes.push(result.note);
+                    if (result.created) createdCount += 1;
+                    else skippedCount += 1;
+                });
+
+                if (!notes.length) return null;
+
+                renderMemoPanel(noteSearchInput ? noteSearchInput.value : '');
+                if (isCompactViewport()) {
+                    showMobilePanel('left');
+                }
+
+                return {
+                    notes,
+                    note: notes[0],
+                    createdCount,
+                    skippedCount,
+                    totalCount: notes.length
+                };
+            }
+
             function saveKnowledgeMethodologyFromMessage(messageEl, options = {}) {
                 const content = (messageEl && messageEl.dataset.aiContent) || '';
                 if (!content.trim()) {
                     showToast('这条回复没有可保存的内容');
                     return null;
                 }
-                const note = saveAiContentToNotes(content, {
+                const result = saveAiContentToNotes(content, {
                     itemText: options.itemText || '',
                     items: options.items || [],
                     sourceQuestion: findSourceQuestionNearMessage(messageEl)
                 });
-                if (!note) {
+                if (!result) {
                     showToast('这次回复里还没有知识点或方法论原文，暂时无法存入笔记');
                     return null;
                 }
+                const savedItems = (result.notes || []).map(item => item.rawContent);
+                markKnowledgeButtonsSaved(messageEl, options.itemText ? [options.itemText] : savedItems);
                 if (options.button) {
                     markSaveNoteButtonSaved(options.button);
                 }
-                return note;
-            }
-
-            function saveAiContentToNotes(content, options = {}) {
-                const note = buildSavedNoteFromContent(content, options);
-                if (!note) return null;
-                upsertSavedNote(note);
-                renderMemoPanel(noteSearchInput ? noteSearchInput.value : '');
-                if (isCompactViewport()) {
-                    showMobilePanel('left');
-                }
-                return note;
+                return result;
             }
 
             function getAllFlashcards() {
@@ -6241,7 +6304,7 @@
                                 });
                                 if (savedNote) {
                                     replyText = buildNoteSaveAck(savedNote);
-                                    showToast('知识点已存入笔记');
+                                    showToast(savedNote.createdCount > 0 ? '知识点已存入笔记' : '已存在，未重复保存');
                                 } else {
                                     replyText = '这次回复里还没有整理出知识点或方法论原文。你可以先让我把题讲完整一点。';
                                 }
@@ -6566,8 +6629,14 @@
                         showToast('最新回复里还没有知识点或方法论原文');
                         return;
                     }
-                    openMemoReader(note);
-                    showToast(`已存入：${note.title}`);
+                    openMemoReader(note.note);
+                    if (note.createdCount > 0 && note.skippedCount > 0) {
+                        showToast(`新存入 ${note.createdCount} 条，跳过重复 ${note.skippedCount} 条`);
+                    } else if (note.createdCount > 0) {
+                        showToast(`已存入 ${note.createdCount} 条`);
+                    } else {
+                        showToast('这些原文已在笔记中，未重复保存');
+                    }
                 } catch (error) {
                     showToast('存入笔记失败，请稍后再试');
                 }
@@ -6581,14 +6650,6 @@
                     const btn = event.target.closest('[data-memo-tag]');
                     if (!btn) return;
                     setActiveMemoTag(btn.dataset.memoTag);
-                });
-            }
-            if (curatedNoteList) {
-                curatedNoteList.addEventListener('click', event => {
-                    const card = event.target.closest('[data-curated-id]');
-                    if (!card) return;
-                    const note = (MEMO.curated || []).find(item => item.id === card.dataset.curatedId);
-                    if (note) openMemoReader(note);
                 });
             }
             if (memoReaderBack) {
@@ -6607,6 +6668,8 @@
                 updateNoteSearchState('');
                 noteSearchInput.focus();
             });
+            savedNotes = normalizeLoadedSavedNotes(savedNotes);
+            persistSavedNotes();
             setActiveMemoTag('all');
             uploadImageBtn.addEventListener('click', () => chatImageInput.click());
             pendingUploadRemove.addEventListener('click', clearPendingImage);
