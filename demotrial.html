@@ -2349,10 +2349,10 @@
         .memo-tag-btn {
             width: 100%;
             min-height: 3.35rem;
-            border-radius: 14px;
-            border: 1px solid rgba(125, 146, 178, 0.14);
-            background: rgba(255,255,255,0.72);
-            color: #6a7c91;
+            border-radius: 16px;
+            border: 1px solid color-mix(in srgb, var(--tag-color, #e8eef6) 70%, #fff);
+            background: var(--tag-color, #e8eef6);
+            color: var(--tag-ink, #5d6e83);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -2361,18 +2361,15 @@
             font-size: 10px;
             font-weight: 700;
             letter-spacing: 0.02em;
-            transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+            transition: filter 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
         }
         .memo-tag-btn i { font-size: 0.85rem; }
         .memo-tag-btn:hover {
-            border-color: rgba(125, 146, 178, 0.28);
-            color: #54687f;
+            filter: brightness(1.03);
         }
         .memo-tag-btn.is-active {
-            background: linear-gradient(180deg, #8d9fb7 0%, #6f839d 100%);
-            color: #fff;
-            border-color: transparent;
-            box-shadow: 0 10px 18px rgba(112, 128, 150, 0.18);
+            box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--tag-ink, #5d6e83) 26%, transparent);
+            filter: saturate(1.08);
         }
         .memo-main {
             flex: 1;
@@ -2398,48 +2395,175 @@
         }
         .memo-card {
             position: relative;
-            border-radius: 16px;
-            border: 1px solid rgba(125, 146, 178, 0.14);
-            background: linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(244,247,251,0.94) 100%);
-            padding: 0.85rem 0.9rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.7rem;
+            border-radius: 18px;
+            border: 1px solid color-mix(in srgb, var(--tag-color, #e8eef6) 62%, #fff);
+            background: var(--tag-color, #e8eef6);
+            padding: 0.9rem 0.95rem;
             margin-bottom: 0.55rem;
             cursor: pointer;
-            transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+            transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
         }
         .memo-card:hover {
             transform: translateY(-1px);
-            border-color: rgba(125, 146, 178, 0.28);
-            box-shadow: 0 10px 20px rgba(118, 132, 153, 0.08);
+            filter: brightness(1.02);
+            box-shadow: 0 8px 18px rgba(118, 132, 153, 0.08);
+        }
+        .memo-card-main {
+            flex: 1;
+            min-width: 0;
         }
         .memo-card-kicker {
             font-size: 10px;
             font-weight: 800;
             letter-spacing: 0.04em;
-            color: #7d92b2;
-            margin-bottom: 0.28rem;
+            color: var(--tag-ink, #7d92b2);
+            margin-bottom: 0.22rem;
         }
         .memo-card-title {
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 700;
-            color: #4d5f74;
+            color: #2f3540;
             line-height: 1.35;
             margin-bottom: 0.28rem;
         }
         .memo-card-summary {
             font-size: 11px;
             line-height: 1.45;
-            color: #8a97a8;
+            color: #8a8f98;
         }
         .memo-wrong-card .memo-card-thumb {
-            height: 2.6rem;
-            border-radius: 10px;
-            margin-bottom: 0.45rem;
+            width: 3.15rem;
+            height: 3.15rem;
+            border-radius: 12px;
+            margin: 0;
+            flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #edf1f5 0%, #dde5ec 100%);
-            color: #74879f;
+            overflow: hidden;
+            background: color-mix(in srgb, var(--tag-color, #e8eef6) 70%, #fff);
+            color: var(--tag-ink, #74879f);
             font-size: 0.85rem;
+        }
+        .memo-wrong-card .memo-card-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .memo-card-handle {
+            width: 0.85rem;
+            flex-shrink: 0;
+            align-self: stretch;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #b7bcc4;
+            cursor: grab;
+            font-size: 0.72rem;
+        }
+        .memo-card-handle:active { cursor: grabbing; }
+        .memo-card.is-dragging {
+            opacity: 0.45;
+        }
+        .memo-card.is-drop-target {
+            box-shadow: 0 0 0 2px color-mix(in srgb, var(--tag-ink, #7d92b2) 35%, transparent);
+        }
+        .memo-card-flags {
+            display: inline-flex;
+            gap: 0.28rem;
+            margin-left: 0.35rem;
+            color: #8a8f98;
+            font-size: 0.68rem;
+            vertical-align: 1px;
+        }
+        .memo-card-actions {
+            position: absolute;
+            right: 0.5rem;
+            bottom: 0.45rem;
+            display: flex;
+            gap: 0.28rem;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(4px);
+            transition: opacity 0.16s ease, transform 0.16s ease;
+        }
+        .memo-card:hover .memo-card-actions,
+        .memo-card.is-menu-open .memo-card-actions {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+        .memo-action-btn {
+            width: 1.7rem;
+            height: 1.7rem;
+            border: 0;
+            border-radius: 999px;
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.68rem;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(80, 86, 96, 0.14);
+        }
+        .memo-action-btn.is-pin { background: #88b096; }
+        .memo-action-btn.is-edit { background: #86a0bf; }
+        .memo-action-btn.is-star { background: #d1b56e; }
+        .memo-action-btn.is-del { background: #cf8f89; }
+        .memo-action-btn.is-on { filter: brightness(0.92); box-shadow: inset 0 0 0 2px rgba(255,255,255,0.55); }
+        .memo-upload-btn {
+            width: 100%;
+            border-radius: 14px;
+            border: 1px dashed rgba(150, 140, 128, 0.34);
+            background: rgba(255,255,255,0.72);
+            color: #7a746c;
+            padding: 0.7rem 0.8rem;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            cursor: pointer;
+        }
+        .memo-upload-preview-wrap {
+            position: relative;
+            margin-top: 0.45rem;
+            display: none;
+        }
+        .memo-upload-preview-wrap.is-on { display: block; }
+        .memo-upload-preview-wrap img {
+            width: 100%;
+            max-height: 8rem;
+            object-fit: cover;
+            border-radius: 12px;
+            display: block;
+        }
+        .memo-upload-clear {
+            position: absolute;
+            top: 0.4rem;
+            right: 0.4rem;
+            border: 0;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.88);
+            color: #7a746c;
+            width: 1.6rem;
+            height: 1.6rem;
+            cursor: pointer;
+        }
+        .memo-reader-edit {
+            margin-left: auto;
+            border: 1px solid rgba(125, 146, 178, 0.18);
+            background: rgba(255,255,255,0.9);
+            color: #6a7c91;
+            border-radius: 999px;
+            padding: 0.32rem 0.7rem;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
         }
         .memo-empty {
             border: 1px dashed rgba(125, 146, 178, 0.28);
@@ -2529,8 +2653,6 @@
             border-radius: 999px;
             background: #8aa0b8;
         }
-        body.night-mode .memo-tag-btn,
-        body.night-mode .memo-card,
         body.night-mode .memo-reader,
         body.night-mode .memo-reader-section li,
         body.night-mode .memo-reader-back {
@@ -2538,9 +2660,139 @@
             color: #dbe5f4 !important;
             border-color: rgba(94, 114, 148, 0.34) !important;
         }
+        body.night-mode .memo-tag-btn,
+        body.night-mode .memo-card {
+            background: color-mix(in srgb, var(--tag-color, #8d9aa8) 32%, rgba(22, 32, 51, 0.94)) !important;
+            color: #dbe5f4 !important;
+            border-color: rgba(94, 114, 148, 0.28) !important;
+        }
         body.night-mode .memo-tag-btn.is-active {
-            background: linear-gradient(135deg, #6f89b0 0%, #587298 100%) !important;
-            color: #fff !important;
+            box-shadow: inset 0 0 0 2px rgba(219, 229, 244, 0.35) !important;
+        }
+        .memo-sheet {
+            position: absolute;
+            inset: 0;
+            z-index: 6;
+            display: none;
+            flex-direction: column;
+            background: linear-gradient(180deg, #f7f4ef 0%, #f3f0ea 100%);
+            border-radius: inherit;
+            padding: 0.9rem 0.95rem 1rem;
+        }
+        .memo-sheet.is-open { display: flex; }
+        .memo-sheet-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.6rem;
+            margin-bottom: 0.75rem;
+        }
+        .memo-sheet-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: #5d5a55;
+        }
+        .memo-sheet-close {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 999px;
+            border: 1px solid rgba(150, 140, 128, 0.2);
+            background: rgba(255,255,255,0.86);
+            color: #7a746c;
+        }
+        .memo-field {
+            display: grid;
+            gap: 0.28rem;
+            margin-bottom: 0.65rem;
+        }
+        .memo-field label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #8a847a;
+        }
+        .memo-field input,
+        .memo-field textarea,
+        .memo-field select {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid rgba(150, 140, 128, 0.22);
+            background: rgba(255,255,255,0.86);
+            padding: 0.55rem 0.7rem;
+            font-size: 13px;
+            color: #564f48;
+            outline: none;
+        }
+        .memo-field textarea { min-height: 7.2rem; resize: vertical; }
+        .memo-color-row,
+        .memo-chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+        .memo-color-dot {
+            width: 1.35rem;
+            height: 1.35rem;
+            border-radius: 999px;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+        .memo-color-dot.is-active { border-color: #5d5a55; }
+        .memo-chip {
+            border-radius: 999px;
+            border: 1px solid rgba(150, 140, 128, 0.22);
+            background: rgba(255,255,255,0.8);
+            color: #6d675f;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 0.28rem 0.6rem;
+            cursor: pointer;
+        }
+        .memo-chip.is-active {
+            background: var(--tag-color, #8d9aa8);
+            color: #fff;
+            border-color: transparent;
+        }
+        .memo-sheet-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: auto;
+            padding-top: 0.6rem;
+        }
+        .memo-sheet-actions button { flex: 1; }
+        .memo-image-preview {
+            display: none;
+            width: 100%;
+            max-height: 8rem;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-top: 0.4rem;
+        }
+        .memo-image-preview.is-on { display: block; }
+        .memo-tag-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            border-radius: 12px;
+            padding: 0.5rem 0.6rem;
+            margin-bottom: 0.4rem;
+            background: rgba(255,255,255,0.78);
+            border: 1px solid rgba(150, 140, 128, 0.16);
+        }
+        .memo-tag-item .name { font-size: 12px; font-weight: 700; color: #5d5a55; }
+        .memo-tag-item .del {
+            font-size: 11px;
+            color: #a08980;
+            background: transparent;
+            border: 0;
+            cursor: pointer;
+        }
+        .memo-reader-image {
+            width: 100%;
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+            object-fit: cover;
+            max-height: 12rem;
         }
         body.night-mode .memo-card-title,
         body.night-mode .memo-reader-title,
@@ -2615,8 +2867,58 @@
                     </div>
                 </div>
                 <div class="flex gap-2 sm:gap-3 shrink-0 mt-3">
-                    <button id="add-note-btn" class="soft-primary-btn flex-1 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-1.5"><i class="fa-solid fa-plus text-xs"></i> 存入知识点</button>
+                    <button id="add-note-btn" class="soft-primary-btn flex-1 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-1.5"><i class="fa-solid fa-plus text-xs"></i> 添加笔记</button>
                     <button id="category-btn" class="soft-secondary-btn flex-1 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-semibold text-brand transition flex items-center justify-center gap-1.5"><i class="fa-solid fa-tags text-xs"></i> 标签</button>
+                </div>
+                <div id="memo-editor" class="memo-sheet" aria-hidden="true">
+                    <div class="memo-sheet-head">
+                        <div id="memo-editor-heading" class="memo-sheet-title">添加笔记</div>
+                        <button type="button" id="memo-editor-close" class="memo-sheet-close" aria-label="关闭"><i class="fa-solid fa-xmark text-xs"></i></button>
+                    </div>
+                    <div class="memo-field">
+                        <label for="memo-editor-title">标题</label>
+                        <input id="memo-editor-title" type="text" maxlength="40" placeholder="给这条笔记起个名字">
+                    </div>
+                    <div class="memo-field">
+                        <label>标签</label>
+                        <div id="memo-editor-tags" class="memo-chip-row"></div>
+                    </div>
+                    <div class="memo-field">
+                        <label for="memo-editor-body">内容</label>
+                        <textarea id="memo-editor-body" placeholder="写下知识点、错题思路或自己的备注"></textarea>
+                    </div>
+                    <div class="memo-field">
+                        <label>图片（可选）</label>
+                        <input id="memo-editor-image" type="file" accept="image/jpeg,image/png,image/webp" class="hidden">
+                        <button type="button" id="memo-editor-image-btn" class="memo-upload-btn"><i class="fa-regular fa-image"></i><span>添加图片</span></button>
+                        <div id="memo-editor-preview-wrap" class="memo-upload-preview-wrap">
+                            <img id="memo-editor-preview" alt="笔记图片预览">
+                            <button type="button" id="memo-editor-image-clear" class="memo-upload-clear" aria-label="移除图片"><i class="fa-solid fa-xmark text-xs"></i></button>
+                        </div>
+                    </div>
+                    <div class="memo-sheet-actions">
+                        <button type="button" id="memo-editor-cancel" class="soft-secondary-btn rounded-2xl py-2.5 text-sm font-semibold text-brand">取消</button>
+                        <button type="button" id="memo-editor-save" class="soft-primary-btn rounded-2xl py-2.5 text-sm font-semibold">保存</button>
+                    </div>
+                </div>
+                <div id="memo-tag-manager" class="memo-sheet" aria-hidden="true">
+                    <div class="memo-sheet-head">
+                        <div class="memo-sheet-title">自定义标签</div>
+                        <button type="button" id="memo-tag-close" class="memo-sheet-close" aria-label="关闭"><i class="fa-solid fa-xmark text-xs"></i></button>
+                    </div>
+                    <div id="memo-tag-list" class="custom-scrollbar" style="flex:1; min-height:0; overflow:auto;"></div>
+                    <div class="memo-field" style="margin-top:0.7rem;">
+                        <label for="memo-tag-name">新标签名称</label>
+                        <input id="memo-tag-name" type="text" maxlength="10" placeholder="例如：作文 / 词汇">
+                    </div>
+                    <div class="memo-field">
+                        <label>颜色</label>
+                        <div id="memo-tag-colors" class="memo-color-row"></div>
+                    </div>
+                    <div class="memo-sheet-actions">
+                        <button type="button" id="memo-tag-cancel" class="soft-secondary-btn rounded-2xl py-2.5 text-sm font-semibold text-brand">完成</button>
+                        <button type="button" id="memo-tag-add" class="soft-primary-btn rounded-2xl py-2.5 text-sm font-semibold">添加标签</button>
+                    </div>
                 </div>
                 <div id="memo-reader" class="memo-reader" aria-hidden="true">
                     <div class="memo-reader-head">
@@ -2626,6 +2928,7 @@
                             <h3 id="memo-reader-title" class="memo-reader-title"></h3>
                             <p id="memo-reader-summary" class="memo-reader-summary"></p>
                         </div>
+                        <button type="button" id="memo-reader-edit" class="memo-reader-edit">编辑</button>
                     </div>
                     <div id="memo-reader-body" class="memo-reader-body custom-scrollbar"></div>
                 </div>
@@ -2951,13 +3254,42 @@
             const memoReaderTitle = document.getElementById('memo-reader-title');
             const memoReaderSummary = document.getElementById('memo-reader-summary');
             const memoReaderBody = document.getElementById('memo-reader-body');
+            const memoEditor = document.getElementById('memo-editor');
+            const memoEditorClose = document.getElementById('memo-editor-close');
+            const memoEditorCancel = document.getElementById('memo-editor-cancel');
+            const memoEditorSave = document.getElementById('memo-editor-save');
+            const memoEditorTitle = document.getElementById('memo-editor-title');
+            const memoEditorBody = document.getElementById('memo-editor-body');
+            const memoEditorTags = document.getElementById('memo-editor-tags');
+            const memoEditorHeading = document.getElementById('memo-editor-heading');
+            const memoEditorImage = document.getElementById('memo-editor-image');
+            const memoEditorImageBtn = document.getElementById('memo-editor-image-btn');
+            const memoEditorImageClear = document.getElementById('memo-editor-image-clear');
+            const memoEditorPreview = document.getElementById('memo-editor-preview');
+            const memoEditorPreviewWrap = document.getElementById('memo-editor-preview-wrap');
+            const memoReaderEdit = document.getElementById('memo-reader-edit');
+            const memoTagManager = document.getElementById('memo-tag-manager');
+            const memoTagClose = document.getElementById('memo-tag-close');
+            const memoTagCancel = document.getElementById('memo-tag-cancel');
+            const memoTagAdd = document.getElementById('memo-tag-add');
+            const memoTagList = document.getElementById('memo-tag-list');
+            const memoTagName = document.getElementById('memo-tag-name');
+            const memoTagColors = document.getElementById('memo-tag-colors');
             const flashcardEntry = document.getElementById('flashcard-entry');
             const flashcardEntryDesc = document.getElementById('flashcard-entry-desc');
             const storeCard = document.getElementById('store-card');
             const noteListEl = document.getElementById('note-list');
             const MEMO = window.TAORAN_MEMO || { tags: [], curated: [], wrongQuestionTags: {} };
             let activeMemoTag = 'all';
-            const TAG_LABELS = { all: '全部', grammar: '语法', cloze: '完形', reading: '阅读' };
+            const TAG_LABELS = { all: '全部', starred: '收藏', grammar: '语法', cloze: '完形', reading: '阅读' };
+            const BUILTIN_MEMO_TAGS = [
+                { id: 'all', label: '全部', icon: 'fa-layer-group', color: '#e8eef6', ink: '#5d6e83', builtin: true },
+                { id: 'starred', label: '收藏', icon: 'fa-star', color: '#f4e2e6', ink: '#8a5d68', builtin: true },
+                { id: 'grammar', label: '语法', icon: 'fa-spell-check', color: '#dceaf8', ink: '#4e6d8c', builtin: true },
+                { id: 'cloze', label: '完形', icon: 'fa-align-left', color: '#f4eadc', ink: '#7a6550', builtin: true },
+                { id: 'reading', label: '阅读', icon: 'fa-book-open', color: '#dcefe6', ink: '#4d7263', builtin: true }
+            ];
+            const MORANDI_COLORS = ['#dceaf8', '#f4eadc', '#dcefe6', '#f4e2e6', '#e6f0d4', '#f3edd8', '#e8e2f3', '#dceef3'];
             const flashcardOverlay = document.getElementById('flashcard-overlay');
             const flashcardModal = document.getElementById('flashcard-modal');
             const flashcardCloseBtn = document.getElementById('flashcard-close-btn');
@@ -3022,6 +3354,7 @@
             const FLASHCARD_STATE_KEY = 'taoran-flashcard-state';
             const GENERATED_FLASHCARDS_KEY = 'taoran-generated-flashcards';
             const SAVED_NOTES_KEY = 'taoran-saved-notes';
+            const CUSTOM_TAGS_KEY = 'taoran-custom-memo-tags';
             const NOTE_FLASHCARDS = [
                 {
                     id: 'reading-detail',
@@ -3093,6 +3426,13 @@
             let flashcardState = loadFlashcardState();
             let generatedFlashcards = loadGeneratedFlashcards();
             let savedNotes = loadSavedNotes();
+            let customTags = loadCustomTags();
+            let editorDraftImage = '';
+            let editorDraftTag = 'grammar';
+            let editingNoteId = null;
+            let draggingNoteId = '';
+            let readingNoteId = '';
+            let tagDraftColor = MORANDI_COLORS[0];
             let flashcardAnimating = false;
             let flashcardWheelLocked = false;
             let composerDragDepth = 0;
@@ -3639,16 +3979,22 @@
                 const items = getKnowledgeMethodologyLines(data);
                 if (!items.length) return '';
 
-                const listHtml = items.map((item, index) => `
+                const listHtml = items.map((item, index) => {
+                    const already = isKnowledgeItemSaved(item);
+                    return `
                     <div class="chat-knowledge-item" data-knowledge-index="${index}">
                         <div class="chat-knowledge-text">${renderPlainText(item)}</div>
-                        <button type="button" class="chat-knowledge-save-btn" data-save-knowledge-item data-knowledge-index="${index}" title="把这条知识点或方法论原文存入笔记">存入</button>
+                        <button type="button" class="chat-knowledge-save-btn${already ? ' is-saved' : ''}" data-save-knowledge-item data-knowledge-index="${index}" title="把这条知识点或方法论原文存入笔记">${already ? '已存' : '存入'}</button>
                     </div>
-                `).join('');
+                `;
+                }).join('');
 
+                const allSaved = items.every(item => isKnowledgeItemSaved(item));
                 const bulkBtn = options.includeBulkSave === false
                     ? ''
-                    : `<button type="button" class="chat-save-note-btn" data-save-note-btn title="把所有知识点与方法论原文存入笔记"><i class="fa-regular fa-bookmark"></i><span>全部存入</span></button>`;
+                    : (allSaved
+                        ? `<button type="button" class="chat-save-note-btn is-saved" data-save-note-btn title="这些知识点已在笔记中"><i class="fa-solid fa-check"></i><span>已存入</span></button>`
+                        : `<button type="button" class="chat-save-note-btn" data-save-note-btn title="把所有知识点与方法论原文存入笔记"><i class="fa-regular fa-bookmark"></i><span>全部存入</span></button>`);
 
                 return `
                     <div class="chat-knowledge-section" data-knowledge-section>
@@ -3768,8 +4114,22 @@
                 await sleep(minimumMs - elapsed);
             }
 
-            function scrollChatToBottom() {
+            let chatStickToBottom = true;
+
+            function isChatNearBottom(threshold = 96) {
+                if (!chatWindow) return true;
+                return chatWindow.scrollHeight - chatWindow.scrollTop - chatWindow.clientHeight <= threshold;
+            }
+
+            function scrollChatToBottom(force = false) {
+                if (!chatWindow) return;
+                if (!force && !chatStickToBottom) return;
                 chatWindow.scrollTop = chatWindow.scrollHeight;
+            }
+
+            function pinChatToBottom() {
+                chatStickToBottom = true;
+                scrollChatToBottom(true);
             }
 
             function animateTextReveal(target, text, renderFn = renderPlainText) {
@@ -3836,23 +4196,25 @@
                     const section = document.createElement('div');
                     section.className = 'chat-knowledge-section';
                     section.dataset.knowledgeSection = '1';
+                    const allSaved = knowledgeItems.every(item => isKnowledgeItemSaved(item));
                     section.innerHTML = `
                         <div class="chat-knowledge-head">
                             <span class="chat-structured-label">知识点与方法论</span>
-                            <button type="button" class="chat-save-note-btn" data-save-note-btn title="把所有知识点与方法论原文存入笔记">
-                                <i class="fa-regular fa-bookmark"></i><span>全部存入</span>
+                            <button type="button" class="chat-save-note-btn${allSaved ? ' is-saved' : ''}" data-save-note-btn title="${allSaved ? '这些知识点已在笔记中' : '把所有知识点与方法论原文存入笔记'}">
+                                ${allSaved ? '<i class="fa-solid fa-check"></i><span>已存入</span>' : '<i class="fa-regular fa-bookmark"></i><span>全部存入</span>'}
                             </button>
                         </div>
                         <div class="chat-knowledge-list"></div>
                     `;
                     const list = section.querySelector('.chat-knowledge-list');
                     knowledgeItems.forEach((item, index) => {
+                        const already = isKnowledgeItemSaved(item);
                         const row = document.createElement('div');
                         row.className = 'chat-knowledge-item';
                         row.dataset.knowledgeIndex = String(index);
                         row.innerHTML = `
                             <div class="chat-knowledge-text"></div>
-                            <button type="button" class="chat-knowledge-save-btn" data-save-knowledge-item data-knowledge-index="${index}" title="把这条知识点或方法论原文存入笔记">存入</button>
+                            <button type="button" class="chat-knowledge-save-btn${already ? ' is-saved' : ''}" data-save-knowledge-item data-knowledge-index="${index}" title="把这条知识点或方法论原文存入笔记">${already ? '已存' : '存入'}</button>
                         `;
                         list.appendChild(row);
                         animatedFields.push({
@@ -3936,6 +4298,7 @@
                     await animateTextReveal(field.element, field.text, renderPlainText);
                     await sleep(180);
                 }
+                syncKnowledgeSaveButtons(bubble.closest('.message-animate'));
             }
 
             async function animateAiBubbleContent(bubble, content) {
@@ -4562,8 +4925,8 @@
 
             function renderMemoTags() {
                 if (!memoTagRail) return;
-                memoTagRail.innerHTML = (MEMO.tags || []).map(tag => `
-                    <button type="button" class="memo-tag-btn ${tag.id === activeMemoTag ? 'is-active' : ''}" data-memo-tag="${tag.id}" title="${tag.label}">
+                memoTagRail.innerHTML = getAllMemoTags().map(tag => `
+                    <button type="button" class="memo-tag-btn ${tag.id === activeMemoTag ? 'is-active' : ''}" data-memo-tag="${tag.id}" title="${tag.label}" style="--tag-color:${tag.color};--tag-ink:${tag.ink || '#5d5a55'}">
                         <i class="fa-solid ${tag.icon || 'fa-tag'}"></i>
                         <span>${tag.label}</span>
                     </button>
@@ -4572,24 +4935,32 @@
 
             function openMemoReader(note) {
                 if (!memoReader || !note) return;
-                memoReaderKicker.textContent = TAG_LABELS[note.tag] || '我的笔记';
+                closeMemoSheets();
+                readingNoteId = note.id;
+                const tag = getMemoTagById(note.tag);
+                memoReaderKicker.textContent = getTagLabel(note.tag);
+                memoReaderKicker.style.color = tag.color;
                 memoReaderTitle.textContent = note.title || '';
                 memoReaderSummary.textContent = note.summary || '';
+                const imageHtml = note.imageDataUrl
+                    ? `<img class="memo-reader-image" src="${note.imageDataUrl}" alt="笔记图片">`
+                    : '';
                 const sections = Array.isArray(note.sections) ? note.sections : [];
-                memoReaderBody.innerHTML = sections.length
+                memoReaderBody.innerHTML = imageHtml + (sections.length
                     ? sections.map(section => `
                         <section class="memo-reader-section">
                             <h4>${escapeHtml(section.heading || '')}</h4>
                             <ul>${(section.bullets || []).map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>
                         </section>
                     `).join('')
-                    : `<section class="memo-reader-section"><h4>原文</h4><ul><li>${escapeHtml(note.rawContent || note.summary || '暂无内容')}</li></ul></section>`;
+                    : `<section class="memo-reader-section"><h4>原文</h4><ul><li>${escapeHtml(note.rawContent || note.summary || '暂无内容')}</li></ul></section>`);
                 memoReader.classList.add('is-open');
                 memoReader.setAttribute('aria-hidden', 'false');
             }
 
             function closeMemoReader() {
                 if (!memoReader) return;
+                readingNoteId = '';
                 memoReader.classList.remove('is-open');
                 memoReader.setAttribute('aria-hidden', 'true');
             }
@@ -4606,32 +4977,45 @@
 
                 if (noteListEl) {
                     noteListEl.innerHTML = myNotes.length
-                        ? myNotes.map(note => `
-                            <div class="memo-card memo-wrong-card note-card" data-note-id="${escapeHtml(note.id)}" data-note-saved="1" data-note-title="${escapeHtml(note.title)}" data-note-keywords="${escapeHtml(note.summary || '')}">
-                                <div class="memo-card-thumb"><i class="fa-solid fa-bookmark"></i></div>
-                                <div class="memo-card-kicker">${TAG_LABELS[note.tag] || '对话存入'}</div>
-                                <div class="memo-card-title">${escapeHtml(note.title)}</div>
-                                <div class="memo-card-summary">${escapeHtml(note.summary || note.rawContent || '')}</div>
+                        ? myNotes.map(note => {
+                            const tag = getMemoTagById(note.tag);
+                            const dateLabel = note.createdAt
+                                ? new Date(note.createdAt).toLocaleDateString('zh-CN').replace(/\//g, '/')
+                                : '';
+                            const thumb = note.imageDataUrl
+                                ? `<div class="memo-card-thumb"><img src="${note.imageDataUrl}" alt=""></div>`
+                                : '';
+                            const flags = [
+                                note.pinned ? '<i class="fa-solid fa-thumbtack"></i>' : '',
+                                note.starred ? '<i class="fa-solid fa-star"></i>' : ''
+                            ].filter(Boolean).join('');
+                            return `
+                            <div class="memo-card memo-wrong-card note-card" style="--tag-color:${tag.color};--tag-ink:${tag.ink || '#5d5a55'}" data-note-id="${escapeHtml(note.id)}" data-note-saved="1" data-note-title="${escapeHtml(note.title)}" data-note-keywords="${escapeHtml(note.summary || '')}">
+                                <span class="memo-card-handle" draggable="true" title="拖拽排序" aria-label="拖拽排序"><i class="fa-solid fa-grip-vertical"></i></span>
+                                <div class="memo-card-main">
+                                    <div class="memo-card-title">${escapeHtml(note.title)}${flags ? `<span class="memo-card-flags">${flags}</span>` : ''}</div>
+                                    <div class="memo-card-summary">${escapeHtml([dateLabel, getTagLabel(note.tag), note.summary || note.rawContent || ''].filter(Boolean).join(' · '))}</div>
+                                </div>
+                                ${thumb}
+                                <div class="memo-card-actions">
+                                    <button type="button" class="memo-action-btn is-pin ${note.pinned ? 'is-on' : ''}" data-note-action="pin" title="${note.pinned ? '取消置顶' : '置顶'}"><i class="fa-solid fa-thumbtack"></i></button>
+                                    <button type="button" class="memo-action-btn is-edit" data-note-action="edit" title="编辑"><i class="fa-solid fa-pen"></i></button>
+                                    <button type="button" class="memo-action-btn is-star ${note.starred ? 'is-on' : ''}" data-note-action="star" title="${note.starred ? '取消收藏' : '收藏'}"><i class="fa-solid fa-star"></i></button>
+                                    <button type="button" class="memo-action-btn is-del" data-note-action="delete" title="删除"><i class="fa-solid fa-trash-can"></i></button>
+                                </div>
                             </div>
-                        `).join('')
-                        : '<div class="memo-empty">还没有笔记。讲题后点「存入」即可保存知识点与方法论原文。</div>';
+                        `;
+                        }).join('')
+                        : '<div class="memo-empty">还没有笔记。可以自己添加，或在讲题后点「存入」。</div>';
                 }
 
                 noteCards = Array.from(document.querySelectorAll('#note-list .note-card'));
-                noteCards.forEach(card => {
-                    card.addEventListener('click', () => {
-                        const saved = getSavedNoteById(card.dataset.noteId);
-                        if (saved) {
-                            openMemoReader(saved);
-                            showToast(`已打开：${saved.title}`);
-                        }
-                    });
-                });
+                bindMemoListInteractions();
 
                 noteSearchEmpty.classList.toggle('hidden', myNotes.length !== 0 || !normalized);
                 noteSearchClear.classList.toggle('hidden', !normalized);
                 if (!normalized) {
-                    noteSearchMeta.textContent = `当前标签：${TAG_LABELS[activeMemoTag] || '全部'} · 已存 ${myNotes.length} 条`;
+                    noteSearchMeta.textContent = `当前标签：${getTagLabel(activeMemoTag)} · 已存 ${myNotes.length} 条 · 悬停出操作，左侧拖排序`;
                 } else {
                     noteSearchMeta.textContent = `搜索“${keyword.trim()}”找到 ${myNotes.length} 条结果`;
                 }
@@ -5058,7 +5442,7 @@
                     </div>
                 `;
                 chatWindow.appendChild(div);
-                chatWindow.scrollTop = chatWindow.scrollHeight;
+                scrollChatToBottom();
                 const controller = bindThinkingPanel(div);
                 controller.startLocalStages(options.messageText || '', Boolean(options.hasImage));
                 div._thinkingController = controller;
@@ -5066,6 +5450,14 @@
                 return div;
             }
 
+            chatWindow.addEventListener('scroll', () => {
+                chatStickToBottom = isChatNearBottom();
+            }, { passive: true });
+            chatWindow.addEventListener('wheel', () => {
+                requestAnimationFrame(() => {
+                    chatStickToBottom = isChatNearBottom();
+                });
+            }, { passive: true });
             chatWindow.addEventListener('click', function(event) {
                 const knowledgeBtn = event.target.closest('[data-save-knowledge-item]');
                 if (knowledgeBtn && chatWindow.contains(knowledgeBtn)) {
@@ -5172,10 +5564,13 @@
                 if (animateTyping) {
                     const bubble = div.querySelector('.chat-bubble-ai');
                     if (bubble) {
-                        requestAnimationFrame(() => {
-                            animateAiBubbleContent(bubble, content);
+                        requestAnimationFrame(async () => {
+                            await animateAiBubbleContent(bubble, content);
+                            syncKnowledgeSaveButtons(div);
                         });
                     }
+                } else {
+                    syncKnowledgeSaveButtons(div);
                 }
                 return {
                     id: crypto.randomUUID(),
@@ -5193,6 +5588,7 @@
 
             function renderMessages(messages) {
                 pendingAiIndicator = null;
+                pinChatToBottom();
                 chatWindow.innerHTML = '';
                 messages.forEach(message => {
                     appendMessage(message.content || '', message.sender, {
@@ -5205,6 +5601,7 @@
                         thinkingSnapshot: message.thinkingSnapshot || null
                     });
                 });
+                syncAllKnowledgeSaveButtons();
             }
 
             async function createChatRecord() {
@@ -5347,6 +5744,341 @@
                 }
             }
 
+            function loadCustomTags() {
+                try {
+                    const parsed = JSON.parse(localStorage.getItem(CUSTOM_TAGS_KEY) || '[]');
+                    return Array.isArray(parsed)
+                        ? parsed.filter(item => item && item.id && item.label)
+                        : [];
+                } catch (error) {
+                    return [];
+                }
+            }
+
+            function persistCustomTags() {
+                try {
+                    localStorage.setItem(CUSTOM_TAGS_KEY, JSON.stringify(customTags));
+                } catch (error) {
+                    // 忽略本地存储异常
+                }
+            }
+
+            function getAllMemoTags() {
+                const builtin = (MEMO.tags || []).length
+                    ? BUILTIN_MEMO_TAGS.map(tag => {
+                        const fromData = (MEMO.tags || []).find(item => item.id === tag.id);
+                        return fromData ? { ...tag, label: fromData.label, icon: fromData.icon || tag.icon } : tag;
+                    })
+                    : BUILTIN_MEMO_TAGS;
+                return [...builtin, ...customTags.map(tag => ({
+                    ...tag,
+                    icon: tag.icon || 'fa-tag',
+                    ink: tag.ink || '#5d5a55',
+                    builtin: false
+                }))];
+            }
+
+            function getMemoTagById(tagId) {
+                return getAllMemoTags().find(tag => tag.id === tagId) || BUILTIN_MEMO_TAGS[0];
+            }
+
+            function getTagLabel(tagId) {
+                return getMemoTagById(tagId).label || TAG_LABELS[tagId] || '笔记';
+            }
+
+            function getAssignableMemoTags() {
+                return getAllMemoTags().filter(tag => tag.id !== 'all' && tag.id !== 'starred');
+            }
+
+            function closeMemoSheets() {
+                [memoEditor, memoTagManager].forEach(sheet => {
+                    if (!sheet) return;
+                    sheet.classList.remove('is-open');
+                    sheet.setAttribute('aria-hidden', 'true');
+                });
+            }
+
+            function openMemoSheet(sheet) {
+                closeMemoReader();
+                closeMemoSheets();
+                if (!sheet) return;
+                sheet.classList.add('is-open');
+                sheet.setAttribute('aria-hidden', 'false');
+            }
+
+            function renderEditorTagChips() {
+                if (!memoEditorTags) return;
+                const tags = getAssignableMemoTags();
+                if (!tags.some(tag => tag.id === editorDraftTag)) {
+                    editorDraftTag = tags[0] ? tags[0].id : 'grammar';
+                }
+                memoEditorTags.innerHTML = tags.map(tag => `
+                    <button type="button" class="memo-chip ${tag.id === editorDraftTag ? 'is-active' : ''}" data-editor-tag="${tag.id}" style="--tag-color:${tag.color}">${escapeHtml(tag.label)}</button>
+                `).join('');
+            }
+
+            function setEditorImagePreview(dataUrl) {
+                editorDraftImage = dataUrl || '';
+                if (memoEditorPreview) memoEditorPreview.src = editorDraftImage;
+                if (memoEditorPreviewWrap) memoEditorPreviewWrap.classList.toggle('is-on', Boolean(editorDraftImage));
+                if (memoEditorImageBtn) {
+                    memoEditorImageBtn.querySelector('span').textContent = editorDraftImage ? '更换图片' : '添加图片';
+                }
+            }
+
+            function getNoteBodyText(note) {
+                if (!note) return '';
+                if (Array.isArray(note.sections) && note.sections.length) {
+                    return note.sections.flatMap(section => section.bullets || []).join('\n');
+                }
+                return note.rawContent || '';
+            }
+
+            function resetMemoEditor() {
+                editingNoteId = null;
+                editorDraftTag = getAssignableMemoTags()[0] ? getAssignableMemoTags()[0].id : 'grammar';
+                if (memoEditorHeading) memoEditorHeading.textContent = '添加笔记';
+                if (memoEditorTitle) memoEditorTitle.value = '';
+                if (memoEditorBody) memoEditorBody.value = '';
+                if (memoEditorImage) memoEditorImage.value = '';
+                setEditorImagePreview('');
+                renderEditorTagChips();
+            }
+
+            function openMemoEditor(note = null) {
+                resetMemoEditor();
+                if (note && note.id) {
+                    editingNoteId = note.id;
+                    editorDraftTag = note.tag || editorDraftTag;
+                    if (memoEditorHeading) memoEditorHeading.textContent = '编辑笔记';
+                    if (memoEditorTitle) memoEditorTitle.value = note.title || '';
+                    if (memoEditorBody) memoEditorBody.value = getNoteBodyText(note);
+                    setEditorImagePreview(note.imageDataUrl || '');
+                    renderEditorTagChips();
+                }
+                openMemoSheet(memoEditor);
+                if (memoEditorTitle) memoEditorTitle.focus();
+            }
+
+            function toggleNoteFlag(noteId, key) {
+                const note = getSavedNoteById(noteId);
+                if (!note) return;
+                note[key] = !note[key];
+                if (key === 'pinned' && note.pinned) {
+                    savedNotes = [note, ...savedNotes.filter(item => item.id !== noteId)];
+                }
+                persistSavedNotes();
+                renderMemoPanel(noteSearchInput ? noteSearchInput.value : '');
+                showToast(key === 'pinned'
+                    ? (note.pinned ? '已置顶' : '已取消置顶')
+                    : (note.starred ? '已收藏' : '已取消收藏'));
+            }
+
+            function deleteSavedNote(noteId) {
+                const note = getSavedNoteById(noteId);
+                if (!note) return;
+                if (!window.confirm(`删除「${note.title || '这条笔记'}」？`)) return;
+                savedNotes = savedNotes.filter(item => item.id !== noteId);
+                persistSavedNotes();
+                if (readingNoteId === noteId) closeMemoReader();
+                renderMemoPanel(noteSearchInput ? noteSearchInput.value : '');
+                syncAllKnowledgeSaveButtons();
+                showToast('笔记已删除');
+            }
+
+            function moveNoteBefore(dragId, targetId) {
+                if (!dragId || dragId === targetId) return;
+                const from = savedNotes.findIndex(item => item.id === dragId);
+                if (from < 0) return;
+                const [item] = savedNotes.splice(from, 1);
+                const to = savedNotes.findIndex(entry => entry.id === targetId);
+                if (to < 0) savedNotes.push(item);
+                else savedNotes.splice(to, 0, item);
+                persistSavedNotes();
+                renderMemoPanel(noteSearchInput ? noteSearchInput.value : '');
+            }
+
+            function bindMemoListInteractions() {
+                noteCards.forEach(card => {
+                    card.addEventListener('click', event => {
+                        if (event.target.closest('.memo-card-handle, .memo-card-actions')) return;
+                        const saved = getSavedNoteById(card.dataset.noteId);
+                        if (saved) {
+                            openMemoReader(saved);
+                        }
+                    });
+                    card.addEventListener('contextmenu', event => {
+                        event.preventDefault();
+                        noteCards.forEach(item => item.classList.toggle('is-menu-open', item === card));
+                    });
+                    const handle = card.querySelector('.memo-card-handle');
+                    if (handle) {
+                        handle.addEventListener('dragstart', event => {
+                            draggingNoteId = card.dataset.noteId;
+                            card.classList.add('is-dragging');
+                            event.dataTransfer.effectAllowed = 'move';
+                            event.dataTransfer.setData('text/plain', draggingNoteId);
+                        });
+                        handle.addEventListener('dragend', () => {
+                            draggingNoteId = '';
+                            noteCards.forEach(item => item.classList.remove('is-dragging', 'is-drop-target'));
+                        });
+                    }
+                    card.addEventListener('dragover', event => {
+                        if (!draggingNoteId || draggingNoteId === card.dataset.noteId) return;
+                        event.preventDefault();
+                        card.classList.add('is-drop-target');
+                    });
+                    card.addEventListener('dragleave', () => {
+                        card.classList.remove('is-drop-target');
+                    });
+                    card.addEventListener('drop', event => {
+                        event.preventDefault();
+                        card.classList.remove('is-drop-target');
+                        moveNoteBefore(draggingNoteId, card.dataset.noteId);
+                    });
+                });
+            }
+
+            function handleMemoCardAction(event) {
+                const actionBtn = event.target.closest('[data-note-action]');
+                if (!actionBtn) return;
+                const card = actionBtn.closest('.note-card');
+                const noteId = card && card.dataset.noteId;
+                const action = actionBtn.dataset.noteAction;
+                if (action === 'pin') toggleNoteFlag(noteId, 'pinned');
+                if (action === 'star') toggleNoteFlag(noteId, 'starred');
+                if (action === 'edit') {
+                    const note = getSavedNoteById(noteId);
+                    if (note) openMemoEditor(note);
+                }
+                if (action === 'delete') deleteSavedNote(noteId);
+            }
+
+            function renderTagManager() {
+                if (memoTagList) {
+                    const custom = customTags;
+                    memoTagList.innerHTML = custom.length
+                        ? custom.map(tag => `
+                            <div class="memo-tag-item" style="border-left:3px solid ${tag.color}">
+                                <span class="name">${escapeHtml(tag.label)}</span>
+                                <button type="button" class="del" data-delete-tag="${tag.id}">删除</button>
+                            </div>
+                        `).join('')
+                        : '<div class="memo-empty">还没有自定义标签。语法 / 完形 / 阅读会一直保留。</div>';
+                }
+                if (memoTagColors) {
+                    memoTagColors.innerHTML = MORANDI_COLORS.map(color => `
+                        <button type="button" class="memo-color-dot ${color === tagDraftColor ? 'is-active' : ''}" data-tag-color="${color}" style="background:${color}" aria-label="${color}"></button>
+                    `).join('');
+                }
+            }
+
+            function openTagManager() {
+                if (memoTagName) memoTagName.value = '';
+                tagDraftColor = MORANDI_COLORS[customTags.length % MORANDI_COLORS.length];
+                renderTagManager();
+                openMemoSheet(memoTagManager);
+                if (memoTagName) memoTagName.focus();
+            }
+
+            function addCustomMemoTag() {
+                const label = (memoTagName && memoTagName.value || '').trim().slice(0, 10);
+                if (!label) {
+                    showToast('先给标签起个名字');
+                    return;
+                }
+                const exists = getAllMemoTags().some(tag => tag.label === label);
+                if (exists) {
+                    showToast('已经有这个标签了');
+                    return;
+                }
+                const id = `tag-${buildFlashcardHash(`${label}-${Date.now()}`)}`;
+                customTags.push({
+                    id,
+                    label,
+                    icon: 'fa-tag',
+                    color: tagDraftColor || MORANDI_COLORS[0],
+                    ink: '#5d5a55'
+                });
+                persistCustomTags();
+                if (memoTagName) memoTagName.value = '';
+                tagDraftColor = MORANDI_COLORS[customTags.length % MORANDI_COLORS.length];
+                renderTagManager();
+                renderMemoTags();
+                renderEditorTagChips();
+                showToast(`已添加标签：${label}`);
+            }
+
+            function deleteCustomMemoTag(tagId) {
+                customTags = customTags.filter(tag => tag.id !== tagId);
+                persistCustomTags();
+                savedNotes = savedNotes.map(note => note.tag === tagId ? { ...note, tag: 'grammar' } : note);
+                persistSavedNotes();
+                if (activeMemoTag === tagId) activeMemoTag = 'all';
+                renderTagManager();
+                renderMemoTags();
+                renderMemoPanel(noteSearchInput ? noteSearchInput.value : '');
+                showToast('标签已删除，相关笔记回到语法');
+            }
+
+            async function readNoteImageFile(file) {
+                if (!file) return '';
+                if (!IMAGE_ACCEPT_TYPES.includes(file.type)) {
+                    showToast('请上传 JPG / PNG / WebP');
+                    return '';
+                }
+                if (file.size > IMAGE_MAX_SIZE) {
+                    showToast('图片不要超过 3MB');
+                    return '';
+                }
+                return await new Promise(resolve => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(String(reader.result || ''));
+                    reader.onerror = () => resolve('');
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            function saveManualNoteFromEditor() {
+                const title = (memoEditorTitle && memoEditorTitle.value || '').trim();
+                const body = (memoEditorBody && memoEditorBody.value || '').trim();
+                if (!title && !body && !editorDraftImage) {
+                    showToast('至少写一点文字，或加一张图');
+                    return;
+                }
+                const rawContent = body || title || '图片笔记';
+                const existing = editingNoteId ? getSavedNoteById(editingNoteId) : null;
+                const note = {
+                    ...(existing || {}),
+                    id: existing ? existing.id : `note-${crypto.randomUUID()}`,
+                    source: existing ? (existing.source || 'manual') : 'manual',
+                    saved: true,
+                    tag: editorDraftTag || 'grammar',
+                    title: title || trimTitleLength(rawContent, 22) || '未命名笔记',
+                    summary: trimTitleLength(body || (editorDraftImage ? '图片笔记' : title), 48),
+                    sections: body ? [{ heading: '笔记', bullets: [body] }] : [],
+                    sourceQuestion: existing ? (existing.sourceQuestion || '') : '',
+                    rawContent,
+                    imageDataUrl: editorDraftImage || '',
+                    pinned: existing ? Boolean(existing.pinned) : false,
+                    starred: existing ? Boolean(existing.starred) : false,
+                    createdAt: existing ? existing.createdAt : new Date().toISOString()
+                };
+                if (existing) {
+                    savedNotes = savedNotes.map(item => item.id === existing.id ? note : item);
+                } else {
+                    savedNotes.unshift(note);
+                    savedNotes = savedNotes.slice(0, 80);
+                }
+                persistSavedNotes();
+                closeMemoSheets();
+                setActiveMemoTag(note.tag);
+                openMemoReader(note);
+                syncAllKnowledgeSaveButtons();
+                showToast(existing ? '笔记已更新' : '笔记已保存');
+            }
+
             function loadSavedNotes() {
                 try {
                     const parsed = JSON.parse(localStorage.getItem(SAVED_NOTES_KEY) || '[]');
@@ -5371,6 +6103,28 @@
                 const seen = new Set();
                 (Array.isArray(list) ? list : []).forEach(item => {
                     if (!item) return;
+                    if (item.source === 'manual' || item.imageDataUrl) {
+                        const rawContent = normalizeNoteRawContent(item.rawContent || item.summary || item.title);
+                        const fingerprint = `${item.id || ''}|${rawContent}|${item.imageDataUrl || ''}`;
+                        if (seen.has(fingerprint)) return;
+                        seen.add(fingerprint);
+                        deduped.push({
+                            ...item,
+                            id: item.id || `note-${crypto.randomUUID()}`,
+                            source: 'manual',
+                            saved: true,
+                            tag: item.tag || inferMemoTagFromText(rawContent),
+                            title: item.title || trimTitleLength(rawContent, 22) || '未命名笔记',
+                            summary: item.summary || trimTitleLength(rawContent || (item.imageDataUrl ? '图片笔记' : ''), 48),
+                            sections: Array.isArray(item.sections) ? item.sections : (rawContent ? [{ heading: '笔记', bullets: [rawContent] }] : []),
+                            rawContent,
+                            imageDataUrl: item.imageDataUrl || '',
+                            pinned: Boolean(item.pinned),
+                            starred: Boolean(item.starred),
+                            createdAt: item.createdAt || new Date().toISOString()
+                        });
+                        return;
+                    }
                     const bullets = Array.isArray(item.sections)
                         ? item.sections.flatMap(section => section.bullets || [])
                         : [];
@@ -5391,6 +6145,9 @@
                             sections: [{ heading: '原文', bullets: [rawContent] }],
                             sourceQuestion: item.sourceQuestion || '',
                             rawContent,
+                            imageDataUrl: '',
+                            pinned: Boolean(item.pinned),
+                            starred: Boolean(item.starred),
                             createdAt: item.createdAt || new Date().toISOString()
                         });
                     });
@@ -5483,6 +6240,35 @@
                 )) || null;
             }
 
+            function isKnowledgeItemSaved(itemText) {
+                return Boolean(findSavedNoteByRawContent(itemText));
+            }
+
+            function syncKnowledgeSaveButtons(messageEl) {
+                if (!messageEl) return;
+                const content = messageEl.dataset.aiContent || '';
+                if (!content) return;
+                const structured = parseStructuredReply(content);
+                const items = getKnowledgeMethodologyLines(structured);
+                if (!items.length) return;
+                messageEl.querySelectorAll('[data-save-knowledge-item]').forEach(button => {
+                    const index = Number(button.dataset.knowledgeIndex);
+                    const itemText = Number.isFinite(index) ? (items[index] || '') : '';
+                    if (isKnowledgeItemSaved(itemText)) {
+                        markSaveNoteButtonSaved(button);
+                    }
+                });
+                const bulkBtn = messageEl.querySelector('[data-save-note-btn]');
+                if (bulkBtn && items.every(item => isKnowledgeItemSaved(item))) {
+                    markSaveNoteButtonSaved(bulkBtn);
+                }
+            }
+
+            function syncAllKnowledgeSaveButtons() {
+                if (!chatWindow) return;
+                chatWindow.querySelectorAll('.message-animate[data-ai-content]').forEach(syncKnowledgeSaveButtons);
+            }
+
             function upsertSavedNote(note) {
                 if (!note || !note.id) return { note: null, created: false };
                 const normalizedRaw = normalizeNoteRawContent(note.rawContent);
@@ -5517,7 +6303,14 @@
             }
 
             function getMyNotesByTag(tagId) {
-                return savedNotes.filter(note => tagId === 'all' || note.tag === tagId);
+                return savedNotes
+                    .filter(note => {
+                        if (tagId === 'all') return true;
+                        if (tagId === 'starred') return Boolean(note.starred);
+                        return note.tag === tagId;
+                    })
+                    .slice()
+                    .sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)));
             }
 
             function isNoteSaveRequest(text) {
@@ -5609,6 +6402,7 @@
                 if (!notes.length) return null;
 
                 renderMemoPanel(noteSearchInput ? noteSearchInput.value : '');
+                syncAllKnowledgeSaveButtons();
                 if (isCompactViewport()) {
                     showMobilePanel('left');
                 }
@@ -6264,6 +7058,7 @@
             window.sendMessage = async function() {
                 const text = chatInput.value.trim();
                 if ((!text && !pendingImage) || isSending) return;
+                pinChatToBottom();
                 let userMessage;
                 if (pendingImage) {
                     userMessage = appendMessage(text, 'user', {
@@ -6597,53 +7392,76 @@
                 }
             });
             flashcardModal.addEventListener('wheel', handleFlashcardWheel, { passive: false });
-            addNoteBtn.addEventListener('click', async () => {
-                try {
-                    const chat = currentChatId ? await getChatById(currentChatId) : null;
-                    const messages = chat && Array.isArray(chat.messages) ? chat.messages : [];
-                    let latestAi = null;
-                    let sourceQuestion = '';
-                    for (let index = messages.length - 1; index >= 0; index -= 1) {
-                        const message = messages[index];
-                        if (!latestAi && message && message.sender === 'ai' && message.type === 'text' && message.content) {
-                            if (isNoteSaveRequest(message.content) || isFlashcardSaveRequest(message.content)) continue;
-                            if (/^好的，已把/.test(message.content)) continue;
-                            latestAi = message;
-                            for (let j = index - 1; j >= 0; j -= 1) {
-                                const previous = messages[j];
-                                if (previous && previous.sender === 'user') {
-                                    if (isNoteSaveRequest(previous.content) || isFlashcardSaveRequest(previous.content)) continue;
-                                    sourceQuestion = previous.content || previous.fileName || '';
-                                    break;
-                                }
-                            }
-                            break;
-                        }
-                    }
-                    if (!latestAi) {
-                        showToast('先聊一道题，再存入知识点');
-                        return;
-                    }
-                    const note = saveAiContentToNotes(latestAi.content, { sourceQuestion });
-                    if (!note) {
-                        showToast('最新回复里还没有知识点或方法论原文');
-                        return;
-                    }
-                    openMemoReader(note.note);
-                    if (note.createdCount > 0 && note.skippedCount > 0) {
-                        showToast(`新存入 ${note.createdCount} 条，跳过重复 ${note.skippedCount} 条`);
-                    } else if (note.createdCount > 0) {
-                        showToast(`已存入 ${note.createdCount} 条`);
-                    } else {
-                        showToast('这些原文已在笔记中，未重复保存');
-                    }
-                } catch (error) {
-                    showToast('存入笔记失败，请稍后再试');
-                }
+            addNoteBtn.addEventListener('click', () => {
+                openMemoEditor();
             });
             categoryBtn.addEventListener('click', () => {
-                showToast('左侧小栏就是标签，点语法 / 完形 / 阅读即可筛选');
+                openTagManager();
             });
+            if (memoEditorClose) memoEditorClose.addEventListener('click', closeMemoSheets);
+            if (memoEditorCancel) memoEditorCancel.addEventListener('click', closeMemoSheets);
+            if (memoEditorSave) memoEditorSave.addEventListener('click', saveManualNoteFromEditor);
+            if (memoEditorTags) {
+                memoEditorTags.addEventListener('click', event => {
+                    const chip = event.target.closest('[data-editor-tag]');
+                    if (!chip) return;
+                    editorDraftTag = chip.dataset.editorTag;
+                    renderEditorTagChips();
+                });
+            }
+            if (memoEditorImageBtn && memoEditorImage) {
+                memoEditorImageBtn.addEventListener('click', () => memoEditorImage.click());
+            }
+            if (memoEditorImageClear) {
+                memoEditorImageClear.addEventListener('click', () => setEditorImagePreview(''));
+            }
+            if (memoEditorImage) {
+                memoEditorImage.addEventListener('change', async () => {
+                    const [file] = memoEditorImage.files || [];
+                    const dataUrl = await readNoteImageFile(file);
+                    if (dataUrl) setEditorImagePreview(dataUrl);
+                    memoEditorImage.value = '';
+                });
+            }
+            if (memoReaderEdit) {
+                memoReaderEdit.addEventListener('click', () => {
+                    const note = getSavedNoteById(readingNoteId);
+                    if (note) openMemoEditor(note);
+                });
+            }
+            if (noteListEl) {
+                noteListEl.addEventListener('click', handleMemoCardAction);
+            }
+            document.addEventListener('click', event => {
+                if (event.target.closest('.note-card')) return;
+                noteCards.forEach(item => item.classList.remove('is-menu-open'));
+            });
+            if (memoTagClose) memoTagClose.addEventListener('click', closeMemoSheets);
+            if (memoTagCancel) memoTagCancel.addEventListener('click', closeMemoSheets);
+            if (memoTagAdd) memoTagAdd.addEventListener('click', addCustomMemoTag);
+            if (memoTagName) {
+                memoTagName.addEventListener('keydown', event => {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        addCustomMemoTag();
+                    }
+                });
+            }
+            if (memoTagColors) {
+                memoTagColors.addEventListener('click', event => {
+                    const dot = event.target.closest('[data-tag-color]');
+                    if (!dot) return;
+                    tagDraftColor = dot.dataset.tagColor;
+                    renderTagManager();
+                });
+            }
+            if (memoTagList) {
+                memoTagList.addEventListener('click', event => {
+                    const btn = event.target.closest('[data-delete-tag]');
+                    if (!btn) return;
+                    deleteCustomMemoTag(btn.dataset.deleteTag);
+                });
+            }
             storeCard.addEventListener('click', showComingSoonToast);
             if (memoTagRail) {
                 memoTagRail.addEventListener('click', event => {
