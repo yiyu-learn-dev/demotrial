@@ -1216,12 +1216,11 @@
         body.night-mode::after {
             opacity: 0.28;
         }
-        body.night-mode,
         body.night-mode .text-gray-800,
-        body.night-mode .text-gray-700,
-        body.night-mode .text-gray-600,
+        body.night-mode .text-gray-700 { color: #eef3fa !important; }
+        body.night-mode .text-gray-600 { color: #c5d0e0 !important; }
         body.night-mode .text-gray-500,
-        body.night-mode .text-gray-400 { color: #dbe5f4 !important; }
+        body.night-mode .text-gray-400 { color: #8b9bb0 !important; }
         body.night-mode .text-brand { color: #bfd1ef !important; }
         body.night-mode header .font-bold.text-brand,
         body.night-mode #settings-panel h3.text-brand,
@@ -1267,7 +1266,7 @@
         body.night-mode .text-red-700,
         body.night-mode .text-purple-900,
         body.night-mode .text-purple-700 { color: #e5e7eb !important; }
-        body.night-mode .note-card,
+        body.night-mode .note-card:not(.memo-card),
         body.night-mode .extend-card,
         body.night-mode .history-item,
         body.night-mode #pending-upload,
@@ -1339,7 +1338,7 @@
             border-color: rgba(90, 107, 132, 0.44) !important;
             box-shadow: 0 18px 34px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.02) !important;
         }
-        body.night-mode #left-panel .note-card,
+        body.night-mode #left-panel .note-card:not(.memo-card),
         body.night-mode #right-panel .extend-card {
             border-color: rgba(82, 100, 128, 0.48) !important;
             box-shadow: 0 14px 24px rgba(0,0,0,0.24) !important;
@@ -1351,7 +1350,7 @@
         body.night-mode #left-panel .note-card p,
         body.night-mode #right-panel .extend-card i,
         body.night-mode #left-panel .note-card i,
-        body.night-mode #history-panel .delete-history-btn,
+        body.night-mode #history-panel .history-more-btn,
         body.night-mode #history-close-btn,
         body.night-mode #clear-history-btn,
         body.night-mode #settings-panel button,
@@ -1362,7 +1361,7 @@
         body.night-mode #profile-sheet .text-gray-700 {
             color: #e7eefb !important;
         }
-        body.night-mode .note-card > div:first-child,
+        body.night-mode .note-card:not(.memo-card) > div:first-child,
         body.night-mode .extend-card {
             background: linear-gradient(135deg, rgba(45, 59, 88, 0.96) 0%, rgba(28, 39, 61, 0.98) 100%) !important;
         }
@@ -1886,7 +1885,7 @@
             border-left: 2px solid rgba(148, 163, 184, 0.32);
             padding-left: 0.85rem;
         }
-        .chat-thinking-stream:empty {
+        .chat-thinking-body:has(.chat-thinking-stream:empty) {
             display: none;
         }
         .chat-thinking-panel.is-active .chat-thinking-stream:not(:empty)::after {
@@ -1923,6 +1922,83 @@
             background: linear-gradient(180deg, rgba(229,236,247,0.95) 0%, rgba(244,238,228,0.96) 100%);
             box-shadow: var(--shadow-lift), var(--shadow-press);
         }
+        .history-more-btn {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 999px;
+            border: 0;
+            background: transparent;
+            color: #8a97a8;
+            opacity: 0;
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
+        }
+        .history-item:hover .history-more-btn,
+        .history-item.is-menu-open .history-more-btn {
+            opacity: 1;
+        }
+        .history-more-btn:hover,
+        .history-item.is-menu-open .history-more-btn {
+            background: rgba(125, 146, 178, 0.12);
+            color: #5d6e83;
+        }
+        @media (max-width: 640px) {
+            .history-more-btn { opacity: 1; }
+        }
+        .history-pin-mark {
+            color: #8a97a8;
+            font-size: 0.65rem;
+            margin-right: 0.28rem;
+        }
+        .history-menu {
+            position: fixed;
+            z-index: 80;
+            min-width: 9.5rem;
+            padding: 0.35rem;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.98);
+            border: 1px solid rgba(125, 146, 178, 0.16);
+            box-shadow: 0 12px 28px rgba(80, 92, 110, 0.16);
+        }
+        .history-menu.hidden { display: none; }
+        .history-menu button {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            border: 0;
+            background: transparent;
+            border-radius: 10px;
+            padding: 0.55rem 0.65rem;
+            font-size: 13px;
+            font-weight: 600;
+            color: #4d5f74;
+            text-align: left;
+            cursor: pointer;
+        }
+        .history-menu button:hover { background: rgba(232, 237, 244, 0.9); }
+        .history-menu button.is-danger { color: #c45c56; }
+        .history-menu button.is-danger:hover { background: rgba(252, 232, 230, 0.9); }
+        .history-rename-input {
+            width: 100%;
+            border: 1px solid rgba(125, 146, 178, 0.32);
+            border-radius: 8px;
+            padding: 0.15rem 0.4rem;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            outline: none;
+        }
+        body.night-mode .history-menu {
+            background: rgba(28, 40, 62, 0.98);
+            border-color: rgba(94, 114, 148, 0.36);
+        }
+        body.night-mode .history-menu button { color: #dbe5f4; }
+        body.night-mode .history-menu button:hover { background: rgba(55, 72, 98, 0.72); }
+        body.night-mode .history-menu button.is-danger { color: #f0a39d; }
 
         #font-size-group button.bg-brand,
         #font-size-group button.text-white {
@@ -2295,18 +2371,104 @@
         }
         body.night-mode #chat-meta,
         body.night-mode .chat-meta-line {
-            color: rgba(185, 199, 222, 0.72) !important;
+            color: #9aabc0 !important;
         }
         body.night-mode #chat-window .chat-bubble-ai,
         body.night-mode #chat-window .chat-bubble-ai.bg-gray-100 {
             background: transparent !important;
-            color: #dbe5f4;
+            color: #eef3fa;
         }
         body.night-mode #chat-window .chat-bubble-user,
         body.night-mode #chat-window .chat-bubble-user.bg-white {
-            background: rgba(55, 72, 98, 0.72) !important;
-            border-color: rgba(90, 110, 140, 0.28) !important;
-            color: #e5e7eb;
+            background: #2b3f5c !important;
+            border-color: #4a6488 !important;
+            color: #f2f6fb;
+        }
+        body.night-mode .chat-knowledge-section,
+        body.night-mode .chat-structured-section {
+            background: #1e2d48 !important;
+            border-color: #4a6488 !important;
+            color: #f2f6fb !important;
+        }
+        body.night-mode .chat-knowledge-item,
+        body.night-mode .chat-structured-card,
+        body.night-mode .chat-structured-step,
+        body.night-mode .chat-structured-answer {
+            background: #24344f !important;
+            border-color: #4a6488 !important;
+            color: #f2f6fb !important;
+        }
+        body.night-mode .chat-knowledge-text,
+        body.night-mode .chat-structured-text {
+            color: #eef3fa !important;
+        }
+        body.night-mode .chat-structured-label {
+            color: #b7c6da !important;
+        }
+        body.night-mode .chat-structured-choice-key {
+            background: #3d5a82 !important;
+            color: #ffffff !important;
+        }
+        body.night-mode .chat-structured-answer-main {
+            color: #f7fafc !important;
+        }
+        body.night-mode .chat-structured-answer-note {
+            color: #d7e3f2 !important;
+        }
+        body.night-mode #chat-stage {
+            background: #121a2b !important;
+        }
+        body.night-mode .chat-toolbar {
+            background: #152033 !important;
+            border-bottom-color: rgba(90, 107, 132, 0.32) !important;
+        }
+        body.night-mode .chat-thinking-toggle-label {
+            color: #edf3ff !important;
+        }
+        body.night-mode .chat-thinking-toggle-meta,
+        body.night-mode .chat-thinking-chevron {
+            color: #b7c6da !important;
+        }
+        body.night-mode .chat-thinking-icon {
+            background: #3d5a82 !important;
+            color: #ffffff !important;
+        }
+        body.night-mode .chat-thinking-body {
+            border-top-color: #4a6488;
+        }
+        body.night-mode .chat-thinking-stream {
+            color: #e8eef8 !important;
+            border-left-color: #6f89b0;
+        }
+        body.night-mode .memo-sheet {
+            background: linear-gradient(180deg, #1a2438 0%, #152033 100%);
+        }
+        body.night-mode .memo-sheet-title,
+        body.night-mode .memo-field label,
+        body.night-mode .memo-tag-item .name {
+            color: #e8eef6 !important;
+        }
+        body.night-mode .memo-sheet-close,
+        body.night-mode .memo-upload-btn,
+        body.night-mode .memo-tag-item {
+            background: #24344f !important;
+            color: #e8eef6 !important;
+            border-color: #4a6488 !important;
+        }
+        body.night-mode .memo-field input,
+        body.night-mode .memo-field textarea,
+        body.night-mode .memo-field select {
+            background: #24344f !important;
+            color: #f4f7fb !important;
+            -webkit-text-fill-color: #f4f7fb;
+            border-color: #4a6488 !important;
+            caret-color: #f4f7fb;
+        }
+        body.night-mode .memo-color-dot {
+            border-color: rgba(232, 238, 246, 0.45);
+        }
+        body.night-mode .memo-color-dot.is-active {
+            border-color: #f4f7fb;
         }
         body.night-mode .composer-shell {
             background: rgba(22, 32, 51, 0.96) !important;
@@ -2662,13 +2824,17 @@
         }
         body.night-mode .memo-tag-btn,
         body.night-mode .memo-card {
-            background: color-mix(in srgb, var(--tag-color, #8d9aa8) 32%, rgba(22, 32, 51, 0.94)) !important;
-            color: #dbe5f4 !important;
-            border-color: rgba(94, 114, 148, 0.28) !important;
+            background: var(--tag-night, #35527a) !important;
+            color: #eef3fa !important;
+            border-color: color-mix(in srgb, var(--tag-night, #35527a) 70%, #0f172a) !important;
         }
         body.night-mode .memo-tag-btn.is-active {
-            box-shadow: inset 0 0 0 2px rgba(219, 229, 244, 0.35) !important;
+            box-shadow: inset 0 0 0 2px rgba(238, 243, 250, 0.42) !important;
+            filter: brightness(1.08);
         }
+        body.night-mode .memo-card-title { color: #f4f7fb !important; }
+        body.night-mode .memo-card-summary,
+        body.night-mode .memo-card-kicker { color: #c3d0e2 !important; }
         .memo-sheet {
             position: absolute;
             inset: 0;
@@ -2733,10 +2899,10 @@
             width: 1.35rem;
             height: 1.35rem;
             border-radius: 999px;
-            border: 2px solid transparent;
+            border: 2px solid rgba(90, 84, 76, 0.32);
             cursor: pointer;
         }
-        .memo-color-dot.is-active { border-color: #5d5a55; }
+        .memo-color-dot.is-active { border-color: #3d3934; box-shadow: inset 0 0 0 2px rgba(255,255,255,0.85); }
         .memo-chip {
             border-radius: 999px;
             border: 1px solid rgba(150, 140, 128, 0.22);
@@ -3069,7 +3235,6 @@
         <div class="flex items-center justify-between gap-3 mb-4">
             <div>
                 <h3 class="text-lg font-bold text-brand">历史对话</h3>
-                <p class="text-xs text-gray-400 mt-1">保存在本地 IndexedDB，刷新页面也能继续聊</p>
             </div>
             <button id="history-close-btn" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
         </div>
@@ -3082,6 +3247,7 @@
         </div>
         <div id="history-list" class="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-1"></div>
     </div>
+    <div id="history-menu" class="history-menu hidden" role="menu"></div>
     <div id="profile-overlay" class="fixed inset-0 bg-black bg-opacity-40 z-[75] hidden"></div>
     <div id="profile-sheet" class="profile-sheet fixed inset-x-4 top-1/2 -translate-y-1/2 sm:inset-x-auto sm:right-6 sm:top-24 sm:translate-y-0 sm:w-[340px] glass-panel rounded-[24px] shadow-2xl z-[80] border border-white/70 p-5 hidden">
         <div class="flex items-start justify-between gap-4 mb-4">
@@ -3217,6 +3383,7 @@
             const historyPanel = document.getElementById('history-panel');
             const historyOverlay = document.getElementById('history-overlay');
             const historyList = document.getElementById('history-list');
+            const historyMenu = document.getElementById('history-menu');
             const historyEmpty = document.getElementById('history-empty');
             const historyCount = document.getElementById('history-count');
             const historyCloseBtn = document.getElementById('history-close-btn');
@@ -3283,12 +3450,13 @@
             let activeMemoTag = 'all';
             const TAG_LABELS = { all: '全部', starred: '收藏', grammar: '语法', cloze: '完形', reading: '阅读' };
             const BUILTIN_MEMO_TAGS = [
-                { id: 'all', label: '全部', icon: 'fa-layer-group', color: '#e8eef6', ink: '#5d6e83', builtin: true },
-                { id: 'starred', label: '收藏', icon: 'fa-star', color: '#f4e2e6', ink: '#8a5d68', builtin: true },
-                { id: 'grammar', label: '语法', icon: 'fa-spell-check', color: '#dceaf8', ink: '#4e6d8c', builtin: true },
-                { id: 'cloze', label: '完形', icon: 'fa-align-left', color: '#f4eadc', ink: '#7a6550', builtin: true },
-                { id: 'reading', label: '阅读', icon: 'fa-book-open', color: '#dcefe6', ink: '#4d7263', builtin: true }
+                { id: 'all', label: '全部', icon: 'fa-layer-group', color: '#e8eef6', night: '#3d5273', ink: '#5d6e83', builtin: true },
+                { id: 'starred', label: '收藏', icon: 'fa-star', color: '#f4e2e6', night: '#6b4552', ink: '#8a5d68', builtin: true },
+                { id: 'grammar', label: '语法', icon: 'fa-spell-check', color: '#dceaf8', night: '#2f5a86', ink: '#4e6d8c', builtin: true },
+                { id: 'cloze', label: '完形', icon: 'fa-align-left', color: '#f4eadc', night: '#6b5340', ink: '#7a6550', builtin: true },
+                { id: 'reading', label: '阅读', icon: 'fa-book-open', color: '#dcefe6', night: '#2f5c50', ink: '#4d7263', builtin: true }
             ];
+            const NIGHT_TAG_FALLBACKS = ['#3d5a86', '#6b5340', '#2f5c50', '#6b4552', '#4a5c38', '#5a4d6e'];
             const MORANDI_COLORS = ['#dceaf8', '#f4eadc', '#dcefe6', '#f4e2e6', '#e6f0d4', '#f3edd8', '#e8e2f3', '#dceef3'];
             const flashcardOverlay = document.getElementById('flashcard-overlay');
             const flashcardModal = document.getElementById('flashcard-modal');
@@ -3632,7 +3800,7 @@
                             conclusion: String(item && item.conclusion || '').trim()
                         }))
                         : [];
-                    return {
+                    return applyCorrectedQuestionType({
                         supported: Boolean(parsed.supported),
                         questionType: String(parsed.question_type || '').trim(),
                         subtype: String(parsed.subtype || '').trim(),
@@ -3652,12 +3820,12 @@
                             ? parsed.knowledge_cards.map(item => String(item || '').trim()).filter(Boolean)
                             : [],
                         knowledgeMethodology: Array.isArray(parsed.knowledge_methodology)
-                            ? parsed.knowledge_methodology.map(item => String(item || '').trim()).filter(Boolean)
+                            ? parsed.knowledge_methodology.map(item => String(item || '').trim()).filter(isUsefulKnowledgeLine)
                             : [],
                         followUp: String(parsed.follow_up || '').trim()
-                    };
+                    });
                 } catch (error) {
-                    return parseLooseStructuredReply(normalized);
+                    return applyCorrectedQuestionType(parseLooseStructuredReply(normalized));
                 }
             }
 
@@ -3694,10 +3862,10 @@
                     : [];
                 const methodologyBlockMatch = source.match(/"knowledge_methodology"\s*:\s*\[([\s\S]*?)\]\s*(?:,|$)/);
                 const knowledgeMethodology = methodologyBlockMatch
-                    ? Array.from(methodologyBlockMatch[1].matchAll(/"([\s\S]*?)"/g)).map(match => decodeJsonLikeString(match[1])).filter(Boolean)
+                    ? Array.from(methodologyBlockMatch[1].matchAll(/"([\s\S]*?)"/g)).map(match => decodeJsonLikeString(match[1])).filter(isUsefulKnowledgeLine)
                     : [];
 
-                return {
+                return applyCorrectedQuestionType({
                     supported: supportedMatch[1].toLowerCase() === 'true',
                     questionType: extractJsonLikeStringField(source, 'question_type'),
                     subtype: extractJsonLikeStringField(source, 'subtype'),
@@ -3716,7 +3884,7 @@
                     knowledgeCards,
                     knowledgeMethodology,
                     followUp: extractJsonLikeStringField(source, 'follow_up')
-                };
+                });
             }
 
             function extractPartialReasoningSteps(source) {
@@ -3775,7 +3943,7 @@
             }
 
             function isJsonConstructionNoise(text) {
-                return /```|(?:构建|构造|组装|生成|填写|填充|输出)\s*(?:这个|最终|固定)?\s*(?:json|JSON)|reasoning_steps|stem_understanding|distractor_analysis|knowledge_cards|need_more_context|unsupported_reason|question_type|"supported"\s*:|固定\s*JSON|合法\s*JSON|字段名|按\s*schema|输出格式|JSON\s*对象|json\s*对象|键值对|根据(?:我的)?角色设定|回顾规则|根据规则|检查规则|对照规则|我需要输出|输出必须是|正式回答只输出|字段必须正确|现在，写JSON|确保不添加任何额外内容/i.test(String(text || ''));
+                return /```|(?:构建|构造|组装|生成|填写|填充|输出|按照|遵循|符合)\s*(?:这个|最终|固定|以下|下面)?\s*(?:json|JSON|格式|schema|字段)|reasoning_steps|stem_understanding|distractor_analysis|knowledge_cards|knowledge_methodology|need_more_context|unsupported_reason|question_type|"supported"\s*:|固定\s*JSON|合法\s*JSON|字段名|按\s*schema|输出格式|JSON\s*对象|json\s*对象|键值对|根据(?:我的)?角色设定|回顾规则|根据规则|检查规则|对照规则|我需要输出|输出必须是|正式回答只输出|字段必须正确|现在，写JSON|确保不添加任何额外内容|不要\s*Markdown|不要代码块|不要前言|"focus"\s*:|"basis"\s*:|"conclusion"\s*:|"step"\s*:|列出推理步骤|干扰项剖析|知识点与方法论|采用以下格式|思考结束后|schema/i.test(String(text || ''));
             }
 
             function stripJsonPayloads(text) {
@@ -3784,10 +3952,13 @@
                     .replace(/\{[\s\S]*?"supported"\s*:[\s\S]*?\}\s*/g, '\n');
             }
 
-            function sanitizeThinkingTranscript(text) {
+            function sanitizeThinkingTranscript(text, live = false) {
                 let source = stripJsonPayloads(text);
                 const jsonStart = source.search(/```|\{\s*"(?:supported|question_type|reasoning_steps|stem_understanding)"/);
                 if (jsonStart >= 0) source = source.slice(0, jsonStart);
+                const formatHead = source.search(/(?:现在|接下来|然后|最后|下面)(?:开始)?(?:构造|组装|生成|输出|填写|按照)\s*(?:这个|最终|固定|以下)?\s*(?:JSON|json|字段|格式)|思考结束后|正式回答只输出|输出一个 JSON|输出一个JSON/);
+                if (formatHead >= 0) source = source.slice(0, formatHead);
+
                 const blocks = source.split(/\n+/);
                 const cleaned = [];
                 blocks.forEach(block => {
@@ -3799,17 +3970,35 @@
                             && !isJsonConstructionNoise(item)
                             && !/^\s*[{[]/.test(item)
                             && !/^"[a-z_]+"\s*:/.test(item)
+                            && !/(?:JSON|字段名|输出格式|schema)/i.test(item)
                         ));
                     if (kept.length) cleaned.push(kept.join(''));
                 });
+
+                if (live && cleaned.length) {
+                    const last = cleaned[cleaned.length - 1];
+                    if (last && !/[。！？!?\n]$/.test(last) && /JSON|字段|schema|reasoning_|knowledge_|supported|输出格式|格式要求|"[a-z_]+"\s*:/i.test(last)) {
+                        cleaned.pop();
+                    }
+                }
                 return cleaned.join('\n\n').replace(/\n{3,}/g, '\n\n').trim();
             }
 
             function inferLocalThinkingProse(messageText, hasImage = false) {
+                const text = String(messageText || '');
                 if (hasImage) {
-                    return ['先把图里的内容看清楚，再决定怎么讲。'];
+                    return ['先核对图里的题干、空格和选项，再判断考点。'];
                 }
-                return ['先看用户在说什么，再组织回答。'];
+                if (/完形|cloze/i.test(text)) {
+                    return ['先看空格前后和文章中心，再排除明显不合语境的词。'];
+                }
+                if (/语法|填空|冠词|非谓语|从句/i.test(text)) {
+                    return ['先看空格前后是短语还是句子，再判断该填什么形式。'];
+                }
+                if (/阅读|细节|主旨|七选五/i.test(text)) {
+                    return ['先抓住题干定位词，再回原文核对同义替换。'];
+                }
+                return ['先抓住题目里的空格、原句和关键限制，再往下推。'];
             }
 
             function structuredReplyToThinkingProse(data) {
@@ -3875,7 +4064,51 @@
             }
 
             function isMetaReasoningFocus(focus) {
-                return /^(判断题型|调用方法体系|调用语法方法论|调用阅读方法论|调用完型方法论|判断信息是否完整|判断现有信息是否足够|给出当前可判断的方向|判断请求性质|判断输入范围|确定优先讲解对象|判断空格类型)$/.test(String(focus || '').trim());
+                return /^(判断题型|调用方法体系|调用语法方法论|调用阅读方法论|调用完型方法论|判断信息是否完整|判断现有信息是否足够|给出当前可判断的方向|判断请求性质|判断输入范围|确定优先讲解对象|判断空格类型|本题考查|这是一道|分析选项)$/.test(String(focus || '').trim());
+            }
+
+            function hasExplicitChoiceOptions(...texts) {
+                const source = texts.map(item => String(item || '')).join('\n');
+                return /(?:^|[\n\r])\s*[A-D][\.．、\)]\s+\S/.test(source)
+                    || /(?:选项|choose|choices?)\s*[A-D]/i.test(source) && /[A-D][\.．、\)]/.test(source);
+            }
+
+            function looksLikeGrammarFillText(text) {
+                return /\([A-Za-z][A-Za-z\s\-']{0,24}\)|（[A-Za-z][A-Za-z\s\-']{0,24}）|_{3,}|语法填空|无提示词|有提示词|词性转换/.test(String(text || ''));
+            }
+
+            function correctQuestionType(claimed, extraText = '') {
+                const source = `${claimed || ''}\n${extraText || ''}`;
+                const hasChoices = hasExplicitChoiceOptions(source);
+                const grammarFill = looksLikeGrammarFillText(source);
+                const numbered = /\(\s*\d{1,2}\s*\)|第\s*\d+\s*[空题]/.test(source);
+
+                if (/七选五/.test(source)) return '七选五';
+                if (hasChoices && !grammarFill) return '完型';
+                if (grammarFill || (numbered && !hasChoices)) return '语法';
+                if (/阅读理解|细节题|主旨/.test(source) && !numbered) return '阅读';
+                if (/完型|完形/.test(String(claimed || '')) && !hasChoices) return '语法';
+                if (/语法/.test(String(claimed || ''))) return '语法';
+                if (/完型|完形/.test(String(claimed || ''))) return '完型';
+                if (/阅读/.test(String(claimed || ''))) return '阅读';
+                if (/改错/.test(String(claimed || ''))) return '改错';
+                if (/翻译/.test(String(claimed || ''))) return '翻译';
+                return String(claimed || '').replace(/^完形$/, '完型').trim();
+            }
+
+            function applyCorrectedQuestionType(data) {
+                if (!data) return data;
+                const extra = [data.subtype, data.stemUnderstanding, data.answer, data.followUp].join('\n');
+                data.questionType = correctQuestionType(data.questionType, extra);
+                return data;
+            }
+
+            function getVisibleDistractorEntries(data, extraText = '') {
+                const entries = Object.entries((data && data.distractorAnalysis) || {}).filter(([, value]) => String(value || '').trim());
+                if (!entries.length) return [];
+                const haystack = `${extraText} ${data && data.stemUnderstanding || ''} ${data && data.followUp || ''}`;
+                if (!hasExplicitChoiceOptions(haystack)) return [];
+                return entries;
             }
 
             function joinReasoningSentence(step) {
@@ -3902,13 +4135,13 @@
                 const steps = Array.isArray(data && data.reasoningSteps) ? data.reasoningSteps : [];
                 const lines = steps
                     .map(joinReasoningSentence)
-                    .filter(Boolean)
+                    .filter(item => item && !/^(本题考查|这是一道|判断题型|调用方法)/.test(item))
                     .flatMap(splitStructuredDisplayLines)
                     .slice(0, maxCount);
 
                 if (lines.length) return lines;
 
-                if (data && data.stemUnderstanding) {
+                if (data && data.stemUnderstanding && !/^(本题考查|这是一道|用户在问)/.test(String(data.stemUnderstanding).trim())) {
                     return splitStructuredDisplayLines(String(data.stemUnderstanding).trim()).slice(0, maxCount);
                 }
 
@@ -3963,16 +4196,34 @@
                 return splitStructuredDisplayLines(String(text).replace(/\s*[；;]\s*/g, '\n'));
             }
 
+            function isUsefulKnowledgeLine(text) {
+                const raw = String(text || '').trim();
+                if (!raw) return false;
+                if (raw.length > 160) return false;
+                if (/(本题|答案是|第\s*\d+\s*空)/.test(raw)) return false;
+                if (/(与语句理解|理解能力相关|与理解有关|需要结合语境|结合上下文判断|具体问题具体分析|选择与.*相关|考查关系词|考查冠词)/.test(raw)) return false;
+                const compact = raw.replace(/[\s,，。．.；;:：、·\-—–“”"']+/g, '');
+                if (compact.length < 6) return false;
+                return /如果|若|当|时|则|就|用|填|选|使用|只能|必须|不要|禁止|不是|没有|改成|变成|独一无二|主动|被动|：|:|→|->/.test(raw);
+            }
+
             function getKnowledgeMethodologyLines(data) {
                 if (!data) return [];
                 const primary = Array.isArray(data.knowledgeMethodology) ? data.knowledgeMethodology : [];
-                const cleanedPrimary = primary.map(item => String(item || '').trim()).filter(Boolean);
-                if (cleanedPrimary.length) return cleanedPrimary;
+                const cleanedPrimary = [];
+                primary.forEach(item => {
+                    const text = String(item || '').trim();
+                    if (!isUsefulKnowledgeLine(text)) return;
+                    if (cleanedPrimary.some(existing => existing === text || existing.includes(text) || text.includes(existing))) return;
+                    cleanedPrimary.push(text);
+                });
+                if (cleanedPrimary.length) return cleanedPrimary.slice(0, 3);
 
                 const cards = Array.isArray(data.knowledgeCards) ? data.knowledgeCards : [];
                 return cards
                     .map(item => String(item || '').trim())
-                    .filter(item => item && (item.length >= 12 || /[，。；：、]/.test(item)));
+                    .filter(item => isUsefulKnowledgeLine(item) && (item.length >= 12 || /[。；：]/.test(item)))
+                    .slice(0, 3);
             }
 
             function renderKnowledgeMethodologySection(data, options = {}) {
@@ -4022,7 +4273,7 @@
                     `
                     : '';
 
-                const distractorEntries = Object.entries(data.distractorAnalysis).filter(([, value]) => value);
+                const distractorEntries = getVisibleDistractorEntries(data);
                 const distractorHtml = distractorEntries.length
                     ? `
                         <div class="chat-structured-section">
@@ -4252,7 +4503,7 @@
                     });
                 }
 
-                const distractorEntries = Object.entries(data.distractorAnalysis || {}).filter(([, value]) => value);
+                const distractorEntries = getVisibleDistractorEntries(data);
                 if (distractorEntries.length) {
                     const section = document.createElement('div');
                     section.className = 'chat-structured-section';
@@ -4405,7 +4656,54 @@
             function isGenericChatTitle(title) {
                 const normalized = cleanTitleText(title).toLowerCase();
                 if (!normalized) return true;
-                return /^(新对话|图片提问|图片题讲解|题目|这道题|这题|英语题|讲题|讲解|分析|解释|看看|解答|题目讲解|帮我分析|帮我讲解|图片题)$/.test(normalized);
+                if (/本题|这道题是|该题是|空格后/.test(normalized)) return true;
+                return /^(新对话|图片提问|图片题讲解|图片讲题|题目|这道题|这题|本题|英语题|讲题|讲解|分析|解释|看看|解答|题目讲解|帮我分析|帮我讲解|图片题|冠词|语法|完形|完型|阅读|第\d+空)$/.test(normalized);
+            }
+
+            function stripTypePrefixFromTitle(text) {
+                return String(text || '')
+                    .replace(/^(完型|完形|语法填空|语法|阅读理解|阅读|七选五|改错|翻译|词汇)\s*[·•、/／\-—–]?\s*/g, '')
+                    .replace(/第\s*\d+\s*[空题]/g, ' ')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+            }
+
+            function titleFocusFromSubtype(subtype) {
+                const cleaned = stripTypePrefixFromTitle(String(subtype || ''))
+                    .replace(/本题|这道题|该题/g, ' ')
+                    .replace(/\s*[\/、，,]\s*/g, '/')
+                    .replace(/\s+/g, '')
+                    .replace(/^\/+|\/+$/g, '')
+                    .trim();
+                if (!cleaned || /^(本题|这道题|该题)$/.test(cleaned)) return '';
+                return cleaned;
+            }
+
+            function extractTitleAnchor(rawInput, structured) {
+                const sources = [
+                    structured && structured.answer,
+                    structured && structured.stemUnderstanding,
+                    rawInput
+                ].filter(Boolean).join('\n');
+
+                const hint = sources.match(/\(([A-Za-z][A-Za-z\-']{2,18})\)|（([A-Za-z][A-Za-z\-']{2,18})）/);
+                if (hint) return hint[1] || hint[2];
+
+                const quoted = String(rawInput || '').match(/[“"'《]([^”"'》]{2,20})[”"'》]/);
+                if (quoted && quoted[1] && !isGenericChatTitle(quoted[1])) return quoted[1].trim();
+
+                const named = sources.match(/[\u4e00-\u9fa5]{2,4}(?=放弃|回到|扶贫|来自)/);
+                if (named && named[0] && !isGenericChatTitle(named[0])) return named[0];
+
+                const skip = /^(this|that|from|with|have|been|come|question|there|their|what|when|which)\b/i;
+                const phrases = String(sources).matchAll(/\b([A-Za-z][A-Za-z'’\-]{4,16}(?:\s+[A-Za-z][A-Za-z'’\-]{3,16}){1,2})\b/g);
+                for (const match of phrases) {
+                    const phrase = String(match[1] || '').trim();
+                    if (phrase && !skip.test(phrase) && !/^(come from|i come|it is|there are)/i.test(phrase)) {
+                        return phrase;
+                    }
+                }
+                return '';
             }
 
             function buildChatTitle(messages) {
@@ -4414,25 +4712,29 @@
                 const firstUserIndex = messages.indexOf(firstUserMessage);
                 const firstAi = messages.slice(firstUserIndex + 1).find(msg => msg.sender === 'ai' && msg.content);
                 const structured = firstAi ? parseStructuredReply(firstAi.content || '') : null;
-                const userSummary = summarizeQuestionTitle(firstUserMessage.content || '', structured);
+                const rawUser = cleanTitleText(firstUserMessage.content || '');
 
-                if (userSummary && !isGenericChatTitle(userSummary)) {
-                    return userSummary;
+                if (rawUser && rawUser.length <= 8 && !isGenericChatTitle(rawUser) && !/^\d+$/.test(rawUser) && !/^(完型|完形|语法|阅读)/.test(rawUser)) {
+                    return rawUser;
                 }
-                const structuredSummary = summarizeStructuredQuestionFocus(structured);
-                if (structuredSummary) {
-                    return trimTitleLength(structuredSummary, 18);
+
+                const focus = titleFocusFromSubtype(structured && structured.subtype);
+                const anchor = extractTitleAnchor(rawUser, structured);
+
+                if (focus && anchor && !focus.includes(anchor) && focus.length <= 8) {
+                    return trimTitleLength(`${focus} · ${anchor}`, 18);
                 }
-                if (firstUserMessage.type === 'image' && !firstUserMessage.content) {
-                    return '图片题讲解';
-                }
-                return trimTitleLength(userSummary || '新对话');
+                if (focus) return trimTitleLength(focus, 16);
+                if (anchor) return trimTitleLength(anchor, 14);
+                if (firstUserMessage.type === 'image' && !rawUser) return '图片讲题';
+                return '新对话';
             }
 
             async function refreshStoredChatTitles() {
                 const chats = await getAllChats();
                 const updates = chats
                     .map(chat => {
+                        if (chat.titleManual) return null;
                         const nextTitle = buildChatTitle(chat.messages || []);
                         if (!nextTitle || nextTitle === chat.title) return null;
                         return { ...chat, title: nextTitle };
@@ -4926,7 +5228,7 @@
             function renderMemoTags() {
                 if (!memoTagRail) return;
                 memoTagRail.innerHTML = getAllMemoTags().map(tag => `
-                    <button type="button" class="memo-tag-btn ${tag.id === activeMemoTag ? 'is-active' : ''}" data-memo-tag="${tag.id}" title="${tag.label}" style="--tag-color:${tag.color};--tag-ink:${tag.ink || '#5d5a55'}">
+                    <button type="button" class="memo-tag-btn ${tag.id === activeMemoTag ? 'is-active' : ''}" data-memo-tag="${tag.id}" title="${tag.label}" style="--tag-color:${tag.color};--tag-night:${tag.night || '#3d5273'};--tag-ink:${tag.ink || '#5d5a55'}">
                         <i class="fa-solid ${tag.icon || 'fa-tag'}"></i>
                         <span>${tag.label}</span>
                     </button>
@@ -4990,7 +5292,7 @@
                                 note.starred ? '<i class="fa-solid fa-star"></i>' : ''
                             ].filter(Boolean).join('');
                             return `
-                            <div class="memo-card memo-wrong-card note-card" style="--tag-color:${tag.color};--tag-ink:${tag.ink || '#5d5a55'}" data-note-id="${escapeHtml(note.id)}" data-note-saved="1" data-note-title="${escapeHtml(note.title)}" data-note-keywords="${escapeHtml(note.summary || '')}">
+                            <div class="memo-card memo-wrong-card note-card" style="--tag-color:${tag.color};--tag-night:${tag.night || '#3d5273'};--tag-ink:${tag.ink || '#5d5a55'}" data-note-id="${escapeHtml(note.id)}" data-note-saved="1" data-note-title="${escapeHtml(note.title)}" data-note-keywords="${escapeHtml(note.summary || '')}">
                                 <span class="memo-card-handle" draggable="true" title="拖拽排序" aria-label="拖拽排序"><i class="fa-solid fa-grip-vertical"></i></span>
                                 <div class="memo-card-main">
                                     <div class="memo-card-title">${escapeHtml(note.title)}${flags ? `<span class="memo-card-flags">${flags}</span>` : ''}</div>
@@ -5099,7 +5401,11 @@
                 return withStore('readonly', (store, resolve, reject) => {
                     const request = store.getAll();
                     request.onsuccess = function() {
-                        resolve((request.result || []).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)));
+                        resolve((request.result || []).sort((a, b) => {
+                            const pinDiff = Number(Boolean(b.pinned)) - Number(Boolean(a.pinned));
+                            if (pinDiff) return pinDiff;
+                            return new Date(b.updatedAt) - new Date(a.updatedAt);
+                        }));
                     };
                     request.onerror = function() {
                         reject(request.error);
@@ -5279,6 +5585,7 @@
                 const streamEl = root.querySelector('.chat-thinking-stream');
                 const startedAt = Date.now();
                 const localTimers = [];
+                let rawThinking = '';
                 let streamText = '';
                 let fallbackProse = '';
                 let hasNativeThinking = false;
@@ -5314,16 +5621,19 @@
                 }
 
                 function visibleThinkingText() {
-                    const native = sanitizeThinkingTranscript(streamText);
-                    if (hasNativeThinking && native) return native;
+                    if (hasNativeThinking) {
+                        return sanitizeThinkingTranscript(rawThinking, !finished);
+                    }
                     if (fallbackProse) return fallbackProse;
-                    return native;
+                    return streamText;
                 }
 
                 function renderStream() {
                     if (!streamEl) return;
-                    streamEl.textContent = visibleThinkingText();
+                    const text = visibleThinkingText();
+                    streamEl.textContent = text;
                     const body = root.querySelector('.chat-thinking-body');
+                    if (body) body.style.display = text ? '' : 'none';
                     if (body) body.scrollTop = body.scrollHeight;
                     scrollChatToBottom();
                 }
@@ -5360,12 +5670,11 @@
                             return;
                         }
                         if (event.type === 'thinking' && event.text) {
-                            if (localPlaceholder) {
-                                streamText = '';
-                                localPlaceholder = false;
-                            }
+                            rawThinking += event.text;
+                            const native = sanitizeThinkingTranscript(rawThinking, true);
+                            if (!native) return;
                             hasNativeThinking = true;
-                            streamText += event.text;
+                            localPlaceholder = false;
                             statusText = '正在想这道题';
                             updateHeader();
                             renderStream();
@@ -5373,9 +5682,8 @@
                     },
                     startLocalStages,
                     ingestFinalReply(replyText) {
-                        const native = sanitizeThinkingTranscript(streamText);
+                        const native = sanitizeThinkingTranscript(rawThinking, false);
                         if (hasNativeThinking && native.length >= 18) {
-                            streamText = native;
                             renderStream();
                             return;
                         }
@@ -5384,8 +5692,6 @@
                         if (prose) {
                             fallbackProse = prose;
                             localPlaceholder = false;
-                        } else if (native) {
-                            streamText = native;
                         }
                         renderStream();
                     },
@@ -5396,7 +5702,11 @@
                             clearInterval(durationTimer);
                             durationTimer = null;
                         }
-                        streamText = sanitizeThinkingTranscript(streamText);
+                        if (hasNativeThinking) {
+                            rawThinking = sanitizeThinkingTranscript(rawThinking, false);
+                        } else {
+                            streamText = sanitizeThinkingTranscript(streamText, false);
+                        }
                         updateHeader();
                         renderStream();
                         setExpanded(false);
@@ -5609,6 +5919,8 @@
                 return {
                     id: crypto.randomUUID(),
                     title: '新对话',
+                    titleManual: false,
+                    pinned: false,
                     createdAt: now,
                     updatedAt: now,
                     messages: getDefaultMessages()
@@ -5616,6 +5928,7 @@
             }
 
             async function renderHistoryList() {
+                closeHistoryMenu();
                 const chats = await getAllChats();
                 historyList.innerHTML = '';
                 historyCount.textContent = `${chats.length} 条对话`;
@@ -5625,32 +5938,115 @@
                     const lastMessage = chat.messages[chat.messages.length - 1];
                     const preview = getMessagePreview(lastMessage).slice(0, 42);
                     item.className = `history-item rounded-[18px] border border-gray-200 p-3 cursor-pointer ${chat.id === currentChatId ? 'active' : 'bg-white'}`;
+                    item.dataset.historyId = chat.id;
                     item.innerHTML = `
                         <div class="flex items-start gap-3">
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center justify-between gap-3">
-                                    <p class="text-sm font-semibold text-gray-800 truncate">${escapeHtml(chat.title)}</p>
+                                    <p class="history-item-title text-sm font-semibold text-gray-800 truncate">${chat.pinned ? '<i class="fa-solid fa-thumbtack history-pin-mark"></i>' : ''}${escapeHtml(chat.title)}</p>
                                     <span class="text-[11px] text-gray-400 whitespace-nowrap">${formatChatTime(chat.updatedAt)}</span>
                                 </div>
                                 <p class="text-xs text-gray-500 mt-1">${escapeHtml(preview)}</p>
                                 <p class="text-[11px] text-gray-400 mt-2">${chat.messages.length} 条消息</p>
                             </div>
-                            <button class="delete-history-btn w-8 h-8 rounded-full hover:bg-gray-100 text-gray-400 hover:text-red-500 transition shrink-0" data-chat-id="${chat.id}" title="删除对话">
-                                <i class="fa-solid fa-trash-can text-xs"></i>
+                            <button type="button" class="history-more-btn" data-chat-id="${chat.id}" title="更多" aria-label="更多">
+                                <i class="fa-solid fa-ellipsis"></i>
                             </button>
                         </div>
                     `;
                     item.addEventListener('click', async function(event) {
-                        if (event.target.closest('.delete-history-btn')) return;
+                        if (event.target.closest('.history-more-btn, .history-rename-input')) return;
+                        closeHistoryMenu();
                         await loadChat(chat.id);
                         closeHistoryPanel();
                     });
-                    item.querySelector('.delete-history-btn').addEventListener('click', async function(event) {
+                    item.querySelector('.history-more-btn').addEventListener('click', function(event) {
                         event.stopPropagation();
-                        await handleDeleteChat(chat.id);
+                        openHistoryMenu(event.currentTarget, chat);
                     });
                     historyList.appendChild(item);
                 });
+            }
+
+            function closeHistoryMenu() {
+                if (!historyMenu) return;
+                historyMenu.classList.add('hidden');
+                historyMenu.innerHTML = '';
+                historyMenu.dataset.chatId = '';
+                document.querySelectorAll('.history-item.is-menu-open').forEach(item => item.classList.remove('is-menu-open'));
+            }
+
+            function openHistoryMenu(button, chat) {
+                if (!historyMenu) return;
+                const alreadyOpen = historyMenu.dataset.chatId === chat.id && !historyMenu.classList.contains('hidden');
+                closeHistoryMenu();
+                if (alreadyOpen) return;
+                historyMenu.dataset.chatId = chat.id;
+                historyMenu.innerHTML = `
+                    <button type="button" data-history-action="rename"><i class="fa-solid fa-pen text-[11px] w-3.5"></i>重命名</button>
+                    <button type="button" data-history-action="pin"><i class="fa-solid fa-thumbtack text-[11px] w-3.5"></i>${chat.pinned ? '取消置顶' : '置顶'}</button>
+                    <button type="button" class="is-danger" data-history-action="delete"><i class="fa-solid fa-trash-can text-[11px] w-3.5"></i>删除</button>
+                `;
+                historyMenu.classList.remove('hidden');
+                const item = button.closest('.history-item');
+                if (item) item.classList.add('is-menu-open');
+                const rect = button.getBoundingClientRect();
+                const menuWidth = 168;
+                const left = Math.min(Math.max(12, rect.right - menuWidth), window.innerWidth - menuWidth - 12);
+                const top = Math.min(rect.bottom + 6, window.innerHeight - 160);
+                historyMenu.style.left = `${left}px`;
+                historyMenu.style.top = `${top}px`;
+            }
+
+            async function handlePinChat(chatId) {
+                const chat = await getChatById(chatId);
+                if (!chat) return;
+                chat.pinned = !chat.pinned;
+                await saveChat(chat);
+                await renderHistoryList();
+                showToast(chat.pinned ? `已置顶「${chat.title}」` : `已取消置顶「${chat.title}」`);
+            }
+
+            async function handleRenameChat(chatId) {
+                const chat = await getChatById(chatId);
+                const item = historyList.querySelector(`[data-history-id="${chatId}"]`);
+                const titleEl = item && item.querySelector('.history-item-title');
+                if (!chat || !titleEl) return;
+                const input = document.createElement('input');
+                input.className = 'history-rename-input';
+                input.value = chat.title || '';
+                input.maxLength = 30;
+                titleEl.replaceWith(input);
+                input.focus();
+                input.select();
+                let finished = false;
+                const finish = async (save) => {
+                    if (finished) return;
+                    finished = true;
+                    const nextTitle = input.value.trim().slice(0, 30);
+                    if (save && nextTitle && nextTitle !== chat.title) {
+                        chat.title = nextTitle;
+                        chat.titleManual = true;
+                        await saveChat(chat);
+                        if (chat.id === currentChatId && chatMeta) {
+                            const userQuestionCount = (chat.messages || []).filter(message => message.sender === 'user').length;
+                            chatMeta.textContent = `${chat.title} · ${userQuestionCount} 轮提问 · 最近更新 ${formatChatTime(chat.updatedAt)}`;
+                        }
+                        showToast('已重命名');
+                    }
+                    await renderHistoryList();
+                };
+                input.addEventListener('keydown', event => {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        finish(true);
+                    }
+                    if (event.key === 'Escape') {
+                        event.preventDefault();
+                        finish(false);
+                    }
+                });
+                input.addEventListener('blur', () => finish(true));
             }
 
             function openHistoryPanel() {
@@ -5665,6 +6061,7 @@
             }
 
             function closeHistoryPanel() {
+                closeHistoryMenu();
                 historyPanel.classList.remove('open');
                 historyOverlay.classList.add('hidden');
             }
@@ -5770,10 +6167,11 @@
                         return fromData ? { ...tag, label: fromData.label, icon: fromData.icon || tag.icon } : tag;
                     })
                     : BUILTIN_MEMO_TAGS;
-                return [...builtin, ...customTags.map(tag => ({
+                return [...builtin, ...customTags.map((tag, index) => ({
                     ...tag,
                     icon: tag.icon || 'fa-tag',
                     ink: tag.ink || '#5d5a55',
+                    night: tag.night || NIGHT_TAG_FALLBACKS[index % NIGHT_TAG_FALLBACKS.length],
                     builtin: false
                 }))];
             }
@@ -5999,6 +6397,7 @@
                     label,
                     icon: 'fa-tag',
                     color: tagDraftColor || MORANDI_COLORS[0],
+                    night: NIGHT_TAG_FALLBACKS[customTags.length % NIGHT_TAG_FALLBACKS.length],
                     ink: '#5d5a55'
                 });
                 persistCustomTags();
@@ -6156,10 +6555,11 @@
             }
 
             function inferMemoTagFromText(...parts) {
-                const text = parts.map(item => String(item || '')).join(' ');
-                if (/完形|cloze/i.test(text)) return 'cloze';
-                if (/阅读|七选五|reading|细节题|主旨/i.test(text)) return 'reading';
-                if (/语法|非谓语|时态|从句|grammar/i.test(text)) return 'grammar';
+                const claimed = parts[0] || '';
+                const extra = parts.slice(1).join('\n');
+                const type = correctQuestionType(claimed, extra);
+                if (type === '完型' || type === '完形') return 'cloze';
+                if (type === '阅读' || type === '七选五') return 'reading';
                 return 'grammar';
             }
 
@@ -6825,7 +7225,9 @@
                 const chat = await getChatById(currentChatId);
                 if (!chat) return;
                 chat.messages.push(message);
-                chat.title = buildChatTitle(chat.messages);
+                if (!chat.titleManual) {
+                    chat.title = buildChatTitle(chat.messages);
+                }
                 chat.updatedAt = message.createdAt;
                 await saveChat(chat);
                 setActiveChatMeta(chat);
@@ -6836,32 +7238,66 @@
                 if (!db || !currentChatId) return [];
                 const chat = await getChatById(currentChatId);
                 if (!chat) return [];
-                const mapped = chat.messages.map(message => ({
-                    sender: message.sender,
-                    content: message.type === 'image'
-                        ? (message.content ? `[图片] ${message.content}` : '[图片]')
-                        : message.content
-                }));
+                const mapped = chat.messages
+                    .filter(message => {
+                        if (message.sender !== 'ai') return true;
+                        const text = String(message.content || '');
+                        return !text.startsWith('你好，我是陶然') && !text.includes('阅读、完形、语法填空都可以直接问');
+                    })
+                    .map(message => ({
+                        sender: message.sender,
+                        content: message.type === 'image'
+                            ? (message.content ? `[图片] ${message.content}` : '[图片]')
+                            : message.content
+                    }))
+                    .filter(item => String(item.content || '').trim());
                 if (mapped.length && mapped[mapped.length - 1].sender === 'user') {
                     return mapped.slice(0, -1);
                 }
                 return mapped;
             }
 
+            function isBlankFollowup(text) {
+                const source = String(text || '').trim();
+                if (!source || source.length > 16) return false;
+                return /^(?:那|然后|接着|还有|再看|继续|再讲|那再看|那再讲)?\s*(?:第\s*)?[（(]?\s*\d{1,3}\s*[)）]?\s*(?:空|题|小题)?\s*[。.?？!！～~]*$/.test(source);
+            }
+
+            async function getLastChatImagePayload() {
+                if (!db || !currentChatId) return null;
+                const chat = await getChatById(currentChatId);
+                if (!chat) return null;
+                for (let index = chat.messages.length - 1; index >= 0; index -= 1) {
+                    const message = chat.messages[index];
+                    if (message && message.sender === 'user' && message.type === 'image' && message.imageDataUrl) {
+                        return {
+                            name: message.fileName || 'question.png',
+                            mimeType: message.mimeType || 'image/png',
+                            dataUrl: message.imageDataUrl,
+                            size: message.fileSize || 0
+                        };
+                    }
+                }
+                return null;
+            }
+
             function getChatStreamApiUrl() {
                 return CHAT_API_URL.replace(/\/api\/chat\/?$/, '/api/chat/stream');
             }
 
-            function buildChatRequestBody(messageText, imagePayload, history) {
-                const fallbackText = imagePayload
-                    ? `我上传了一张图片：${imagePayload.fileName}${messageText ? `。补充说明：${messageText}` : '。请先帮我确认收到并给出分析建议。'}`
-                    : messageText;
+            function buildChatRequestBody(messageText, imagePayload, history, options = {}) {
+                const keepMessage = options.keepMessage || isBlankFollowup(messageText);
+                const imageName = imagePayload && (imagePayload.fileName || imagePayload.name || 'question.png');
+                const fallbackText = imagePayload && !keepMessage
+                    ? `我上传了一张图片：${imageName}${messageText ? `。补充说明：${messageText}` : '。请先帮我确认收到并给出分析建议。'}`
+                    : (messageText || (imagePayload ? '请结合图片继续讲这道题。' : ''));
                 return {
                     session_id: currentChatId,
                     message: fallbackText,
                     history,
+                    use_ocr_first: options.useOcrFirst !== false,
                     latest_image: imagePayload ? {
-                        file_name: imagePayload.name,
+                        file_name: imageName,
                         mime_type: imagePayload.mimeType,
                         data_url: imagePayload.dataUrl
                     } : null
@@ -6918,13 +7354,13 @@
                 throw new Error('empty stream');
             }
 
-            async function requestAssistantReplyJson(messageText, imagePayload, history) {
+            async function requestAssistantReplyJson(messageText, imagePayload, history, options = {}) {
                 const response = await fetch(CHAT_API_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(buildChatRequestBody(messageText, imagePayload, history))
+                    body: JSON.stringify(buildChatRequestBody(messageText, imagePayload, history, options))
                 });
                 if (!response.ok) {
                     throw new Error(`request failed: ${response.status}`);
@@ -6935,6 +7371,15 @@
 
             async function requestAssistantReply(messageText, imagePayload = null, onEvent = null) {
                 const history = await getCurrentChatHistoryForApi();
+                let attachedImage = imagePayload;
+                let useOcrFirst = Boolean(imagePayload);
+                if (!attachedImage && isBlankFollowup(messageText)) {
+                    attachedImage = await getLastChatImagePayload();
+                    useOcrFirst = false;
+                }
+                const body = JSON.stringify(buildChatRequestBody(messageText, attachedImage, history, {
+                    useOcrFirst
+                }));
                 try {
                     const response = await fetch(getChatStreamApiUrl(), {
                         method: 'POST',
@@ -6942,7 +7387,7 @@
                             'Content-Type': 'application/json',
                             'Accept': 'text/event-stream'
                         },
-                        body: JSON.stringify(buildChatRequestBody(messageText, imagePayload, history))
+                        body
                     });
                     if (!response.ok) {
                         throw new Error(`request failed: ${response.status}`);
@@ -6958,7 +7403,7 @@
                     if (!/request failed: (404|405)|not a stream|empty stream/.test(message)) {
                         throw error;
                     }
-                    return await requestAssistantReplyJson(messageText, imagePayload, history);
+                    return await requestAssistantReplyJson(messageText, attachedImage, history, { useOcrFirst });
                 }
             }
 
@@ -6989,6 +7434,7 @@
                 const chats = await getAllChats();
                 const target = chats.find(chat => chat.id === chatId);
                 if (!target) return;
+                if (!window.confirm(`删除「${target.title}」？`)) return;
                 await deleteChat(chatId);
                 if (chatId === currentChatId) {
                     const remainingChats = await getAllChats();
@@ -7365,6 +7811,24 @@
             historyBtn.addEventListener('click', openHistoryPanel);
             historyOverlay.addEventListener('click', closeHistoryPanel);
             historyCloseBtn.addEventListener('click', closeHistoryPanel);
+            if (historyMenu) {
+                historyMenu.addEventListener('click', async event => {
+                    const btn = event.target.closest('[data-history-action]');
+                    if (!btn) return;
+                    event.stopPropagation();
+                    const chatId = historyMenu.dataset.chatId;
+                    const action = btn.dataset.historyAction;
+                    closeHistoryMenu();
+                    if (action === 'pin') await handlePinChat(chatId);
+                    if (action === 'rename') await handleRenameChat(chatId);
+                    if (action === 'delete') await handleDeleteChat(chatId);
+                });
+            }
+            document.addEventListener('click', event => {
+                if (!historyMenu || historyMenu.classList.contains('hidden')) return;
+                if (event.target.closest('#history-menu, .history-more-btn')) return;
+                closeHistoryMenu();
+            });
             flashcardEntry.addEventListener('click', () => openFlashcardModal(selectedNoteId));
             flashcardOverlay.addEventListener('click', closeFlashcardModal);
             flashcardCloseBtn.addEventListener('click', closeFlashcardModal);

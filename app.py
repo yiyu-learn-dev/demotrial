@@ -328,8 +328,128 @@ def normalize_structured_reply(
     message: str,
     image_context: str | None = None,
 ) -> str:
-    del message, image_context
-    return reply
+    parsed = parse_structured_reply(reply)
+    if not parsed:
+        return reply
+    parsed["question_type"] = classify_question_type(message, parsed, image_context)
+    return json.dumps(parsed, ensure_ascii=False)
+
+
+def classify_question_type(
+    message: str,
+    parsed: dict[str, object],
+    image_context: str | None = None,
+) -> str:
+    claimed = str(parsed.get("question_type") or "").strip()
+    subtype = str(parsed.get("subtype") or "")
+    stem = str(parsed.get("stem_understanding") or "")
+    answer = str(parsed.get("answer") or "")
+    combined = "\n".join(part for part in (message, image_context, claimed, subtype, stem, answer) if part)
+
+    has_options = has_explicit_options(combined)
+    grammar_fill = looks_like_grammar_fill(combined) or bool(
+        re.search(r"语法填空|无提示词|有提示词|词性转换", combined)
+    )
+    numbered_blanks = bool(re.search(r"\(\s*\d{1,2}\s*\)|第\s*\d+\s*[空题]", combined))
+
+    if re.search(r"七选五", combined):
+        return "七选五"
+    if has_options and not grammar_fill:
+        return "完型"
+    if grammar_fill or (numbered_blanks and not has_options):
+        return "语法"
+    if re.search(r"阅读理解|细节题|主旨", combined) and not numbered_blanks:
+        return "阅读"
+    if re.search(r"完型|完形", claimed) and not has_options:
+        return "语法"
+    if re.search(r"语法", claimed):
+        return "语法"
+    if re.search(r"完型|完形", claimed):
+        return "完型"
+    if re.search(r"阅读", claimed):
+        return "阅读"
+    if re.search(r"改错", claimed):
+        return "改错"
+    if re.search(r"翻译", claimed):
+        return "翻译"
+    return claimed or "语法"
+
+
+CONVERSATION_RULES = """思考时只用自然语言分析题目：看哪一句、哪个空、为什么排除、填什么。
+禁止在思考中出现 JSON、字段名、schema、输出格式、Markdown、代码块，以及 supported、reasoning_steps、knowledge_methodology、distractor_analysis、stem_understanding 这些词。想清楚后再输出 JSON。
+
+对话记忆：
+- 上文已有题干、原文、图片或已讲空格时，后续追问必须接着用，不得装作没看到。
+- 学生只发空号或题号（如 13、第12空）时，视为同一套题继续讲，need_more_context 必须为 false。
+- 材料里有多个空时，answer 按空号一次列全，例如 (11) a；(12) struggled；(13) to。
+- knowledge_methodology 最多 3 条，写成“什么条件 → 填/用什么”，禁止“与理解能力相关”这类空话。
+- 没有 A/B/C/D 的带空短文判为语法，不要判成完型。"""
+
+BLANK_FOLLOWUP_RE = re.compile(
+    r"^\s*(那|然后|接着|还有|再看|继续|再讲|那再看|那再讲)?"
+    r"\s*(第\s*)?[（(]?\s*\d{1,3}\s*[)）]?\s*(空|题|小题)?"
+    r"\s*[。.?？!！～~]*\s*$",
+    re.IGNORECASE,
+)
+
+
+def is_blank_followup(message: str) -> bool:
+    text = (message or "").strip()
+    if not text or len(text) > 16:
+        return False
+    return bool(BLANK_FOLLOWUP_RE.match(text))
+
+
+def is_greeting_history_item(item: ChatMessage) -> bool:
+    if item.sender != "ai":
+        return False
+    text = (item.content or "").strip()
+    return text.startswith("你好，我是陶然") or "阅读、完形、语法填空都可以直接问" in text
+
+
+def compact_assistant_content(content: str) -> str:
+    parsed = parse_structured_reply(content)
+    if not parsed:
+        return (content or "").strip()[:3000]
+
+    parts: list[str] = []
+    qtype = str(parsed.get("question_type") or "").strip()
+    subtype = str(parsed.get("subtype") or "").strip()
+    header = " / ".join(part for part in (qtype, subtype) if part)
+    if header:
+        parts.append(f"题型：{header}")
+    stem = str(parsed.get("stem_understanding") or "").strip()
+    if stem:
+        parts.append(f"题意：{stem}")
+    answer = str(parsed.get("answer") or "").strip()
+    if answer:
+        parts.append(f"已给答案：{answer}")
+    steps = parsed.get("reasoning_steps")
+    briefs: list[str] = []
+    if isinstance(steps, list):
+        for step in steps[:5]:
+            if not isinstance(step, dict):
+                continue
+            line = str(step.get("conclusion") or step.get("basis") or "").strip()
+            if line and line not in briefs:
+                briefs.append(line)
+    if briefs:
+        parts.append("已讲要点：" + "；".join(briefs[:4]))
+    follow = str(parsed.get("follow_up") or "").strip()
+    if follow:
+        parts.append(f"收尾：{follow}")
+    return "\n".join(parts) if parts else str(content)[:1500]
+
+
+def decorate_current_user_message(message: str) -> str:
+    text = (message or "").strip()
+    if is_blank_followup(text):
+        return (
+            "这是对上一题的追问。必须结合上文已有题干、原文、图片和已给答案继续讲当前这个空，"
+            "不要说只看到了当前这几个字，也不要让学生重发材料。need_more_context 必须为 false。\n\n"
+            f"学生追问：{text}"
+        )
+    return text
 
 
 def prior_chat_history(history: list[ChatMessage], message: str, *, limit: int) -> list[ChatMessage]:
@@ -339,17 +459,29 @@ def prior_chat_history(history: list[ChatMessage], message: str, *, limit: int) 
     return prior[-limit:]
 
 
+def iter_compacted_history(history: list[ChatMessage], message: str, *, limit: int) -> list[tuple[str, str]]:
+    prior = prior_chat_history(history, message, limit=max(limit * 3, 18))
+    compacted: list[tuple[str, str]] = []
+    for item in prior:
+        if is_greeting_history_item(item):
+            continue
+        content = compact_assistant_content(item.content) if item.sender == "ai" else (item.content or "")
+        content = content.strip()
+        if not content:
+            continue
+        role = "assistant" if item.sender == "ai" else "user"
+        compacted.append((role, content[:4000]))
+    return compacted[-limit:]
+
+
 def build_text_messages(message: str, history: list[ChatMessage]) -> list[dict]:
     messages: list[dict] = [
-        {
-            "role": "system",
-            "content": get_teaching_prompt(),
-        }
+        {"role": "system", "content": get_teaching_prompt()},
+        {"role": "system", "content": CONVERSATION_RULES},
     ]
-    for item in prior_chat_history(history, message, limit=10):
-        role = "assistant" if item.sender == "ai" else "user"
-        messages.append({"role": role, "content": item.content})
-    messages.append({"role": "user", "content": message})
+    for role, content in iter_compacted_history(history, message, limit=12):
+        messages.append({"role": role, "content": content})
+    messages.append({"role": "user", "content": decorate_current_user_message(message)})
     return messages
 
 
@@ -364,15 +496,15 @@ def build_vision_messages(
             "role": "system",
             "content": (
                 f"{get_teaching_prompt()}\n\n"
+                f"{CONVERSATION_RULES}\n\n"
                 "当前用户上传了题目图片。结合图片、用户问题和已有上下文作答即可。"
             ),
         }
     ]
-    for item in prior_chat_history(history, message, limit=6):
-        role = "assistant" if item.sender == "ai" else "user"
-        messages.append({"role": role, "content": item.content})
+    for role, content in iter_compacted_history(history, message, limit=8):
+        messages.append({"role": role, "content": content})
 
-    user_content: list[dict] = [{"type": "text", "text": message}]
+    user_content: list[dict] = [{"type": "text", "text": decorate_current_user_message(message)}]
     if ocr_text:
         user_content.append(
             {
@@ -500,6 +632,8 @@ def iter_streamed_reply_events(
     enable_thinking: bool,
     meta: ModelMeta,
     non_stream_fallback,
+    source_message: str = "",
+    image_context: str | None = None,
 ):
     content_parts: list[str] = []
     for reasoning, content in iter_completion_deltas(
@@ -522,6 +656,7 @@ def iter_streamed_reply_events(
         if reply:
             yield sse_event({"type": "content", "text": reply})
 
+    reply = normalize_structured_reply(reply, message=source_message, image_context=image_context)
     yield sse_event({"type": "done", "reply": reply, "meta": meta.model_dump()})
 
 
@@ -584,6 +719,8 @@ def iter_chat_sse(request: ChatRequest):
                     vision_model,
                     ocr_text=ocr_text,
                 ),
+                source_message=request.message,
+                image_context=ocr_text,
             )
             return
 
@@ -601,6 +738,7 @@ def iter_chat_sse(request: ChatRequest):
             enable_thinking=model_supports_thinking(text_model),
             meta=meta,
             non_stream_fallback=lambda: generate_text_reply(client, request.message, request.history, text_model),
+            source_message=request.message,
         )
     except Exception:  # noqa: BLE001
         logger.exception("Streaming model pipeline failed, fallback to demo reply")
@@ -644,6 +782,11 @@ def run_model_pipeline(request: ChatRequest) -> ChatResponse:
                 vision_model,
                 ocr_text=ocr_text,
             )
+            reply = normalize_structured_reply(
+                reply,
+                message=request.message,
+                image_context=ocr_text,
+            )
             return ChatResponse(
                 reply=reply,
                 meta=ModelMeta(
@@ -655,6 +798,7 @@ def run_model_pipeline(request: ChatRequest) -> ChatResponse:
             )
 
         reply = generate_text_reply(client, request.message, request.history, text_model)
+        reply = normalize_structured_reply(reply, message=request.message)
         return ChatResponse(
             reply=reply,
             meta=ModelMeta(
