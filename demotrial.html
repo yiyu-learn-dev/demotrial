@@ -3943,7 +3943,7 @@
             }
 
             function isJsonConstructionNoise(text) {
-                return /```|(?:构建|构造|组装|生成|填写|填充|输出|按照|遵循|符合)\s*(?:这个|最终|固定|以下|下面)?\s*(?:json|JSON|格式|schema|字段)|reasoning_steps|stem_understanding|distractor_analysis|knowledge_cards|knowledge_methodology|need_more_context|unsupported_reason|question_type|"supported"\s*:|固定\s*JSON|合法\s*JSON|字段名|按\s*schema|输出格式|JSON\s*对象|json\s*对象|键值对|根据(?:我的)?角色设定|回顾规则|根据规则|检查规则|对照规则|我需要输出|输出必须是|正式回答只输出|字段必须正确|现在，写JSON|确保不添加任何额外内容|不要\s*Markdown|不要代码块|不要前言|"focus"\s*:|"basis"\s*:|"conclusion"\s*:|"step"\s*:|列出推理步骤|干扰项剖析|知识点与方法论|采用以下格式|思考结束后|schema/i.test(String(text || ''));
+                return /```|(?:构建|构造|组装|生成|填写|填充|输出|按照|遵循|符合)\s*(?:这个|最终|固定|以下|下面)?\s*(?:json|JSON|格式|schema|字段)|reasoning_steps|stem_understanding|distractor_analysis|knowledge_cards|knowledge_methodology|need_more_context|unsupported_reason|question_type|"supported"\s*:|固定\s*JSON|合法\s*JSON|字段名|按\s*schema|输出格式|JSON\s*对象|json\s*对象|键值对|根据(?:我的)?(?:角色设定|系统规则)|回顾规则|根据规则|查看规则|系统规则|检查规则|对照规则|我需要输出|输出必须是|正式回答只输出|字段必须正确|现在(?:开始)?(?:写|构造|组装|输出|填写)\s*JSON|现在，写JSON|写JSON|构造JSON|组装JSON|检查字段|字段怎么填|确保不添加任何额外内容|不要\s*Markdown|不要代码块|不要前言|"focus"\s*:|"basis"\s*:|"conclusion"\s*:|"step"\s*:|列出推理步骤|干扰项剖析|知识点与方法论|采用以下格式|思考结束后|schema/i.test(String(text || ''));
             }
 
             function stripJsonPayloads(text) {
@@ -4069,31 +4069,46 @@
 
             function hasExplicitChoiceOptions(...texts) {
                 const source = texts.map(item => String(item || '')).join('\n');
-                return /(?:^|[\n\r])\s*[A-D][\.．、\)]\s+\S/.test(source)
-                    || /(?:选项|choose|choices?)\s*[A-D]/i.test(source) && /[A-D][\.．、\)]/.test(source);
+                const marked = ['A', 'B', 'C', 'D'].filter(letter => (
+                    new RegExp(`(?:^|[\\n\\r])\\s*${letter}[\\.．、\\)]\\s+\\S`).test(source)
+                ));
+                if (marked.length >= 3) return true;
+                return /(?:选项|choose|choices?)\s*[A-D]/i.test(source) && /[A-D][\.．、\)]/.test(source) && marked.length >= 2;
             }
 
             function looksLikeGrammarFillText(text) {
-                return /\([A-Za-z][A-Za-z\s\-']{0,24}\)|（[A-Za-z][A-Za-z\s\-']{0,24}）|_{3,}|语法填空|无提示词|有提示词|词性转换/.test(String(text || ''));
+                return /\((?![A-Da-d]\))([A-Za-z][A-Za-z\s\-']{1,24})\)|（(?![A-Da-d]）)([A-Za-z][A-Za-z\s\-']{1,24})）|_{3,}|语法填空|无提示词|有提示词|词性转换/.test(String(text || ''));
+            }
+
+            function looksLikeClozeBlankText(text) {
+                return /第\s*\d+\s*空|\(\s*\d{1,2}\s*\)\s*[_.＿—–-]{2,}|\(\s*\d{1,2}\s*\)\s*_+/.test(String(text || ''));
+            }
+
+            function looksLikeReadingText(text) {
+                return /阅读理解|细节题|主旨|推断题|标题题|根据(?:短文|原文|文章|passage)|Which of the following|According to (?:the )?(?:passage|text|author)|Why (?:did|does|is|was|would)|What (?:does|did|is|can|do) (?:the|we|you)|The (?:passage|author|text) (?:mainly|suggests|implies|is)/i.test(String(text || ''));
             }
 
             function correctQuestionType(claimed, extraText = '') {
-                const source = `${claimed || ''}\n${extraText || ''}`;
+                const claimedType = String(claimed || '').replace(/^完形$/, '完型').trim();
+                const source = `${claimedType}\n${extraText || ''}`;
                 const hasChoices = hasExplicitChoiceOptions(source);
                 const grammarFill = looksLikeGrammarFillText(source);
-                const numbered = /\(\s*\d{1,2}\s*\)|第\s*\d+\s*[空题]/.test(source);
+                const clozeBlanks = looksLikeClozeBlankText(source);
+                const readingLike = looksLikeReadingText(source) || claimedType === '阅读';
 
                 if (/七选五/.test(source)) return '七选五';
-                if (hasChoices && !grammarFill) return '完型';
-                if (grammarFill || (numbered && !hasChoices)) return '语法';
-                if (/阅读理解|细节题|主旨/.test(source) && !numbered) return '阅读';
-                if (/完型|完形/.test(String(claimed || '')) && !hasChoices) return '语法';
-                if (/语法/.test(String(claimed || ''))) return '语法';
-                if (/完型|完形/.test(String(claimed || ''))) return '完型';
-                if (/阅读/.test(String(claimed || ''))) return '阅读';
-                if (/改错/.test(String(claimed || ''))) return '改错';
-                if (/翻译/.test(String(claimed || ''))) return '翻译';
-                return String(claimed || '').replace(/^完形$/, '完型').trim();
+                if (grammarFill && !(hasChoices && clozeBlanks)) return '语法';
+                if (readingLike && !clozeBlanks) return '阅读';
+                if (hasChoices && clozeBlanks) return '完型';
+                if (clozeBlanks && !hasChoices) return '语法';
+                if (hasChoices && !readingLike) return '完型';
+                if (/完型|完形/.test(claimedType) && !hasChoices) return '语法';
+                if (/语法/.test(claimedType)) return '语法';
+                if (/完型|完形/.test(claimedType)) return '完型';
+                if (/阅读/.test(claimedType)) return '阅读';
+                if (/改错/.test(claimedType)) return '改错';
+                if (/翻译/.test(claimedType)) return '翻译';
+                return claimedType;
             }
 
             function applyCorrectedQuestionType(data) {

@@ -24,7 +24,7 @@ NOTES_DATA_FILE = BASE_DIR / "notes-data.js"
 PROMPT_FILE = BASE_DIR / "prompt_1.md"
 logger = logging.getLogger("taoran.demo")
 
-app = FastAPI(title="Taoran AI Demo API", version="0.2.0")
+app = FastAPI(title="Taoran AI Demo API", version="0.2.1")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -276,7 +276,39 @@ def looks_like_grammar_fill(*segments: str | None) -> bool:
     combined = "\n".join(segment for segment in segments if segment).strip()
     if not combined:
         return False
-    return bool(re.search(r"_{2,}|\([A-Za-z][A-Za-z\s\-']*\)|（[A-Za-z][A-Za-z\s\-']*）", combined))
+    if re.search(r"语法填空|无提示词|有提示词|词性转换", combined):
+        return True
+    return bool(
+        re.search(
+            r"_{3,}|_{2,}|"
+            r"\((?![A-Da-d]\))([A-Za-z][A-Za-z\s\-']{1,24})\)|"
+            r"（(?![A-Da-d]）)([A-Za-z][A-Za-z\s\-']{1,24})）",
+            combined,
+        )
+    )
+
+
+def looks_like_cloze_blanks(*segments: str | None) -> bool:
+    combined = "\n".join(segment for segment in segments if segment).strip()
+    if not combined:
+        return False
+    return bool(re.search(r"第\s*\d+\s*空|\(\s*\d{1,2}\s*\)\s*[_.＿—–-]{2,}|\(\s*\d{1,2}\s*\)\s*_+", combined))
+
+
+def looks_like_reading(*segments: str | None) -> bool:
+    combined = "\n".join(segment for segment in segments if segment).strip()
+    if not combined:
+        return False
+    return bool(
+        re.search(
+            r"阅读理解|细节题|主旨|推断题|标题题|根据(?:短文|原文|文章|passage)|"
+            r"Which of the following|According to (?:the )?(?:passage|text|author)|"
+            r"Why (?:did|does|is|was|would)|What (?:does|did|is|can|do) (?:the|we|you)|"
+            r"The (?:passage|author|text) (?:mainly|suggests|implies|is)",
+            combined,
+            flags=re.IGNORECASE,
+        )
+    )
 
 
 def extract_candidate_challenge(message: str) -> str:
@@ -322,6 +354,162 @@ def extract_candidate_explanation(reasoning_steps: object, candidate: str) -> st
     return ""
 
 
+def english_word_count(*segments: str | None) -> int:
+    combined = "\n".join(segment for segment in segments if segment)
+    return len(re.findall(r"[A-Za-z]{3,}", combined))
+
+
+def has_enough_question_material(message: str, image_context: str | None = None) -> bool:
+    if image_context and image_context.strip():
+        return True
+    text = message or ""
+    if looks_like_grammar_fill(text) or looks_like_cloze_blanks(text):
+        return True
+    if has_explicit_options(text) and english_word_count(text) >= 20:
+        return True
+    return english_word_count(text) >= 18
+
+
+def is_bare_explain_request(message: str) -> bool:
+    text = (message or "").strip()
+    if not text or len(text) > 40 or is_blank_followup(text):
+        return False
+    return bool(re.search(r"阅读|完形|完型|语法|七选五|改错|翻译|讲题|讲一下", text))
+
+
+def asked_for_knowledge_cards(message: str) -> bool:
+    return bool(re.search(r"闪卡|错题卡|知识点卡片|整理关键词|做成卡片|做成闪卡", message or ""))
+
+
+def is_hollow_structured(parsed: dict[str, object]) -> bool:
+    answer = str(parsed.get("answer") or "").strip()
+    stem = str(parsed.get("stem_understanding") or "").strip()
+    follow = str(parsed.get("follow_up") or "").strip()
+    steps = parsed.get("reasoning_steps")
+    useful_steps = False
+    if isinstance(steps, list):
+        for step in steps:
+            if not isinstance(step, dict):
+                continue
+            if str(step.get("basis") or "").strip() or str(step.get("conclusion") or "").strip() or str(step.get("focus") or "").strip():
+                useful_steps = True
+                break
+    return not answer and not stem and not follow and not useful_steps
+
+
+def sentence_containing_blank(message: str, blank: str) -> str:
+    match = re.search(rf"[^.?\n]*\(\s*{re.escape(blank)}\s*\)[^.?\n]*", message or "")
+    return match.group(0) if match else ""
+
+
+def revise_unjustified_past_perfect(parsed: dict[str, object], message: str) -> None:
+    answer = str(parsed.get("answer") or "")
+    if not answer or not re.search(r"\bhad\s+[A-Za-z]+", answer, flags=re.IGNORECASE):
+        return
+
+    rewritten: list[tuple[str, str]] = []
+
+    def replace_had(match: re.Match) -> str:
+        blank, verb = match.group(1), match.group(2)
+        sentence = sentence_containing_blank(message, blank)
+        if not sentence:
+            return match.group(0)
+        if re.search(r"\bby\s+(the time|then|\d{4})\b|\balready\b", sentence, flags=re.IGNORECASE):
+            return match.group(0)
+        duration_only = bool(
+            re.search(
+                r"\bfor\s+(?:\d+\s+)?(?:years?|months?|weeks?|days?|hours?|a long time)\b",
+                sentence,
+                flags=re.IGNORECASE,
+            )
+        )
+        other_pasts = re.findall(r"\b(?:was|were|did|[A-Za-z]{3,}ed)\b", sentence, flags=re.IGNORECASE)
+        if duration_only and len(other_pasts) < 2:
+            rewritten.append((verb, blank))
+            return f"({blank}) {verb}"
+        return match.group(0)
+
+    parsed["answer"] = re.sub(r"\((\d{1,2})\)\s*had\s+([A-Za-z]+)", replace_had, answer, flags=re.IGNORECASE)
+    if not rewritten:
+        return
+
+    def scrub(text: object) -> str:
+        value = str(text or "")
+        for verb, _blank in rewritten:
+            value = re.sub(rf"(?<![A-Za-z])had\s+{re.escape(verb)}\b", verb, value, flags=re.IGNORECASE)
+        return value
+
+    steps = parsed.get("reasoning_steps")
+    if isinstance(steps, list):
+        for step in steps:
+            if not isinstance(step, dict):
+                continue
+            for key in ("focus", "basis", "conclusion"):
+                step[key] = scrub(step.get(key))
+            combined = " ".join(str(step.get(key) or "") for key in ("focus", "basis", "conclusion"))
+            if re.search(r"过去完成|had done", combined) and re.search(r"for years|一段时间|先后", combined, flags=re.IGNORECASE):
+                step["basis"] = "同一句里只有一个过去动作，for years 不是过去完成的标志。"
+                step["conclusion"] = re.sub(r"过去完成时", "一般过去时", str(step.get("conclusion") or ""))
+
+    methods = parsed.get("knowledge_methodology")
+    if isinstance(methods, list):
+        parsed["knowledge_methodology"] = [
+            "同一句只有一个过去动作，且只有 for years → 用一般过去，不填 had done"
+            if isinstance(item, str) and re.search(r"过去完成|had done|先后", item)
+            else item
+            for item in methods
+        ]
+
+
+def infer_requested_question_type(message: str) -> str:
+    text = message or ""
+    if re.search(r"七选五", text):
+        return "七选五"
+    if re.search(r"阅读", text):
+        return "阅读"
+    if re.search(r"完型|完形", text):
+        return "完型"
+    if re.search(r"语法", text):
+        return "语法"
+    if re.search(r"改错", text):
+        return "改错"
+    if re.search(r"翻译", text):
+        return "翻译"
+    return "综合"
+
+
+def apply_need_material_defaults(parsed: dict[str, object], message: str) -> dict[str, object]:
+    question_type = infer_requested_question_type(message)
+    ask = {
+        "阅读": "把阅读原文、题干和选项发过来，或直接传截图。",
+        "完型": "把完形短文、空号和选项发过来，或直接传截图。",
+        "语法": "把带空的句子或短文发过来，有提示词也一并写上。",
+        "七选五": "把七选五原文和选项 A-G 发过来，或直接传截图。",
+        "改错": "把短文改错原文发过来。",
+        "翻译": "把要讲的句子或段落发过来。",
+    }.get(question_type, "把原文、题干或截图发过来。")
+    parsed["supported"] = True
+    parsed["question_type"] = question_type
+    parsed["answer"] = "需要确认"
+    parsed["confidence"] = "high"
+    parsed["need_more_context"] = True
+    parsed["unsupported_reason"] = ""
+    parsed["stem_understanding"] = "还没有原文、题干或选项，没法讲具体哪一题。"
+    parsed["reasoning_steps"] = [
+        {
+            "step": 1,
+            "focus": "先补材料",
+            "basis": "只有题型、没有题目，无法判断空格、定位句或选项。",
+            "conclusion": ask,
+        }
+    ]
+    parsed["distractor_analysis"] = {"A": "", "B": "", "C": "", "D": ""}
+    parsed["knowledge_methodology"] = []
+    parsed["knowledge_cards"] = []
+    parsed["follow_up"] = ask
+    return parsed
+
+
 def normalize_structured_reply(
     reply: str,
     *,
@@ -330,8 +518,19 @@ def normalize_structured_reply(
 ) -> str:
     parsed = parse_structured_reply(reply)
     if not parsed:
+        if is_bare_explain_request(message) and not has_enough_question_material(message, image_context):
+            return json.dumps(apply_need_material_defaults({}, message), ensure_ascii=False)
         return reply
-    parsed["question_type"] = classify_question_type(message, parsed, image_context)
+
+    no_material = not has_enough_question_material(message, image_context) and not is_blank_followup(message)
+    if no_material and (is_bare_explain_request(message) or is_hollow_structured(parsed)):
+        parsed = apply_need_material_defaults(parsed, message)
+    else:
+        parsed["question_type"] = classify_question_type(message, parsed, image_context)
+        revise_unjustified_past_perfect(parsed, message)
+        if not asked_for_knowledge_cards(message):
+            parsed["knowledge_cards"] = []
+
     return json.dumps(parsed, ensure_ascii=False)
 
 
@@ -340,26 +539,29 @@ def classify_question_type(
     parsed: dict[str, object],
     image_context: str | None = None,
 ) -> str:
-    claimed = str(parsed.get("question_type") or "").strip()
+    claimed = str(parsed.get("question_type") or "").strip().replace("完形", "完型")
     subtype = str(parsed.get("subtype") or "")
     stem = str(parsed.get("stem_understanding") or "")
     answer = str(parsed.get("answer") or "")
     combined = "\n".join(part for part in (message, image_context, claimed, subtype, stem, answer) if part)
 
     has_options = has_explicit_options(combined)
-    grammar_fill = looks_like_grammar_fill(combined) or bool(
-        re.search(r"语法填空|无提示词|有提示词|词性转换", combined)
-    )
-    numbered_blanks = bool(re.search(r"\(\s*\d{1,2}\s*\)|第\s*\d+\s*[空题]", combined))
+    grammar_fill = looks_like_grammar_fill(combined)
+    cloze_blanks = looks_like_cloze_blanks(combined)
+    reading_like = looks_like_reading(combined) or claimed == "阅读"
 
     if re.search(r"七选五", combined):
         return "七选五"
-    if has_options and not grammar_fill:
-        return "完型"
-    if grammar_fill or (numbered_blanks and not has_options):
+    if grammar_fill and not (has_options and cloze_blanks):
         return "语法"
-    if re.search(r"阅读理解|细节题|主旨", combined) and not numbered_blanks:
+    if reading_like and not cloze_blanks:
         return "阅读"
+    if has_options and cloze_blanks:
+        return "完型"
+    if cloze_blanks and not has_options:
+        return "语法"
+    if has_options and not reading_like:
+        return "完型"
     if re.search(r"完型|完形", claimed) and not has_options:
         return "语法"
     if re.search(r"语法", claimed):
@@ -375,15 +577,76 @@ def classify_question_type(
     return claimed or "语法"
 
 
-CONVERSATION_RULES = """思考时只用自然语言分析题目：看哪一句、哪个空、为什么排除、填什么。
-禁止在思考中出现 JSON、字段名、schema、输出格式、Markdown、代码块，以及 supported、reasoning_steps、knowledge_methodology、distractor_analysis、stem_understanding 这些词。想清楚后再输出 JSON。
+CONVERSATION_RULES = """思考时只用自然语言看句子：空在哪、前后是什么、为什么排除、填什么。
+禁止在思考中出现 JSON、字段名、schema、输出格式、Markdown、代码块。
+禁止写 supported、question_type、reasoning_steps、knowledge_methodology、distractor_analysis、stem_understanding、knowledge_cards、need_more_context。
+禁止说“现在写JSON / 构造JSON / 检查字段 / 字段怎么填”。想清楚后直接输出 JSON，思考里不要谈格式。
 
 对话记忆：
 - 上文已有题干、原文、图片或已讲空格时，后续追问必须接着用，不得装作没看到。
 - 学生只发空号或题号（如 13、第12空）时，视为同一套题继续讲，need_more_context 必须为 false。
 - 材料里有多个空时，answer 按空号一次列全，例如 (11) a；(12) struggled；(13) to。
 - knowledge_methodology 最多 3 条，写成“什么条件 → 填/用什么”，禁止“与理解能力相关”这类空话。
-- 没有 A/B/C/D 的带空短文判为语法，不要判成完型。"""
+- knowledge_cards 默认 []，除非学生明确要闪卡或关键词。
+- 没有原文、题干或选项时，不要吐空壳：answer 写“需要确认”，need_more_context 为 true，follow_up 明确要材料。
+- 文章后面跟理解题（Why/What/Which/细节/主旨）是阅读，即使有 A/B/C/D 也不要判完型。完型是短文里带空号且每空有选项。
+- 过去完成必须同一句里有两个过去并强调先后。不要只因为 for years / for a long time 就填 had done。"""
+
+THINKING_NOISE_RE = re.compile(
+    r"```|"
+    r"(?:构建|构造|组装|生成|填写|填充|输出|按照|遵循|符合)\s*(?:这个|最终|固定|以下|下面)?\s*(?:json|JSON|格式|schema|字段)|"
+    r"reasoning_steps|stem_understanding|distractor_analysis|knowledge_cards|"
+    r"knowledge_methodology|need_more_context|unsupported_reason|question_type|"
+    r'"supported"\s*:|固定\s*JSON|合法\s*JSON|字段名|按\s*schema|输出格式|'
+    r"JSON\s*对象|json\s*对象|键值对|根据(?:我的)?(?:角色设定|系统规则)|回顾规则|根据规则|查看规则|系统规则|"
+    r"检查规则|对照规则|我需要输出|输出必须是|正式回答只输出|字段必须正确|"
+    r"现在(?:开始)?(?:写|构造|组装|输出|填写)\s*JSON|写JSON|构造JSON|组装JSON|"
+    r"检查字段|字段怎么填|确保不添加任何额外内容|不要\s*Markdown|不要代码块|不要前言|"
+    r'"focus"\s*:|"basis"\s*:|"conclusion"\s*:|"step"\s*:|'
+    r"列出推理步骤|干扰项剖析|知识点与方法论|采用以下格式|思考结束后|schema",
+    re.IGNORECASE,
+)
+
+
+def sanitize_thinking_text(text: str, live: bool = False) -> str:
+    source = re.sub(r"```(?:json)?[\s\S]*?```", "\n", text or "", flags=re.IGNORECASE)
+    source = re.sub(r'\{[\s\S]*?"supported"\s*:[\s\S]*?\}\s*', "\n", source)
+    json_start = re.search(r'```|\{\s*"(?:supported|question_type|reasoning_steps|stem_understanding)"', source)
+    if json_start:
+        source = source[: json_start.start()]
+    format_head = re.search(
+        r"(?:现在|接下来|然后|最后|下面)(?:开始)?(?:构造|组装|生成|输出|填写|按照)\s*(?:这个|最终|固定|以下)?\s*(?:JSON|json|字段|格式)|"
+        r"思考结束后|正式回答只输出|输出一个 JSON|输出一个JSON",
+        source,
+    )
+    if format_head:
+        source = source[: format_head.start()]
+
+    cleaned: list[str] = []
+    for block in re.split(r"\n+", source):
+        kept: list[str] = []
+        for sentence in re.split(r"(?<=[。！？!?\n])", block):
+            item = sentence.strip()
+            if not item:
+                continue
+            if THINKING_NOISE_RE.search(item) or re.match(r"^\s*[{[]", item) or re.match(r'^"[a-z_]+"\s*:', item):
+                continue
+            if re.search(r"JSON|字段名|输出格式|schema", item, flags=re.IGNORECASE):
+                continue
+            kept.append(item)
+        if kept:
+            cleaned.append("".join(kept))
+
+    if live and cleaned:
+        last = cleaned[-1]
+        if last and not re.search(r"[。！？!?\n]$", last) and re.search(
+            r'JSON|字段|schema|reasoning_|knowledge_|supported|输出格式|格式要求|"[a-z_]+"\s*:',
+            last,
+            flags=re.IGNORECASE,
+        ):
+            cleaned.pop()
+    return re.sub(r"\n{3,}", "\n\n", "\n\n".join(cleaned)).strip()
+
 
 BLANK_FOLLOWUP_RE = re.compile(
     r"^\s*(那|然后|接着|还有|再看|继续|再讲|那再看|那再讲)?"
@@ -449,6 +712,13 @@ def decorate_current_user_message(message: str) -> str:
             "不要说只看到了当前这几个字，也不要让学生重发材料。need_more_context 必须为 false。\n\n"
             f"学生追问：{text}"
         )
+    notes: list[str] = []
+    if looks_like_reading(text) and has_explicit_options(text) and not looks_like_cloze_blanks(text):
+        notes.append("这是阅读理解，不是完型。")
+    if looks_like_grammar_fill(text) and re.search(r"\bfor\s+(?:years|a long time)\b", text, flags=re.IGNORECASE):
+        notes.append("for years / for a long time 不是完成时或过去完成的标志。同一句里只有一个过去动作时填一般过去，不要填 had done。")
+    if notes:
+        return text + "\n\n" + " ".join(notes)
     return text
 
 
@@ -636,6 +906,8 @@ def iter_streamed_reply_events(
     image_context: str | None = None,
 ):
     content_parts: list[str] = []
+    raw_thinking = ""
+    emitted_thinking = ""
     for reasoning, content in iter_completion_deltas(
         client,
         model=model,
@@ -644,7 +916,15 @@ def iter_streamed_reply_events(
         enable_thinking=enable_thinking,
     ):
         if reasoning:
-            yield sse_event({"type": "thinking", "text": reasoning})
+            raw_thinking += reasoning
+            cleaned = sanitize_thinking_text(raw_thinking, live=True)
+            if cleaned.startswith(emitted_thinking):
+                delta = cleaned[len(emitted_thinking) :]
+            else:
+                delta = ""
+            if delta:
+                emitted_thinking = cleaned
+                yield sse_event({"type": "thinking", "text": delta})
         if content:
             content_parts.append(content)
             yield sse_event({"type": "content", "text": content})
